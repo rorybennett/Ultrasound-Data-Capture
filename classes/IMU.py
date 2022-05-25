@@ -20,8 +20,8 @@ def availableComPorts():
 class IMU:
     """
     Class for handling a connection to a Witmotion IMU sensor. Tested with some of their Bluetooth range
-    of sensors. During initialisation the requested COM port is opened at the specified baudrate. Then
-    a callback is subscribed that lets the class know when new IMU data is avaible.
+    of sensors. During initialisation the requested COM port is opened at the specified baud rate. Then
+    a callback is subscribed that lets the class know when new IMU data is available.
 
     The default values made available are acceleration, angle, and quaternion values, if other fields are
     required then the __imuCallback() method must be updated.
