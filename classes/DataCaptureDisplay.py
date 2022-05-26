@@ -119,6 +119,9 @@ class DataCaptureDisplay():
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
     def updatePlot(self):
+        """
+        Update the plot to show orientation of the IMU unit.
+        """
         # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
         if self.enablePlotting and self.imu.isConnected and self.imu.quaternion:
             self.fig_agg.restore_region(self.bg)
@@ -131,17 +134,19 @@ class DataCaptureDisplay():
     def setAzimuth(self, azimuth):
         """
         Set the azimuth of the plot to the slider value. This allows for aligning the plot to the user's orientation
-        since the IMU orientation is based on magnetic north.
+        since the IMU orientation is based on magnetic north. The axis needs to be cleared first, then reinitialised
+        to ensure a clean plot is saved for blitting purposes.
 
         Args:
             azimuth (int): Azimuth to set the displayed plot to.
         """
+        # Clear axis.
         self.ax.cla()
-
-        self.ax = ut.initialiseAxis(self.ax, int(azimuth))
-
+        # Reinitialise axis.
+        self.ax = ut.initialiseAxis(self.ax, azimuth)
+        # Redraw new axis.
         self.fig_agg.draw()
-
+        # Re-save background for blitting.
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
     def refreshComPorts(self):
