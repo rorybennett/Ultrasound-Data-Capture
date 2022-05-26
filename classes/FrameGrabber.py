@@ -38,7 +38,7 @@ class FrameGrabber:
         On object delete, release the VideoCapture device.
         """
         self.isConnected = False
-        if self.vid.isOpened():
+        if self.vid and self.vid.isOpened():
             self.vid.release()
             print('FrameGrabber released.')
 
