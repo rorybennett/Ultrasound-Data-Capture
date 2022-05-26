@@ -80,11 +80,15 @@ class IMU:
         elif msg_type is wm.protocol.AngleMessage:
             self.angle = self.imu.get_angle
 
-    def connect(self):
+    def connect(self) -> (bool):
         """
         Attempt to connect to the IMU. If the Com port and baudRate were not explicitly set, the default
         values will be used. The callbackCounter and startTime are reset on a successful connection.
+
+        Returns:
+            successFlag (bool): True if the IMU connects, else False.
         """
+        successFlag = False
         try:
             print(
                 f'Attempting to connect to {self.comPort} at {self.baudRate}...')
@@ -97,10 +101,11 @@ class IMU:
             self.isConnected = True
             self.callbackCounter = 0
             self.startTime = time.time()
+            successFlag = true
         except Exception as e:
             print(f'Error initialising IMU class object: {e}')
             self.disconnect()
-            raise
+        return successFlag
 
     def disconnect(self):
         """
