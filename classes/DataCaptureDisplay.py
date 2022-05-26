@@ -45,7 +45,7 @@ class DataCaptureDisplay():
                        enable_events=True)],
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font='Helvetica 20')],
             [sg.Button('', image_source='icons/refresh_icon.png', image_subsample=3, border_width=2,
-                       key='-BUTTON-COM-REFRESH-')]
+                       key='-BUTTON-COM-REFRESH-'), sg.Combo(self.availableComPorts, key='-COMBO-COM-PORT-')]
         ]
 
         layout = [[sg.Column(imuColumnLayout, element_justification='center')]]
