@@ -31,7 +31,14 @@ class DataCaptureDisplay():
         self.frameGrabber = FrameGrabber.FrameGrabber()
         # Initial search for system COM ports.
         self.availableComPorts = IMU.availableComPorts()
+        # Plotting variables.
+        self.ax = None
+        self.pointData = None
+        self.lineData = None
+        self.fig_agg = None
+        self.bg = None
 
+        # Create overall layout.
         self.layout = self.createLayout()
 
         self.window = sg.Window('Ultrasound Data Capture', self.layout, finalize=True)
@@ -39,7 +46,6 @@ class DataCaptureDisplay():
         self.createPlot()
 
         self.run()
-
 
     def createLayout(self):
         imuColumnLayout = [
@@ -81,7 +87,7 @@ class DataCaptureDisplay():
                 break
 
             if event == '-SLIDER-AZIMUTH-':
-                self.setAzimuth(values['-SLIDER-AZIMUTH-'])
+                self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
 
             if event == '-BUTTON-COM-REFRESH-':
                 self.refreshComPorts()
@@ -130,18 +136,18 @@ class DataCaptureDisplay():
                 self.ax.draw_artist(self.pointData)
 
             # Draw lines between points
-            # for i, point in enumerate(rpp):
-            #     if not i < len(rpp) - 1:
-            #         next_point = rpp[0, :]
-            #         self.lineData.set_data([next_point[0], point[0]],
-            #                                [next_point[1], point[1]])
-            #         self.lineData.set_3d_properties([next_point[2], point[2]])
-            #     else:
-            #         next_point = rpp[i + 1, :]
-            #         self.lineData.set_data([next_point[0], point[0]],
-            #                                [next_point[1], point[1]])
-            #         self.lineData.set_3d_properties([next_point[2], point[2]])
-            #     self.ax.draw_artist(self.lineData)
+            for i, point in enumerate(rpp):
+                if not i < len(rpp) - 1:
+                    next_point = rpp[0, :]
+                    self.lineData.set_data([next_point[0], point[0]],
+                                           [next_point[1], point[1]])
+                    self.lineData.set_3d_properties([next_point[2], point[2]])
+                else:
+                    next_point = rpp[i + 1, :]
+                    self.lineData.set_data([next_point[0], point[0]],
+                                           [next_point[1], point[1]])
+                    self.lineData.set_3d_properties([next_point[2], point[2]])
+                self.ax.draw_artist(self.lineData)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()
@@ -154,7 +160,20 @@ class DataCaptureDisplay():
         Args:
             azimuth (int): Azimuth to set the displayed plot to.
         """
-        print(f'The azimuth will be set to: {azimuth}')
+        self.ax.cla()
+
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+        self.ax.set_xlim((-5, 5))
+        self.ax.set_ylim((-5, 5))
+        self.ax.set_zlim((-5, 5))
+
+        self.ax.azim = int(azimuth)
+
+        self.fig_agg.draw()
+
+        self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
     def refreshComPorts(self):
         """

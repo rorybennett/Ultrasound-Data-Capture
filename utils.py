@@ -44,3 +44,7 @@ def rotatePoints(points, quaternion):
         rotated_points.append(myQuaternion.rotate(point))
 
     return np.array(rotated_points)
+
+
+def plotOnAxis(axis):
+
