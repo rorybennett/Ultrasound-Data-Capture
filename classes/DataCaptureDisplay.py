@@ -2,7 +2,7 @@ import Utils
 from datetime import datetime as dt
 from classes import IMU
 from classes import FrameGrabber
-
+import Styling as st
 import PySimpleGUI as sg
 
 
@@ -38,14 +38,16 @@ class DataCaptureDisplay():
 
     def createLayout(self):
         imuColumnLayout = [
-            [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font='Helvetica 20')],
+            [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(size=(500, 500), key='-CANVAS-PLOT-')],
             [sg.Text('Select Azimuth')],
             [sg.Slider(range=(0, 360), default_value=30, size=(40, 10), orientation='h', key='-SLIDER-AZIMUTH-',
                        enable_events=True)],
-            [sg.Text('IMU Controls', size=(40, 1), justification='center', font='Helvetica 20')],
+            [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
+                     pad=((0, 0), (20, 5)))],
             [sg.Button('', image_source='icons/refresh_icon.png', image_subsample=3, border_width=2,
-                       key='-BUTTON-COM-REFRESH-'), sg.Combo(self.availableComPorts, key='-COMBO-COM-PORT-')]
+                       key='-BUTTON-COM-REFRESH-'),
+             sg.Combo(self.availableComPorts, size=7, key='-COMBO-COM-PORT-', font=st.COMBO_FONT, enable_events=True)]
         ]
 
         layout = [[sg.Column(imuColumnLayout, element_justification='center')]]
@@ -68,6 +70,9 @@ class DataCaptureDisplay():
             if event == '-BUTTON-COM-REFRESH-':
                 self.refreshComPorts()
 
+            if event == '-COMBO-COM-PORT-':
+                self.setComPort(values['-COMBO-COM-PORT-'])
+
     def setAzimuth(self, azimuth):
         """
         Set the azimuth of the plot to the slider value. This allows for aligning the plot to the user's orientation
@@ -82,6 +87,9 @@ class DataCaptureDisplay():
         Refresh the available COM ports. The list of available COM ports is updated as well as the drop down menu/list.
         """
         print('Refresh the available com ports.')
+
+    def setComPort(self, comPort):
+        print(f'Will set the COM port of the IMU to: {comPort}.')
 
     def close(self):
         """
