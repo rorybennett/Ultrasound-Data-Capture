@@ -82,8 +82,11 @@ class IMU:
 
     def connect(self) -> (bool):
         """
-        Attempt to connect to the IMU. If the Com port and baudRate were not explicitly set, the default
+        Attempt to connect to the IMU. If the COM port and baud rate were not explicitly set, the default
         values will be used. The callbackCounter and startTime are reset on a successful connection.
+        self.isConnected is set to True if a successful IMU object is created, and does not account for the
+        state of the callback subscription. If subscription fails the self.isConnected state can still be True but
+        the successFlag will be False.
 
         Returns:
             successFlag (bool): True if the IMU connects, else False.
