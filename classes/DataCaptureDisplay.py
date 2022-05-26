@@ -80,10 +80,10 @@ class DataCaptureDisplay():
                 self.refreshComPorts()
 
             if event == '-COMBO-COM-PORT-':
-                self.setComPort(values['-COMBO-COM-PORT-'])
+                self.imu.comPort = values['-COMBO-COM-PORT-']
 
             if event == '-COMBO-BAUD-RATE-':
-                self.setBaudRate(values['-COMBO-BAUD-RATE-'])
+                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
 
             if event == '-BUTTON-IMU-CONNECT-':
                 self.toggleImuConnect()
@@ -104,25 +104,6 @@ class DataCaptureDisplay():
         """
         print('Refresh the available com ports.')
 
-    def setComPort(self, comPort):
-        """
-        Set the COM port of the IMU to the value given. The IMU may not always be able to connect to the given COM port,
-        or it may connect but receive no data. Both of these problems indicate that the incorrect COM port was chosen.
-
-        Args:
-            comPort (str): Com port to set the IMU to.
-        """
-        print(f'Will set the COM port of the IMU to: {comPort}.')
-
-    def setBaudRate(self, baudRate):
-        """
-        Set the baud rate of the IMU to the given value.
-
-        Args:
-            baudRate (int): Baud rate used by the IMU for communication.
-        """
-        print(f'Will set the baud rate of the IMU to: {baudRate}.')
-
     def close(self):
         """
         Delete references to IMU and FrameGrabber objects for garbage collection. This ensures the resources are freed
@@ -136,4 +117,5 @@ class DataCaptureDisplay():
         Toggles the connection state of the IMU object. If the IMU is connected, it will be disconnected, else it will
         be connected using the values set in the Combo boxes or using the default initialisation values.
         """
+
         print(f'IMU connected: {self.imu.isConnected}, will be swapped.')
