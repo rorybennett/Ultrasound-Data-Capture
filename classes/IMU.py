@@ -46,7 +46,7 @@ class IMU:
         self.startTime = time.time()
         self.callbackCounter = None
         self.imu = None  # Witmotion IMU object
-        self.isConnected = False  # Has an IMU object been successfully created
+        self.isConnected = False  # Has an IMU object been successfully connected (does not account for callback).
         self.comPort = comPort  # IMU object's COM port
         self.baudRate = baudRate  # IMU object's baudRate
         self.acceleration = []  # Acceleration returned by IMU
@@ -93,18 +93,19 @@ class IMU:
             print(
                 f'Attempting to connect to {self.comPort} at {self.baudRate}...')
             self.imu = wm.IMU(path=self.comPort, baudrate=self.baudRate)
+            self.isConnected = True
 
             print('IMU serial connection created. Subscribing callback...')
             self.imu.subscribe(self.__imuCallback)
 
             print(f'Callback subscribed. IMU connected on {self.comPort}!')
-            self.isConnected = True
             self.callbackCounter = 0
             self.startTime = time.time()
-            successFlag = true
+            successFlag = True
         except Exception as e:
             print(f'Error initialising IMU class object: {e}')
-            self.disconnect()
+            if self.isConnected:
+                self.disconnect()
         return successFlag
 
     def disconnect(self):
