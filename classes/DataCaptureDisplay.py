@@ -31,7 +31,7 @@ class DataCaptureDisplay():
         self.frameGrabber = FrameGrabber.FrameGrabber()
         # Initial search for system COM ports.
         self.availableComPorts = IMU.availableComPorts()
-        # Plotting variables.
+        # Plotting variables, axis, points, lines, fig_agg, and bg set to None until initialised.
         self.ax = None
         self.pointData = None
         self.lineData = None
@@ -43,7 +43,7 @@ class DataCaptureDisplay():
 
         self.window = sg.Window('Ultrasound Data Capture', self.layout, finalize=True)
 
-        self.createPlot()
+        self.createPlot(c.DEFAULT_AZIMUTH)
 
         self.run()
 
@@ -52,7 +52,8 @@ class DataCaptureDisplay():
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
             [sg.Text('Select Azimuth')],
-            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=30, size=(40, 10), orientation='h',
+            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
+                       orientation='h',
                        enable_events=True)],
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
                      pad=((0, 0), (20, 5)))],
@@ -107,18 +108,11 @@ class DataCaptureDisplay():
         figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
         return figure_canvas_agg
 
-    def createPlot(self):
+    def createPlot(self, azimuth):
         fig = Figure(figsize=(5, 5), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Y')
-        self.ax.set_zlabel('Z')
-        self.ax.set_xlim((-5, 5))
-        self.ax.set_ylim((-5, 5))
-        self.ax.set_zlim((-5, 5))
 
-        self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
-        self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
+        self.ax = ut.initialiseAxis(self.ax, azimuth)
 
         self.fig_agg = self.drawFigure(fig, self.window['-CANVAS-PLOT-'].TKCanvas)
 
@@ -128,26 +122,8 @@ class DataCaptureDisplay():
         # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
         if self.enablePlotting and self.imu.isConnected and self.imu.quaternion:
             self.fig_agg.restore_region(self.bg)
-            rpp = ut.rotatePoints(c.PROBE_POINTS, self.imu.quaternion)
-            # Draw points
-            for point in rpp:
-                self.pointData.set_data([point[0]], [point[1]])
-                self.pointData.set_3d_properties([point[2]])
-                self.ax.draw_artist(self.pointData)
 
-            # Draw lines between points
-            for i, point in enumerate(rpp):
-                if not i < len(rpp) - 1:
-                    next_point = rpp[0, :]
-                    self.lineData.set_data([next_point[0], point[0]],
-                                           [next_point[1], point[1]])
-                    self.lineData.set_3d_properties([next_point[2], point[2]])
-                else:
-                    next_point = rpp[i + 1, :]
-                    self.lineData.set_data([next_point[0], point[0]],
-                                           [next_point[1], point[1]])
-                    self.lineData.set_3d_properties([next_point[2], point[2]])
-                self.ax.draw_artist(self.lineData)
+            self.ax = ut.plotPointsOnAxis(self.ax, self.imu.quaternion)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()
@@ -162,14 +138,7 @@ class DataCaptureDisplay():
         """
         self.ax.cla()
 
-        self.ax.set_xlabel('X')
-        self.ax.set_ylabel('Y')
-        self.ax.set_zlabel('Z')
-        self.ax.set_xlim((-5, 5))
-        self.ax.set_ylim((-5, 5))
-        self.ax.set_zlim((-5, 5))
-
-        self.ax.azim = int(azimuth)
+        self.ax = ut.initialiseAxis(self.ax, int(azimuth))
 
         self.fig_agg.draw()
 

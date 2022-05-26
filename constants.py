@@ -24,3 +24,6 @@ PROBE_POINTS = [
     [0, -6, 0],
     [2, -.8, 0],
     [1, -.3, 0]]
+
+# Default azimuth value used for the 3D plot.
+DEFAULT_AZIMUTH = 30
