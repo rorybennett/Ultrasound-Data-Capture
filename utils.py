@@ -49,15 +49,15 @@ def rotatePoints(points, quaternion):
 
 def plotPointsOnAxis(axis, quaternion):
     """
-    Plot the orientation points on the given axis once they have been rotated by the given quaternion. The returned
+    Plot the orientation points on the given axis once they have been rotated by the given Quaternion. The returned
     axis is then blitted on to the figure for increased plotting speed.
 
     Args:
-        axis:
-        quaternion:
+        axis (axis): Axis on to which the points and lines must be plotted.
+        quaternion (list(q0, q1, q2, q3)): 4D vector representing a quaternion.
 
     Returns:
-
+        axis (axis): Axis containing newly plotted points and lines.
     """
     rpp = rotatePoints(c.PROBE_POINTS, quaternion)
     pointData = axis.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
@@ -86,6 +86,15 @@ def plotPointsOnAxis(axis, quaternion):
 
 
 def initialiseAxis(axis, azimuth):
+    """
+    Set the initial labels, limits, and azimuth of the given axis
+    Args:
+        axis (axis): Axis that will have its labels, limits, and azimuth set.
+        azimuth (int): Azimuth value applied to the axis.
+
+    Returns:
+        axis (axis): Axis containing newly plotted points and lines.
+    """
     axis.set_xlabel('X')
     axis.set_ylabel('Y')
     axis.set_zlabel('Z')
@@ -93,6 +102,6 @@ def initialiseAxis(axis, azimuth):
     axis.set_ylim((-5, 5))
     axis.set_zlim((-5, 5))
 
-    axis.azim = int(azimuth)
+    axis.azim = azimuth
 
     return axis
