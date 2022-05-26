@@ -54,8 +54,8 @@ class DataCaptureDisplay():
              sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
              sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
                       enable_events=True, readonly=True),
-             sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect to IMU', font=st.BUTTON_FONT, border_width=3,
-                       pad=((40, 0), (0, 0)))],
+             sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((40, 0), (0, 0)))],
 
         ]
 
@@ -102,7 +102,8 @@ class DataCaptureDisplay():
         """
         Refresh the available COM ports. The list of available COM ports is updated as well as the drop down menu/list.
         """
-        print('Refresh the available com ports.')
+        self.availableComPorts = IMU.availableComPorts()
+        self.window['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
 
     def close(self):
         """
@@ -118,4 +119,15 @@ class DataCaptureDisplay():
         be connected using the values set in the Combo boxes or using the default initialisation values.
         """
 
-        print(f'IMU connected: {self.imu.isConnected}, will be swapped.')
+        # If imu is not connected it must be connected, else disconnected.
+        if not self.imu.isConnected:
+            self.imu.connect()
+        else:
+            self.imu.disconnect()
+        # Set colors and button states
+        self.window['-COMBO-COM-PORT-'].update(disabled=True if self.imu.isConnected else False)
+        self.window['-COMBO-BAUD-RATE-'].update(disabled=True if self.imu.isConnected else False)
+        self.window['-BUTTON-IMU-CONNECT-'].update(
+            button_color='#ff2121' if self.imu.isConnected else sg.DEFAULT_BUTTON_COLOR,
+            text='Disconnect IMU' if self.imu.isConnected else 'Connect IMU'
+        )
