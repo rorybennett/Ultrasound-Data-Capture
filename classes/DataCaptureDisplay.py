@@ -1,15 +1,17 @@
-import Utils
-from datetime import datetime as dt
+import utils as ut
 from classes import IMU
 from classes import FrameGrabber
-import Styling as st
+import styling as st
+import constants as c
+
 import PySimpleGUI as sg
+from datetime import datetime as dt
 
 
 class DataCaptureDisplay():
     def __init__(self):
         # Create initial directories for storing data.
-        self.singleFramesPath, self.videosPath = Utils.createInitialDirectories()
+        self.singleFramesPath, self.videosPath = ut.createInitialDirectories()
         # Record state of the program.
         self.enableRecording = False
         # Counter for labelling frame number in a recording.
@@ -45,9 +47,14 @@ class DataCaptureDisplay():
                        enable_events=True)],
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
                      pad=((0, 0), (20, 5)))],
-            [sg.Button('', image_source='icons/refresh_icon.png', image_subsample=3, border_width=2,
+            [sg.Button('', image_source='icons/refresh_icon.png', image_subsample=4, border_width=3,
                        key='-BUTTON-COM-REFRESH-'),
-             sg.Combo(self.availableComPorts, size=7, key='-COMBO-COM-PORT-', font=st.COMBO_FONT, enable_events=True)]
+             sg.Combo(self.availableComPorts, size=7, key='-COMBO-COM-PORT-', font=st.COMBO_FONT, enable_events=True,
+                      readonly=True),
+             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT),
+             sg.Combo(c.COMMON_BAUD_RATES, size=7, key='-COMBO-BAUD-RATE-', font=st.COMBO_FONT, enable_events=True,
+                      readonly=True)],
+            [sg.Button('Connect to IMU', key='-BUTTON-IMU-CONNECT-', font=st.BUTTON_FONT, border_width=3)]
         ]
 
         layout = [[sg.Column(imuColumnLayout, element_justification='center')]]
@@ -73,12 +80,19 @@ class DataCaptureDisplay():
             if event == '-COMBO-COM-PORT-':
                 self.setComPort(values['-COMBO-COM-PORT-'])
 
+            if event == '-COMBO-BAUD-RATE-':
+                self.setBaudRate(values['-COMBO-BAUD-RATE-'])
+
+            if event == '-BUTTON-IMU-CONNECT-':
+                self.toggleImuConnect()
+
     def setAzimuth(self, azimuth):
         """
         Set the azimuth of the plot to the slider value. This allows for aligning the plot to the user's orientation
         since the IMU orientation is based on magnetic north.
+
         Args:
-            azimuth:
+            azimuth (int): Azimuth to set the displayed plot to.
         """
         print(f'The azimuth will be set to: {azimuth}')
 
@@ -89,7 +103,23 @@ class DataCaptureDisplay():
         print('Refresh the available com ports.')
 
     def setComPort(self, comPort):
+        """
+        Set the COM port of the IMU to the value given. The IMU may not always be able to connect to the given COM port,
+        or it may connect but receive no data. Both of these problems indicate that the incorrect COM port was chosen.
+
+        Args:
+            comPort (str): Com port to set the IMU to.
+        """
         print(f'Will set the COM port of the IMU to: {comPort}.')
+
+    def setBaudRate(self, baudRate):
+        """
+        Set the baud rate of the IMU to the given value.
+
+        Args:
+            baudRate (int): Baud rate used by the IMU for communication.
+        """
+        print(f'Will set the baud rate of the IMU to: {baudRate}.')
 
     def close(self):
         """
@@ -98,3 +128,10 @@ class DataCaptureDisplay():
         """
         del self.imu
         del self.frameGrabber
+
+    def toggleImuConnect(self):
+        """
+        Toggles the connection state of the IMU object. If the IMU is connected, it will be disconnected, else it will
+        be connected using the values set in the Combo boxes or using the default initialisation values.
+        """
+        print(f'IMU connected: {self.imu.isConnected}, will be swapped.')
