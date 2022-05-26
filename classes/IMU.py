@@ -10,11 +10,19 @@ def availableComPorts():
     COM port then it may not be the correct COM port.
 
     Returns:
-        portInfo (list[ListPortInfo]0: A list of available COM ports as [Port Number], [Description], [HardwareId].
+        allComPorts (list[str]): A list of available COM ports. Only the port number is returned, e.g. 'COM7'.
     """
     portInfo = serial.tools.list_ports.comports()
 
-    return sorted(portInfo)
+    allComPorts = []
+
+    for port, description, hid in sorted(portInfo):
+        allComPorts.append(port)
+
+    if not allComPorts:
+        allComPorts = ['None']
+
+    return allComPorts
 
 
 class IMU:
