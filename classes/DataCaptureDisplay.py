@@ -41,20 +41,22 @@ class DataCaptureDisplay():
     def createLayout(self):
         imuColumnLayout = [
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Canvas(size=(500, 500), key='-CANVAS-PLOT-')],
+            [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
             [sg.Text('Select Azimuth')],
-            [sg.Slider(range=(0, 360), default_value=30, size=(40, 10), orientation='h', key='-SLIDER-AZIMUTH-',
+            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=30, size=(40, 10), orientation='h',
                        enable_events=True)],
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
                      pad=((0, 0), (20, 5)))],
-            [sg.Button('', image_source='icons/refresh_icon.png', image_subsample=4, border_width=3,
-                       key='-BUTTON-COM-REFRESH-'),
-             sg.Combo(self.availableComPorts, size=7, key='-COMBO-COM-PORT-', font=st.COMBO_FONT, enable_events=True,
-                      readonly=True),
-             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT),
-             sg.Combo(c.COMMON_BAUD_RATES, size=7, key='-COMBO-BAUD-RATE-', font=st.COMBO_FONT, enable_events=True,
-                      readonly=True)],
-            [sg.Button('Connect to IMU', key='-BUTTON-IMU-CONNECT-', font=st.BUTTON_FONT, border_width=3)]
+            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+                       image_subsample=4, border_width=3),
+             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True),
+             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
+             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True),
+             sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect to IMU', font=st.BUTTON_FONT, border_width=3,
+                       pad=((40, 0), (0, 0)))],
+
         ]
 
         layout = [[sg.Column(imuColumnLayout, element_justification='center')]]
