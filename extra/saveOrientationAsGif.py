@@ -1,5 +1,7 @@
-"""A Python script for selecting a recorded data file and generating a gif of the orientation of the probe during
- recording of the data file. """
+"""
+A Python script for selecting a recorded data file and generating a gif of the orientation of the probe during
+recording of the data file.
+ """
 import csv
 import os
 from tkinter import filedialog
@@ -42,7 +44,7 @@ def main():
     print(f'Total lines (frames): {len(imuData)}')
 
     # Plotting variables
-    fig = plt.figure(figsize=(6, 6), dpi=100)
+    fig = plt.figure(figsize=(6, 6), dpi=200)
     ax = Axes3D(fig, auto_add_to_figure=False)
     fig.add_axes(ax)
 
@@ -75,7 +77,7 @@ def main():
     anim = animation.FuncAnimation(fig, animate, init_func=init, frames=len(imuData), interval=20, repeat=False)
     # Save animation as a .gif. Named after video folder name.
     name = folderPath.split('/')[-1] + '.gif'
-    writerGif = animation.PillowWriter(fps=30)
+    writerGif = animation.PillowWriter(fps=22)
     anim.save(name, writer=writerGif)
     print(f'GIF created: {name}.')
 
