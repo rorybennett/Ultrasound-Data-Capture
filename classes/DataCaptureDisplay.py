@@ -7,7 +7,9 @@ import constants as c
 import PySimpleGUI as sg
 from datetime import datetime as dt
 from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, FigureCanvasAgg
+
+
+
 
 
 class DataCaptureDisplay():
@@ -66,6 +68,8 @@ class DataCaptureDisplay():
                       enable_events=True, readonly=True),
              sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((40, 0), (0, 0)))],
+            [sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True, disabled=True)]
 
         ]
 
@@ -102,19 +106,23 @@ class DataCaptureDisplay():
             if event == '-BUTTON-IMU-CONNECT-':
                 self.toggleImuConnect()
 
-    def drawFigure(self, figure, canvas):
-        figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-        figure_canvas_agg.draw()
-        figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
-        return figure_canvas_agg
+            if event == '-COMBO-RETURN-RATE-':
+                self.imu.setReturnRate(values['-COMBO-RETURN-RATE-'][:-2])
 
     def createPlot(self, azimuth):
+        """
+        Instantiate the initial plotting variables: The Figure and the axis. This is also called when changing
+        the azimuth of the plot as the entire canvas needs to be redrawn.
+
+        Args:
+            azimuth (int): Azimuth angle in degrees.
+        """
         fig = Figure(figsize=(5, 5), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
 
         self.ax = ut.initialiseAxis(self.ax, azimuth)
 
-        self.fig_agg = self.drawFigure(fig, self.window['-CANVAS-PLOT-'].TKCanvas)
+        self.fig_agg = ut.drawFigure(fig, self.window['-CANVAS-PLOT-'].TKCanvas)
 
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
@@ -167,13 +175,14 @@ class DataCaptureDisplay():
             self.imu.connect()
         else:
             self.imu.disconnect()
-        # Set colors and button states
+        # Set element states
         self.window['-COMBO-COM-PORT-'].update(disabled=True if self.imu.isConnected else False)
         self.window['-COMBO-BAUD-RATE-'].update(disabled=True if self.imu.isConnected else False)
         self.window['-BUTTON-IMU-CONNECT-'].update(
             button_color='#ff2121' if self.imu.isConnected else sg.DEFAULT_BUTTON_COLOR,
             text='Disconnect IMU' if self.imu.isConnected else 'Connect IMU'
         )
+        self.window['-COMBO-RETURN-RATE-'].update(disabled=True if not self.imu.isConnected else False)
 
     def close(self):
         """

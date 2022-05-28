@@ -80,7 +80,7 @@ class IMU:
         elif msg_type is wm.protocol.AngleMessage:
             self.angle = self.imu.get_angle
 
-    def connect(self) -> (bool):
+    def connect(self) -> bool:
         """
         Attempt to connect to the IMU. If the COM port and baud rate were not explicitly set, the default
         values will be used. The callbackCounter and startTime are reset on a successful connection.
@@ -126,3 +126,15 @@ class IMU:
                 self.isConnected = False
         except Exception as e:
             print(f'Error disconnecting from IMU: {e}')
+
+    def setReturnRate(self, rate):
+        """
+        Set the return rate of the IMU is Hz. Not all IMUs have the same return rate capabilities and at the moment
+        there is no way to test if the command was received correctly by the IMU. The return rate just needs to be
+        monitored.
+
+        Args:
+            rate (float): Requested return rate. One of the values in the constants.py file.
+        """
+        print(f'Setting return rate of IMU: {rate}Hz')
+        self.imu.set_update_rate(rate)

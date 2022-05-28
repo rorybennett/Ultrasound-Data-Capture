@@ -2,6 +2,7 @@ from pathlib import Path
 import numpy as np
 from pyquaternion import Quaternion
 import constants as c
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 def createInitialDirectories() -> (Path, Path):
@@ -105,3 +106,19 @@ def initialiseAxis(axis, azimuth):
     axis.azim = azimuth
 
     return axis
+
+def drawFigure(figure, canvas):
+    """
+    Helper function for integrating matplotlib plots with PySimpleGui. Used to draw the initial canvas.
+
+    Args:
+        figure (figure): Figure to be placed in a canvas.
+        canvas (TKCanvas): Canvas that the figure is placed in.
+
+    Returns:
+        figure_canvas_agg (FigureCanvasTkAgg): A FigureCanvasTkAgg object.
+    """
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    return figure_canvas_agg

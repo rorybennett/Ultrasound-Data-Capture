@@ -27,3 +27,16 @@ PROBE_POINTS = [
 
 # Default azimuth value used for the 3D plot.
 DEFAULT_AZIMUTH = 30
+
+# Available return rates for the IMU. The Witmotion library limits the number of return rates that are available.
+IMU_RATE_OPTIONS = [
+    "0.2Hz",
+    "0.5Hz",
+    "1Hz",
+    "2Hz",
+    "5Hz",
+    "10Hz",
+    "20Hz",
+    "50Hz",
+    "100Hz"
+]
