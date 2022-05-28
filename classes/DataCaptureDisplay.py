@@ -47,32 +47,41 @@ class DataCaptureDisplay():
         self.run()
 
     def createLayout(self):
+        displayColumnLayout = [
+            [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
+            []
+        ]
+
         imuColumnLayout = [
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
             [sg.Text('Select Azimuth')],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
-                       orientation='h',
-                       enable_events=True)],
+                       orientation='h', enable_events=True)],
+            [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (10, 0)))],
+            [sg.HSep(pad=((10, 10), (10, 20)))],
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
-                     pad=((0, 0), (20, 5)))],
+                     pad=((0, 0), (0, 20)))],
             [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
                        image_subsample=4, border_width=3),
              sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
                       enable_events=True, readonly=True),
              sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
              sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True),
-             sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((40, 0), (0, 0)))],
-            [sg.Button(key='-BUTTON-IMU-CALIBRATE-', button_text='Calibrate Acc', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((40, 0), (0, 0)), disabled=True),
+                      enable_events=True, readonly=True)],
+            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (20, 20)))],
+            [sg.Text('Return Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
              sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, disabled=True)]
-
+                      enable_events=True, readonly=True, disabled=True),
+             sg.Button(key='-BUTTON-IMU-CALIBRATE-', button_text='Calibrate Acc', size=(15, 1),
+                       font=st.BUTTON_FONT, border_width=3, pad=((40, 0), (0, 0)), disabled=True),
+             ]
         ]
 
-        layout = [[sg.Column(imuColumnLayout, element_justification='center')]]
+        layout = [[sg.Column(displayColumnLayout, element_justification='center'),
+                   sg.Column(imuColumnLayout, element_justification='center')]]
 
         return layout
 
@@ -92,6 +101,9 @@ class DataCaptureDisplay():
 
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
+
+            if event == '-BUTTON-TOGGLE-PLOT-':
+                self.togglePlotting()
 
             if event == '-BUTTON-COM-REFRESH-':
                 self.refreshComPorts()
@@ -156,8 +168,17 @@ class DataCaptureDisplay():
         self.ax = ut.initialiseAxis(self.ax, azimuth)
         # Redraw new axis.
         self.fig_agg.draw()
-        # Re-save background for blitting.
+        # Re-save background for blit.
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
+
+    def togglePlotting(self):
+        """
+        Toggle whether the plot should be updated or not. Disabling plotting can give a slight frame rate boost, but
+        with blit the improvement tends to be marginal.
+        """
+        self.enablePlotting = not self.enablePlotting
+        self.window['-BUTTON-PLOT-TOGGLE-'].update(
+            text='Disable Plotting' if self.enablePlotting else 'Enable Plotting')
 
     def refreshComPorts(self):
         """
