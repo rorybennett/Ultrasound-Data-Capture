@@ -138,3 +138,11 @@ class IMU:
         """
         print(f'Setting return rate of IMU: {rate}Hz')
         self.imu.set_update_rate(rate)
+
+    def calibrateAcceleration(self):
+        """
+        Tell the IMU to calibrate its accelerometer. The IMU should be placed flat on a horizontal service for 5 seconds
+        while the calibration continues. Nothing is returned after the calibration, but you will see the acceleration
+        values calibrate to (0, 0, 1) once the process is complete.
+        """
+        self.imu.send_config_command(wm.protocol.ConfigCommand(register=wm.protocol.Register.calsw, data=0x01))

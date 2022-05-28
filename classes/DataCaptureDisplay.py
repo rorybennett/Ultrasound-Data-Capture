@@ -9,9 +9,6 @@ from datetime import datetime as dt
 from matplotlib.figure import Figure
 
 
-
-
-
 class DataCaptureDisplay():
     def __init__(self):
         # Create initial directories for storing data.
@@ -68,7 +65,9 @@ class DataCaptureDisplay():
                       enable_events=True, readonly=True),
              sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((40, 0), (0, 0)))],
-            [sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.COMBO_FONT,
+            [sg.Button(key='-BUTTON-IMU-CALIBRATE-', button_text='Calibrate Acc', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((40, 0), (0, 0)), disabled=True),
+             sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.COMBO_FONT,
                       enable_events=True, readonly=True, disabled=True)]
 
         ]
@@ -107,7 +106,10 @@ class DataCaptureDisplay():
                 self.toggleImuConnect()
 
             if event == '-COMBO-RETURN-RATE-':
-                self.imu.setReturnRate(values['-COMBO-RETURN-RATE-'][:-2])
+                self.imu.setReturnRate(float(values['-COMBO-RETURN-RATE-'][:-2]))
+
+            if event == '-BUTTON-IMU-CALIBRATE-':
+                self.imu.calibrateAcceleration()
 
     def createPlot(self, azimuth):
         """
@@ -183,6 +185,7 @@ class DataCaptureDisplay():
             text='Disconnect IMU' if self.imu.isConnected else 'Connect IMU'
         )
         self.window['-COMBO-RETURN-RATE-'].update(disabled=True if not self.imu.isConnected else False)
+        self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if not self.imu.isConnected else False)
 
     def close(self):
         """
