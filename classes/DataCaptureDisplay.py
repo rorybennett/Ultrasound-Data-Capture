@@ -102,7 +102,7 @@ class DataCaptureDisplay():
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
 
-            if event == '-BUTTON-TOGGLE-PLOT-':
+            if event == '-BUTTON-PLOT-TOGGLE-':
                 self.togglePlotting()
 
             if event == '-BUTTON-COM-REFRESH-':
