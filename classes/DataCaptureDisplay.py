@@ -157,7 +157,7 @@ class DataCaptureDisplay:
         """
         Set the azimuth of the plot to the slider value. This allows for aligning the plot to the user's orientation
         since the IMU orientation is based on magnetic north. The axis needs to be cleared first, then reinitialised
-        to ensure a clean plot is saved for blitting purposes.
+        to ensure a clean plot is saved for blit purposes.
 
         Args:
             azimuth (int): Azimuth to set the displayed plot to.
@@ -182,7 +182,7 @@ class DataCaptureDisplay:
 
     def refreshComPorts(self):
         """
-        Refresh the available COM ports. The list of available COM ports is updated as well as the drop down menu/list.
+        Refresh the available COM ports. The list of available COM ports is updated as well as the drop-down menu/list.
         """
         self.availableComPorts = IMU.availableComPorts()
         self.window['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
