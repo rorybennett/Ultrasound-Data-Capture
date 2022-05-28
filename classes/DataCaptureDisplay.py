@@ -9,7 +9,7 @@ from datetime import datetime as dt
 from matplotlib.figure import Figure
 
 
-class DataCaptureDisplay():
+class DataCaptureDisplay:
     def __init__(self):
         # Create initial directories for storing data.
         self.singleFramesPath, self.videosPath = ut.createInitialDirectories()
