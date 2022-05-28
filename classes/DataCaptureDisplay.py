@@ -49,7 +49,7 @@ class DataCaptureDisplay:
     def createLayout(self):
         displayColumnLayout = [
             [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            []
+            [sg.Image(key='-IMAGE-FRAME-', size=(1024, 576), background_color='#000000')]
         ]
 
         imuColumnLayout = [
