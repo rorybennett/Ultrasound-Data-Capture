@@ -49,13 +49,19 @@ class DataCaptureDisplay:
     def createLayout(self):
         displayColumnLayout = [
             [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Image(key='-IMAGE-FRAME-', size=(1024, 576), background_color='#000000')]
+            [sg.Image(key='-IMAGE-FRAME-', size=(1024, 576), background_color='#000000')],
+            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (10, 0)))],
+            [sg.HSep(pad=((10, 10), (10, 20)))],
+            [sg.Text('Video Source:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
+             sg.Combo(key='-COMBO-VIDEO-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
+                      font=st.COMBO_FONT, enable_events=True, readonly=True)]
         ]
 
         imuColumnLayout = [
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
-            [sg.Text('Select Azimuth')],
+            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (15, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
@@ -90,6 +96,8 @@ class DataCaptureDisplay:
         Main loop for displaying the GUI and reacting to events, in standard PySimpleGUI fashion.
         """
         while True:
+            # Update the image display
+            self.updateImage()
             # Update the plot
             self.updatePlot()
 
@@ -98,6 +106,9 @@ class DataCaptureDisplay:
             if event == sg.WIN_CLOSED:
                 self.close()
                 break
+
+            if event == '-BUTTON-DISPLAY-TOGGLE-':
+                self.toggleDisplay()
 
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
@@ -122,6 +133,19 @@ class DataCaptureDisplay:
 
             if event == '-BUTTON-IMU-CALIBRATE-':
                 self.imu.calibrateAcceleration()
+
+    def updateImage(self):
+        if self.enableDisplay:
+            pass
+
+    def toggleDisplay(self):
+        """
+        Toggle whether the display should be updated or not. Disabling the display can give a moderate frame rate boost,
+        especially when recording frames.
+        """
+        self.enableDisplay = not self.enablePlotting
+        self.window['-BUTTON-DISPLAY-TOGGLE-'].update(
+            text='Disable Display' if self.enableDisplay else 'Enable Display')
 
     def createPlot(self, azimuth):
         """
