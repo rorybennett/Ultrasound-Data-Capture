@@ -172,6 +172,11 @@ class DataCaptureDisplay:
             text='Disable Display' if self.enableDisplay else 'Enable Display')
 
     def setVideoSource(self, signalSource):
+        """
+        Set the source of the video signal then attempt to connect to the new source.
+        Args:
+            signalSource (int): Location of the video signal source as an integer, representing a USB port or webcam.
+        """
         self.frameGrabber.signalSource = signalSource
         self.frameGrabber.connect()
 

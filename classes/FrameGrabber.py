@@ -73,7 +73,6 @@ class FrameGrabber:
         except Exception as e:
             print(f'Error connecting to source: {e}')
 
-
     def setGrabberProperties(self, width, height, fps=100) -> bool:
         """
         Set the properties of the FrameGrabber object. If the object is connected attempt to change the signal
