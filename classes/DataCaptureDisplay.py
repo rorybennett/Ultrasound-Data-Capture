@@ -53,8 +53,8 @@ class DataCaptureDisplay:
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
             [sg.HSep(pad=((10, 10), (10, 20)))],
-            [sg.Text('Video Source:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
-             sg.Combo(key='-COMBO-VIDEO-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
+            [sg.Text('Signal Source:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
+             sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
                       font=st.COMBO_FONT, enable_events=True, readonly=True)]
         ]
 
@@ -110,6 +110,9 @@ class DataCaptureDisplay:
             if event == '-BUTTON-DISPLAY-TOGGLE-':
                 self.toggleDisplay()
 
+            if event == '-COMBO-SIGNAL-SOURCE-':
+                self.setVideoSource(int(values['-COMBO-SIGNAL-SOURCE-']))
+
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
 
@@ -135,7 +138,7 @@ class DataCaptureDisplay:
                 self.imu.calibrateAcceleration()
 
     def updateImage(self):
-        if self.enableDisplay:
+        if self.enableDisplay and self.frameGrabber.isConnected:
             pass
 
     def toggleDisplay(self):
@@ -146,6 +149,10 @@ class DataCaptureDisplay:
         self.enableDisplay = not self.enablePlotting
         self.window['-BUTTON-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display')
+
+    def setVideoSource(self, signalSource):
+        self.frameGrabber.signalSource = signalSource
+        self.frameGrabber.connect()
 
     def createPlot(self, azimuth):
         """
