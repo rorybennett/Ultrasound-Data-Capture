@@ -44,9 +44,10 @@ class FrameGrabber:
 
     def connect(self):
         """
-        Attempt to create a VideoCapture object. If the object is successfully created the MJPG
-        codec is used and the dimensions and frame rate are set (via the setProperties() method).
-        At a future date the codec may need to be changed to improve performance (frame rate).
+        Attempt to create a VideoCapture object. If the object is already connected, disconnect it and connect it again.
+        If the object is successfully created the MJPG codec is used and the dimensions and frame rate are set
+        (via the setProperties() method). At a future date the codec may need to be changed to improve performance
+        (frame rate).
         """
         try:
             print(f'Checking if FrameGrabber at {self.signalSource} is already open...')
