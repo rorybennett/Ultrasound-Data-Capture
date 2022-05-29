@@ -1,3 +1,6 @@
+import cv2
+from PIL import Image
+
 import utils as ut
 from classes import IMU
 from classes import FrameGrabber
@@ -49,7 +52,7 @@ class DataCaptureDisplay:
     def createLayout(self):
         displayColumnLayout = [
             [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Image(key='-IMAGE-FRAME-', size=(1024, 576), background_color='#000000')],
+            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000')],
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
             [sg.HSep(pad=((10, 10), (10, 20)))],
@@ -97,7 +100,7 @@ class DataCaptureDisplay:
         """
         while True:
             # Update the image display
-            self.updateImage()
+            self.updateFrame()
             # Update the plot
             self.updatePlot()
 
@@ -137,16 +140,24 @@ class DataCaptureDisplay:
             if event == '-BUTTON-IMU-CALIBRATE-':
                 self.imu.calibrateAcceleration()
 
-    def updateImage(self):
-        if self.enableDisplay and self.frameGrabber.isConnected:
-            pass
+    def updateFrame(self):
+        # Check if frameGrabber is connected before fetching frame.
+        if self.frameGrabber.isConnected:
+            res, frame = self.frameGrabber.getFrame()
+            # Check if a frame has been returned.
+            if res:
+                # Check if the display should be updated.
+                if self.enableDisplay:
+                    resizedFrame = cv2.resize(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
+                    imageBytes = cv2.imencode(".png", resizedFrame)[1].tobytes()
+                    self.window['-IMAGE-FRAME-'].update(data=imageBytes)
 
     def toggleDisplay(self):
         """
         Toggle whether the display should be updated or not. Disabling the display can give a moderate frame rate boost,
         especially when recording frames.
         """
-        self.enableDisplay = not self.enablePlotting
+        self.enableDisplay = not self.enableDisplay
         self.window['-BUTTON-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display')
 
