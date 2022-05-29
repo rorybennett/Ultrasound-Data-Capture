@@ -56,9 +56,13 @@ class DataCaptureDisplay:
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
             [sg.HSep(pad=((10, 10), (10, 20)))],
+            [sg.Text('Video Signal Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
+                     pad=((0, 0), (0, 20)))],
             [sg.Text('Signal Source:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
              sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
-                      font=st.COMBO_FONT, enable_events=True, readonly=True)]
+                      font=st.COMBO_FONT, enable_events=True, readonly=True),
+             sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
+                     font=st.DESC_FONT, pad=((20, 0), (0, 0)))]
         ]
 
         imuColumnLayout = [
@@ -151,6 +155,12 @@ class DataCaptureDisplay:
                     resizedFrame = cv2.resize(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
                     imageBytes = cv2.imencode(".png", resizedFrame)[1].tobytes()
                     self.window['-IMAGE-FRAME-'].update(data=imageBytes)
+
+                # Frame rate estimate
+                self.fpsCalc2 = dt.now().timestamp()
+                self.window['-TEXT-FRAME-RATE-'].update(
+                    f'Estimated Frame Rate: {int(1 / (self.fpsCalc2 - self.fpsCalc1))} Hz')
+                self.fpsCalc1 = self.fpsCalc2
 
     def toggleDisplay(self):
         """

@@ -50,9 +50,9 @@ class FrameGrabber:
         (frame rate).
         """
         try:
-            print(f'Checking if FrameGrabber at {self.signalSource} is already open...')
+            print(f'Checking if FrameGrabber is already open...')
             if self.isConnected:
-                print(f'{self.isConnected}. Attempting to release current source: ({self.signalSource})...')
+                print(f'{self.isConnected}. Attempting to release current source...')
                 self.vid.release()
                 self.isConnected = False
             else:
@@ -62,7 +62,8 @@ class FrameGrabber:
                 f'Attempting to connect to source: {self.signalSource}, with dimensions: {self.width}x{self.height}...')
             self.vid = cv.VideoCapture(self.signalSource, cv.CAP_DSHOW)
             if not self.vid.isOpened():
-                raise
+                print(f'Could not open source: {self.signalSource}.')
+                return
 
             print(f'Connected to source {self.signalSource}.')
             self.isConnected = True
@@ -71,7 +72,7 @@ class FrameGrabber:
             self.setGrabberProperties(self.width, self.height, self.fps)
         except Exception as e:
             print(f'Error connecting to source: {e}')
-            raise
+
 
     def setGrabberProperties(self, width, height, fps=100) -> bool:
         """
