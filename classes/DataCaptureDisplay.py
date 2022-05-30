@@ -68,8 +68,8 @@ class DataCaptureDisplay:
                      pad=((0, 0), (0, 20)))],
             [sg.Text('Signal Source:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
              sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
-                      font=st.COMBO_FONT, enable_events=True, readonly=True),
-             sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
+                      font=st.COMBO_FONT, enable_events=True, readonly=True)],
+            [sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
                      font=st.DESC_FONT, pad=((20, 0), (0, 0)))],
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (20, 20)), disabled=True)],
@@ -105,8 +105,6 @@ class DataCaptureDisplay:
                        font=st.BUTTON_FONT, border_width=3, pad=((40, 0), (0, 0)), disabled=True),
              ]
         ]
-
-
 
         layout = [[sg.Column(displayColumnLayout, element_justification='center'),
                    sg.Column(imuColumnLayout, element_justification='center')]]
@@ -260,8 +258,10 @@ class DataCaptureDisplay:
         """
         fig = Figure(figsize=(5, 5), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
+        fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
 
         self.ax = ut.initialiseAxis(self.ax, azimuth)
+        self.ax.disable_mouse_rotation()
 
         self.fig_agg = ut.drawFigure(fig, self.window['-CANVAS-PLOT-'].TKCanvas)
 

@@ -7,6 +7,7 @@ from cv2.gapi.wip.draw import Image
 from pyquaternion import Quaternion
 import constants as c
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import PySimpleGUI as sg
 
 
 def createInitialDirectories() -> (Path, Path):
@@ -106,6 +107,8 @@ def initialiseAxis(axis, azimuth):
     axis.set_xlim((-5, 5))
     axis.set_ylim((-5, 5))
     axis.set_zlim((-5, 5))
+
+    axis.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
 
     axis.azim = azimuth
 
