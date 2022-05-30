@@ -1,6 +1,3 @@
-import cv2
-from PIL import Image
-
 import utils as ut
 from classes import IMU
 from classes import FrameGrabber
@@ -58,23 +55,35 @@ class DataCaptureDisplay:
         self.run()
 
     def createLayout(self):
-        displayColumnLayout = [
-            [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000')],
-            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (10, 0)))],
-            [sg.HSep(pad=((10, 10), (10, 20)))],
-            [sg.Text('Video Signal Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
-                     pad=((0, 0), (0, 20)))],
+        videoControlsLayout1 = [
             [sg.Text('Signal Source:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
              sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
                       font=st.COMBO_FONT, enable_events=True, readonly=True)],
-            [sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
-                     font=st.DESC_FONT, pad=((20, 0), (0, 0)))],
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (20, 20)), disabled=True)],
             [sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (20, 20)), disabled=True)]
+        ]
+
+        videoControlsLayout2 = [
+            [sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
+                     font=st.DESC_FONT, pad=((20, 0), (0, 0)))]
+        ]
+
+        displayColumnLayout = [
+            [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
+            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000')],
+            [sg.Text(text=f'Display Dimensions: {c.DEFAULT_DISPLAY_DIMENSIONS}.', font=st.DESC_FONT,
+                     justification='left', expand_x=True),
+             sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.DESC_FONT,
+                     justification='right', expand_x=True)],
+            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (10, 0)))],
+            [sg.HSep(pad=((10, 0), (10, 20)))],
+            [sg.Text('Video Signal Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
+                     pad=((0, 0), (0, 20)))],
+            [sg.Column(videoControlsLayout1, element_justification='center', expand_x=True),
+             sg.Column(videoControlsLayout2, element_justification='center', expand_x=True)]
 
         ]
 
@@ -85,8 +94,8 @@ class DataCaptureDisplay:
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (10, 0)))],
-            [sg.HSep(pad=((10, 10), (10, 20)))],
+                       border_width=3, pad=((0, 0), (41, 0)))],
+            [sg.HSep(pad=((0, 10), (10, 20)))],
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
                      pad=((0, 0), (0, 20)))],
             [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
@@ -106,8 +115,8 @@ class DataCaptureDisplay:
              ]
         ]
 
-        layout = [[sg.Column(displayColumnLayout, element_justification='center'),
-                   sg.Column(imuColumnLayout, element_justification='center')]]
+        layout = [[sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
+                   sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
 
         return layout
 
@@ -228,6 +237,8 @@ class DataCaptureDisplay:
         # Set element states.
         self.window['-BUTTON-SNAPSHOT-'].update(disabled=False if self.frameGrabber.isConnected else True)
         self.window['-BUTTON-RECORD-TOGGLE-'].update(disabled=False if self.frameGrabber.isConnected else True)
+        self.window['-TEXT-SIGNAL-DIMENSIONS-'].update(
+            f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
     def toggleRecording(self):
         self.enableRecording = not self.enableRecording

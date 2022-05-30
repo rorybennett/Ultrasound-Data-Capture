@@ -1,4 +1,5 @@
 import cv2 as cv
+import constants as c
 
 
 class FrameGrabber:
@@ -12,7 +13,8 @@ class FrameGrabber:
     the current signal be released, and a new call to connect() be made.
     """
 
-    def __init__(self, signalSource=0, width=640, height=480, fps=100):
+    def __init__(self, signalSource=0, width=c.COMMON_SIGNAL_DIMENSIONS[0][0], height=c.COMMON_SIGNAL_DIMENSIONS[0][1],
+                 fps=c.DEFAULT_FRAME_RATE):
         """
         Initialising of a SignalGrabber object. Connection is not made until connect() method is
         explicitly called. Initial parameter instantiation.
