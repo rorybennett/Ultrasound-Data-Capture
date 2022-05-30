@@ -18,6 +18,12 @@ class DataCaptureDisplay:
         self.singleFramesPath, self.videosPath = ut.createInitialDirectories()
         # Record state of the program.
         self.enableRecording = False
+        # Directory where recorded frames are stored.
+        self.currentRecordingPath = None
+        # Path to data.txt file where IMU data of recording is saved.
+        self.currentDataFilePath = None
+        # File for saving IMU data of recording.
+        self.currentDataFile = None
         # Save a single frame.
         self.saveSingleFrame = False
         # Counter for labelling frame number in a recording.
@@ -100,6 +106,8 @@ class DataCaptureDisplay:
              ]
         ]
 
+
+
         layout = [[sg.Column(displayColumnLayout, element_justification='center'),
                    sg.Column(imuColumnLayout, element_justification='center')]]
 
@@ -161,16 +169,23 @@ class DataCaptureDisplay:
         # Check if frameGrabber is connected before fetching frame.
         if self.frameGrabber.isConnected:
             res, frame = self.frameGrabber.getFrame()
+            acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+            quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
             # Check if a frame has been returned.
             if res:
                 # Record frames?
                 if self.enableRecording:
-                    print('Record')
+                    frameName = f'{self.frameGrabCounter}-{int(dt.now().timestamp() * 1000)}'
+                    self.record(frameName, frame, acceleration, quaternion)
+                    self.frameGrabCounter += 1
+
                 # Save a single frame?
                 if self.saveSingleFrame:
                     # Only save one frame.
                     self.saveSingleFrame = False
-                    ut.saveSingleFrame(frame, self.singleFramesPath)
+                    frameName = f'{int(dt.now().timestamp() * 1000)}.png'
+                    ut.saveSingleFrame(frame,
+                                       f'{self.singleFramesPath}\\{frameName}')
 
                 # Check if the display should be updated.
                 if self.enableDisplay:
@@ -178,11 +193,21 @@ class DataCaptureDisplay:
                     frameBytes = ut.frameToBytes(resizedFrame)
                     self.window['-IMAGE-FRAME-'].update(data=frameBytes)
 
-                # Frame rate estimate
+                # Frame rate estimate.
                 self.fpsCalc2 = dt.now().timestamp()
                 self.window['-TEXT-FRAME-RATE-'].update(
                     f'Estimated Frame Rate: {int(1 / (self.fpsCalc2 - self.fpsCalc1))} Hz')
                 self.fpsCalc1 = self.fpsCalc2
+
+    def record(self, frameName, frame, acceleration, quaternion):
+        try:
+            self.currentDataFile.write(f'{frameName},:'
+                                       f'acc[,{acceleration[0]},{acceleration[1]},{acceleration[2]},]'
+                                       f'q[,{quaternion[0]},{quaternion[1]},{quaternion[2]},{quaternion[3]},]'
+                                       f'dimensions[,{self.frameGrabber.width},{self.frameGrabber.height},]\n')
+            ut.saveSingleFrame(frame, f'{self.currentRecordingPath}\\{frameName}.png')
+        except Exception as e:
+            print(f'Error recording a frame or recording to data.txt: {e}.')
 
     def toggleDisplay(self):
         """
@@ -208,10 +233,20 @@ class DataCaptureDisplay:
 
     def toggleRecording(self):
         self.enableRecording = not self.enableRecording
+        print(f'Enable Recording: {self.enableRecording}')
         self.frameGrabCounter = 0
+        # Create video directory for saving frames.
+        if self.enableRecording:
+            self.currentRecordingPath, self.currentDataFilePath = ut.createRecordingDirectory(self.videosPath)
+            self.currentDataFile = open(self.currentDataFilePath, 'w')
+        else:
+            print(f'Closing data file {self.currentDataFilePath}...')
+            self.currentDataFile.close()
+
         # Set element states.
         self.window['-BUTTON-RECORD-TOGGLE-'].update(
-            button_color='#ff2121' if self.enableRecording else sg.DEFAULT_BUTTON_COLOR)
+            button_color='#ff2121' if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
+            text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.window['-COMBO-SIGNAL-SOURCE-'].update(disabled=True if self.enableRecording else False)
         self.window['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 

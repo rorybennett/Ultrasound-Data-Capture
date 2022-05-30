@@ -161,20 +161,34 @@ def frameToBytes(frame) -> bytes:
     return byteFrame
 
 
-def saveSingleFrame(frame, singleFramesPath):
+def saveSingleFrame(frame, framePath):
     """
-    Save a single frame to the specified directory singleFramesPath. All single frames will be stored in the same
-    directory with a time stamp as their name. The save format is .png.
+    Save a single frame to the specified path. The path must include the intended name of the frame, not just the
+    directory.
 
     Args:
         frame (Image): A CV2 image.
-        singleFramesPath (Path): Path to the singleFrames directory.
+        framePath (str): Path to where the frame should be saved, including file name and extension.
     """
-    print(f'Attempting to save a single frame to: {singleFramesPath}')
     try:
-        framePath = str(Path(singleFramesPath, dt.now().strftime("%d-%m-%Y-%H-%M-%S.%f")[:-3] + ".png"))
         cv2.imwrite(framePath, frame)
     except Exception as e:
-        print(f'Error saving a single frame to {singleFramesPath}: {e}')
+        print(f'Error saving frame to {framePath}: {e}')
 
-    # TODO: save imu data to a text file matching the singleFrame name
+
+def createRecordingDirectory(videosPath) -> tuple[Path, str]:
+    """
+
+    Args:
+        videosPath:
+
+    Returns:
+
+    """
+    # Create the new recording directory.
+    currentRecordingPath = Path(videosPath, dt.now().strftime("%d-%m-%Y-%H-%M-%S.%f")[:-3])
+    currentRecordingPath.mkdir(parents=True, exist_ok=True)
+    # Return a path to the new directory's data.txt file for IMU data recording.
+    dataFilePath = str(Path(currentRecordingPath, 'data.txt'))
+
+    return currentRecordingPath, dataFilePath
