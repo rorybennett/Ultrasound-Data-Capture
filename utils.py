@@ -2,6 +2,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+from datetime import datetime as dt
 from cv2.gapi.wip.draw import Image
 from pyquaternion import Quaternion
 import constants as c
@@ -158,3 +159,22 @@ def frameToBytes(frame) -> bytes:
     """
     byteFrame = cv2.imencode(".png", frame)[1].tobytes()
     return byteFrame
+
+
+def saveSingleFrame(frame, singleFramesPath):
+    """
+    Save a single frame to the specified directory singleFramesPath. All single frames will be stored in the same
+    directory with a time stamp as their name. The save format is .png.
+
+    Args:
+        frame (Image): A CV2 image.
+        singleFramesPath (Path): Path to the singleFrames directory.
+    """
+    print(f'Attempting to save a single frame to: {singleFramesPath}')
+    try:
+        framePath = str(Path(singleFramesPath, dt.now().strftime("%d-%m-%Y-%H-%M-%S.%f")[:-3] + ".png"))
+        cv2.imwrite(framePath, frame)
+    except Exception as e:
+        print(f'Error saving a single frame to {singleFramesPath}: {e}')
+
+    # TODO: save imu data to a text file matching the singleFrame name

@@ -35,7 +35,7 @@ class DataCaptureDisplay:
         self.frameGrabber = FrameGrabber.FrameGrabber()
         # Initial search for system COM ports.
         self.availableComPorts = IMU.availableComPorts()
-        # Plotting variables, axis, points, lines, fig_agg, and bg set to None until initialised.
+        # Plotting variables: axis, points, lines, fig_agg, and bg set to None until initialised.
         self.ax = None
         self.pointData = None
         self.lineData = None
@@ -66,7 +66,10 @@ class DataCaptureDisplay:
              sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
                      font=st.DESC_FONT, pad=((20, 0), (0, 0)))],
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (20, 20)), disabled=True)],
+            [sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (20, 20)), disabled=True)]
+
         ]
 
         imuColumnLayout = [
@@ -127,6 +130,9 @@ class DataCaptureDisplay:
             if event == '-BUTTON-SNAPSHOT-':
                 self.saveSingleFrame = True
 
+            if event == '-BUTTON-RECORD-TOGGLE-':
+                self.toggleRecording()
+
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
 
@@ -157,10 +163,14 @@ class DataCaptureDisplay:
             res, frame = self.frameGrabber.getFrame()
             # Check if a frame has been returned.
             if res:
+                # Record frames?
+                if self.enableRecording:
+                    print('Record')
                 # Save a single frame?
                 if self.saveSingleFrame:
                     # Only save one frame.
                     self.saveSingleFrame = False
+                    ut.saveSingleFrame(frame, self.singleFramesPath)
 
                 # Check if the display should be updated.
                 if self.enableDisplay:
@@ -186,11 +196,24 @@ class DataCaptureDisplay:
     def setVideoSource(self, signalSource):
         """
         Set the source of the video signal then attempt to connect to the new source.
+
         Args:
             signalSource (int): Location of the video signal source as an integer, representing a USB port or webcam.
         """
         self.frameGrabber.signalSource = signalSource
         self.frameGrabber.connect()
+        # Set element states.
+        self.window['-BUTTON-SNAPSHOT-'].update(disabled=False if self.frameGrabber.isConnected else True)
+        self.window['-BUTTON-RECORD-TOGGLE-'].update(disabled=False if self.frameGrabber.isConnected else True)
+
+    def toggleRecording(self):
+        self.enableRecording = not self.enableRecording
+        self.frameGrabCounter = 0
+        # Set element states.
+        self.window['-BUTTON-RECORD-TOGGLE-'].update(
+            button_color='#ff2121' if self.enableRecording else sg.DEFAULT_BUTTON_COLOR)
+        self.window['-COMBO-SIGNAL-SOURCE-'].update(disabled=True if self.enableRecording else False)
+        self.window['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
     def createPlot(self, azimuth):
         """
