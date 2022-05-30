@@ -179,6 +179,11 @@ class DataCaptureDisplay:
                 self.imu.calibrateAcceleration()
 
     def updateFrame(self):
+        """
+        Updates the display with a new frame, if enableDisplay is True. If enableRecording is True then a frame, and
+        associated IMU data is saved into the correct directory. If saveSingleFrame is True then a single frame is
+        stored in the correct directory.
+        """
         # Check if frameGrabber is connected before fetching frame.
         if self.frameGrabber.isConnected:
             res, frame = self.frameGrabber.getFrame()
@@ -212,6 +217,16 @@ class DataCaptureDisplay:
                 self.fpsCalc1 = self.fpsCalc2
 
     def record(self, frameName, frame, acceleration, quaternion):
+        """
+        Save a frame as part of a series of frames to be stitched together at a later stage. The frame is saved as a
+        .png in the currentRecordingPath and the currentDataFile is updated with the relevant IMU data.
+
+        Args:
+            frameName (str): Name of the frame, without extension. Based on time.
+            frame (Image): CV2 image.
+            acceleration (3D list): Acceleration returned by the imu object.
+            quaternion (4D list): Quaternion returned by the imu object.
+        """
         try:
             self.currentDataFile.write(f'{frameName},:'
                                        f'acc[,{acceleration[0]},{acceleration[1]},{acceleration[2]},]'

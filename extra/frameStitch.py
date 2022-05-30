@@ -5,13 +5,12 @@ import cv2 as cv
 import os
 from tkinter import filedialog
 import natsort
-from sys import exit
 
 
 def main():
     # Get video directory
     folderPath = filedialog.askdirectory(title="Select Video Folder",
-                                         initialdir=os.path.split(os.getcwd())[0] + '\Generated\Videos')
+                                         initialdir=os.path.split(os.getcwd())[0] + '\\Generated\\Videos')
     folderName = folderPath.split("/")[-1]
 
     print("Creating video...")

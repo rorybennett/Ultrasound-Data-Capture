@@ -26,7 +26,7 @@ def main():
 
     # Select video folder for orientation reconstruction.
     folderPath = filedialog.askdirectory(title="Select Video Folder",
-                                         initialdir=os.path.split(os.getcwd())[0] + '\Generated\Videos')
+                                         initialdir=os.path.split(os.getcwd())[0] + '\\Generated\\Videos')
 
     print(f"Orientation will be generated for: {folderPath.split('/')[-1]}")
 
