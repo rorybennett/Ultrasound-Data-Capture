@@ -18,6 +18,8 @@ class DataCaptureDisplay:
         self.singleFramesPath, self.videosPath = ut.createInitialDirectories()
         # Record state of the program.
         self.enableRecording = False
+        # Save a single frame.
+        self.saveSingleFrame = False
         # Counter for labelling frame number in a recording.
         self.frameGrabCounter = 0
         # Time variables used to estimate frame rate of program.
@@ -62,7 +64,9 @@ class DataCaptureDisplay:
              sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
                       font=st.COMBO_FONT, enable_events=True, readonly=True),
              sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
-                     font=st.DESC_FONT, pad=((20, 0), (0, 0)))]
+                     font=st.DESC_FONT, pad=((20, 0), (0, 0)))],
+            [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (20, 20)), disabled=True)]
         ]
 
         imuColumnLayout = [
@@ -120,6 +124,9 @@ class DataCaptureDisplay:
             if event == '-COMBO-SIGNAL-SOURCE-':
                 self.setVideoSource(int(values['-COMBO-SIGNAL-SOURCE-']))
 
+            if event == '-BUTTON-SNAPSHOT-':
+                self.saveSingleFrame = True
+
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
 
@@ -150,11 +157,16 @@ class DataCaptureDisplay:
             res, frame = self.frameGrabber.getFrame()
             # Check if a frame has been returned.
             if res:
+                # Save a single frame?
+                if self.saveSingleFrame:
+                    # Only save one frame.
+                    self.saveSingleFrame = False
+
                 # Check if the display should be updated.
                 if self.enableDisplay:
-                    resizedFrame = cv2.resize(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
-                    imageBytes = cv2.imencode(".png", resizedFrame)[1].tobytes()
-                    self.window['-IMAGE-FRAME-'].update(data=imageBytes)
+                    resizedFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
+                    frameBytes = ut.frameToBytes(resizedFrame)
+                    self.window['-IMAGE-FRAME-'].update(data=frameBytes)
 
                 # Frame rate estimate
                 self.fpsCalc2 = dt.now().timestamp()

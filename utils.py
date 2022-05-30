@@ -1,5 +1,8 @@
 from pathlib import Path
+
+import cv2
 import numpy as np
+from cv2.gapi.wip.draw import Image
 from pyquaternion import Quaternion
 import constants as c
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -107,6 +110,7 @@ def initialiseAxis(axis, azimuth):
 
     return axis
 
+
 def drawFigure(figure, canvas):
     """
     Helper function for integrating matplotlib plots with PySimpleGui. Used to draw the initial canvas.
@@ -122,3 +126,35 @@ def drawFigure(figure, canvas):
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
+
+
+def resizeFrame(frame, newDimensions) -> Image:
+    """
+    Resize the given frame to the given dimensions. This is used to make the returned frame fit in the display box, and
+    may result in some distortion if the video signal does not match the DEFAULT_DISPLAY_DIMENSIONS' aspect ratio.
+
+    Args:
+        frame (Image): A CV2 image.
+        newDimensions (int, int): A tuple representing the required width and height.
+
+    Returns:
+        resizedFrame (Image): A resized CV2 image.
+
+    """
+
+    resizedFrame = cv2.resize(frame, newDimensions)
+    return resizedFrame
+
+
+def frameToBytes(frame) -> bytes:
+    """
+    Converts a frame (CV2 image) into a byte array for displaying in PySimpleGUI's Image element.
+
+    Args:
+        frame (Image): A CV2 image.
+
+    Returns:
+        byteFrame (bytes): frame converted into bytes.
+    """
+    byteFrame = cv2.imencode(".png", frame)[1].tobytes()
+    return byteFrame
