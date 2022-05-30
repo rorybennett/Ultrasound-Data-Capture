@@ -51,9 +51,12 @@ DEFAULT_DISPLAY_DIMENSIONS = (1024, 576)
 # Default frame rate of the video signal. This is dependent on the video signal source and the hardware being used.
 DEFAULT_FRAME_RATE = 100
 
-# Common video signal dimensions
+# Default signal dimensions.
+DEFAULT_SIGNAL_DIMENSIONS = [640, 480]
+
+# Common video signal dimensions, width x height
 COMMON_SIGNAL_DIMENSIONS = [
-    [640, 480],
-    [800, 600],
-    [1280, 720],
-    [1920, 1080]]
+    ['640x480'],
+    ['800x600'],
+    ['1280x720'],
+    ['1920x1080']]

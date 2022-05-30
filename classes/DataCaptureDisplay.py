@@ -56,18 +56,22 @@ class DataCaptureDisplay:
 
     def createLayout(self):
         videoControlsLayout1 = [
-            [sg.Text('Signal Source:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
+            [sg.Text('Signal Source: ', justification='right', font=st.DESC_FONT),
              sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
                       font=st.COMBO_FONT, enable_events=True, readonly=True)],
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (20, 20)), disabled=True)],
+                       border_width=3, pad=((0, 0), (20, 0)), disabled=True)],
             [sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (20, 20)), disabled=True)]
+                       border_width=3, pad=((0, 0), (20, 0)), disabled=True)]
         ]
 
         videoControlsLayout2 = [
-            [sg.Text(key='-TEXT-FRAME-RATE-', text='Estimated Frame Rate: 0 Hz', justification='right',
-                     font=st.DESC_FONT, pad=((20, 0), (0, 0)))]
+            [sg.Text(text='Estimated Frame Rate: ', justification='right', font=st.DESC_FONT),
+             sg.Text(key='-TEXT-FRAME-RATE-', text='0', justification='left', font=st.DESC_FONT,
+                     size=(4, 1))],
+            [sg.Text('Change Signal Dimensions: ', justification='right', font=st.DESC_FONT, pad=((0, 0), (20, 0))),
+             sg.Combo(key='-COMBO-SIGNAL-DIMENSIONS-', values=c.COMMON_SIGNAL_DIMENSIONS, size=10,
+                      font=st.COMBO_FONT, enable_events=True, readonly=True, pad=((0, 0), (20, 0)), disabled=True)]
         ]
 
         displayColumnLayout = [
@@ -75,8 +79,7 @@ class DataCaptureDisplay:
             [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000')],
             [sg.Text(text=f'Display Dimensions: {c.DEFAULT_DISPLAY_DIMENSIONS}.', font=st.DESC_FONT,
                      justification='left', expand_x=True),
-             sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.DESC_FONT,
-                     justification='right', expand_x=True)],
+             sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.DESC_FONT)],
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
             [sg.HSep(pad=((10, 0), (10, 20)))],
@@ -140,13 +143,16 @@ class DataCaptureDisplay:
                 self.toggleDisplay()
 
             if event == '-COMBO-SIGNAL-SOURCE-':
-                self.setVideoSource(int(values['-COMBO-SIGNAL-SOURCE-']))
+                self.setSignalSource(int(values['-COMBO-SIGNAL-SOURCE-']))
 
             if event == '-BUTTON-SNAPSHOT-':
                 self.saveSingleFrame = True
 
             if event == '-BUTTON-RECORD-TOGGLE-':
                 self.toggleRecording()
+
+            if event == '-COMBO-SIGNAL-DIMENSIONS-':
+                self.setSignalDimensions(values['-COMBO-SIGNAL-DIMENSIONS-'][0])
 
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
@@ -202,8 +208,7 @@ class DataCaptureDisplay:
 
                 # Frame rate estimate.
                 self.fpsCalc2 = dt.now().timestamp()
-                self.window['-TEXT-FRAME-RATE-'].update(
-                    f'Estimated Frame Rate: {int(1 / (self.fpsCalc2 - self.fpsCalc1))} Hz')
+                self.window['-TEXT-FRAME-RATE-'].update(f'{int(1 / (self.fpsCalc2 - self.fpsCalc1))}')
                 self.fpsCalc1 = self.fpsCalc2
 
     def record(self, frameName, frame, acceleration, quaternion):
@@ -225,7 +230,7 @@ class DataCaptureDisplay:
         self.window['-BUTTON-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display')
 
-    def setVideoSource(self, signalSource):
+    def setSignalSource(self, signalSource):
         """
         Set the source of the video signal then attempt to connect to the new source.
 
@@ -239,6 +244,7 @@ class DataCaptureDisplay:
         self.window['-BUTTON-RECORD-TOGGLE-'].update(disabled=False if self.frameGrabber.isConnected else True)
         self.window['-TEXT-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
+        self.window['-COMBO-SIGNAL-DIMENSIONS-'].update(disabled=False if self.frameGrabber.isConnected else True)
 
     def toggleRecording(self):
         self.enableRecording = not self.enableRecording
@@ -258,6 +264,23 @@ class DataCaptureDisplay:
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.window['-COMBO-SIGNAL-SOURCE-'].update(disabled=True if self.enableRecording else False)
         self.window['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
+
+    def setSignalDimensions(self, dimensions):
+        """
+        Attempt to set the dimensions of the video signal to the chosen dimensions. All tests are taken care of in the
+        FrameGrabber class, and the displayed signal dimensions are the only GUI element to be updated.
+
+        Args:
+            dimensions (str): Dimensions formatted as a string (width x height), sans white spaces.
+        """
+
+        dimensions = dimensions.split('x')
+        width = int(dimensions[0])
+        height = int(dimensions[1])
+        self.frameGrabber.setGrabberProperties(width=width, height=height, fps=c.DEFAULT_FRAME_RATE)
+        # Set element states.
+        self.window['-TEXT-SIGNAL-DIMENSIONS-'].update(
+            f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
     def createPlot(self, azimuth):
         """

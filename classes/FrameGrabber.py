@@ -13,7 +13,7 @@ class FrameGrabber:
     the current signal be released, and a new call to connect() be made.
     """
 
-    def __init__(self, signalSource=0, width=c.COMMON_SIGNAL_DIMENSIONS[0][0], height=c.COMMON_SIGNAL_DIMENSIONS[0][1],
+    def __init__(self, signalSource=0, width=c.DEFAULT_SIGNAL_DIMENSIONS[0], height=c.DEFAULT_SIGNAL_DIMENSIONS[1],
                  fps=c.DEFAULT_FRAME_RATE):
         """
         Initialising of a SignalGrabber object. Connection is not made until connect() method is
