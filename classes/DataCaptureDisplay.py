@@ -55,6 +55,12 @@ class DataCaptureDisplay:
         self.run()
 
     def createLayout(self):
+        """
+        Create the layout for the program.
+
+        Returns:
+            layout (list): 2D list used by PySImpleGUI as the layout format.
+        """
         videoControlsLayout1 = [
             [sg.Text('Signal Source: ', justification='right', font=st.DESC_FONT),
              sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
