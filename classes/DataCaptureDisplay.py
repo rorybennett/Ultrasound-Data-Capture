@@ -59,7 +59,7 @@ class DataCaptureDisplay:
         Create the layout for the program.
 
         Returns:
-            layout (list): 2D list used by PySImpleGUI as the layout format.
+            layout (list): 2D list used by PySimpleGUI as the layout format.
         """
         videoControlsLayout1 = [
             [sg.Text('Signal Source: ', justification='right', font=st.DESC_FONT),
