@@ -195,3 +195,18 @@ def createRecordingDirectory(videosPath) -> tuple[Path, str]:
     dataFilePath = str(Path(currentRecordingPath, 'data.txt'))
 
     return currentRecordingPath, dataFilePath
+
+def createBatteryTestDirectory() -> Path:
+    """
+    Create a directory for storing IMU data files created during battery tests. If the directory already exists, return
+    a path to it.
+
+    Returns:
+        batteryTestPath (Path): Path object to the newly created directory.
+
+    """
+    # Create the directory for storing battery test IMU files.
+    batteryTestPath = Path(Path.absolute(), 'BatteryTests')
+    batteryTestPath.mkdir(parents=True, exist_ok=True)
+    # Return a path to the created directory.
+    return batteryTestPath
