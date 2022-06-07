@@ -67,6 +67,12 @@ class ImuBatterLifeTest:
             # Set azimuth.
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
+            # Set the return rate of the IMU.
+            if event == '-COMBO-RETURN-RATE-':
+                self.imu.set_update_rate(float(values['-COMBO-RETURN-RATE-'][:-2]))
+            # Calibrate IMU acceleration.
+            if event == '-BUTTON-IMU-CALIBRATE-':
+                self.imu.send_config_command(wm.protocol.ConfigCommand(register=wm.protocol.Register.calsw, data=0x01))
 
         # Close IMU connections manually.
         print('Program closing down...')
