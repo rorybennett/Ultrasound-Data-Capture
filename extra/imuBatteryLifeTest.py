@@ -181,8 +181,7 @@ class ImuBatterLifeTest:
 
     def toggleTest(self):
         """
-        Toggle the testing state of the program. If true, IMU data will be stored in a .txt file, else nothing special
-        will happen.
+        Toggle the testing state of the program. If true, IMU data will be stored in a .txt file, else close data file.
         """
         self.testing = not self.testing
         print(f'Start a test: {self.testing}')
