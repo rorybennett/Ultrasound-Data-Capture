@@ -181,11 +181,13 @@ def saveSingleFrame(frame, framePath):
 
 def createRecordingDirectory(videosPath) -> tuple[Path, str]:
     """
+    Create a directory where a recording of frames will be saved. Based on the time the test/recording was started.
 
     Args:
-        videosPath:
+        videosPath (str): Path to the parent Videos directory where all recordings are saved.
 
     Returns:
+        tuple(Path, str): The Path to the current recording directory and its related data.txt file.
 
     """
     # Create the new recording directory.
@@ -195,6 +197,7 @@ def createRecordingDirectory(videosPath) -> tuple[Path, str]:
     dataFilePath = str(Path(currentRecordingPath, 'data.txt'))
 
     return currentRecordingPath, dataFilePath
+
 
 def createBatteryTestDirectory() -> Path:
     """
