@@ -129,7 +129,7 @@ class IMU:
 
     def setReturnRate(self, rate):
         """
-        Set the return rate of the IMU is Hz. Not all IMUs have the same return rate capabilities and at the moment
+        Set the return rate of the IMU in Hz. Not all IMUs have the same return rate capabilities and at the moment
         there is no way to test if the command was received correctly by the IMU. The return rate just needs to be
         monitored.
 
