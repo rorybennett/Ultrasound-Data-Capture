@@ -41,6 +41,9 @@ class ImuBatterLifeTest:
         self.bg = None
         # Is a test currently running.
         self.testing = False
+        self.testStartTime = dt.now().timestamp()
+        self.testLastMessageTime = dt.now().timestamp()
+        self.testElapsedTime = self.testLastMessageTime - self.testStartTime
         # Create BatteryTests directory.
         self.batteryTestsPath = ut.createBatteryTestDirectory()
 
@@ -55,7 +58,7 @@ class ImuBatterLifeTest:
         while True:
             self.updateIMUValues()
             self.updateOrientationPlot()
-            event, values = self.window.read(0)
+            event, values = self.window.read(20)
             # Close window event (exit).
             if event == sg.WIN_CLOSED:
                 break
@@ -94,17 +97,6 @@ class ImuBatterLifeTest:
             self.imu.ser.close()
             self.imu.close()
 
-    def toggleTest(self):
-        self.testing = not self.testing
-        print(f'Start a test: {self.testing}')
-
-        if self.testing:
-            pass
-
-        # Set element states.
-        self.window['-BUTTON-TEST-START-'].update(disabled=True if self.testing else False)
-        self.window['-BUTTON-TEST-STOP-'].update(disabled=True if not self.testing else False)
-
     def createLayout(self):
         """
         Create the layout for the program.
@@ -112,6 +104,7 @@ class ImuBatterLifeTest:
         Returns:
             layout (list): 2D list used by PySimpleGUI as the layout format.
         """
+        # IMU controls.
         imuLayout = [
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
                      pad=((0, 0), (0, 20)))],
@@ -131,7 +124,7 @@ class ImuBatterLifeTest:
                        font=st.BUTTON_FONT, border_width=3, pad=((40, 0), (0, 0)), disabled=True),
              ]
         ]
-
+        # Orientation plot.
         imuPlotLayout = [
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
@@ -139,7 +132,7 @@ class ImuBatterLifeTest:
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)],
         ]
-
+        # IMU values from callback.
         imuValuesLayout = [
             [sg.Text('IMU Values', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Text('Acceleration (m/s^2): ', justification='left', font=st.DESC_FONT, size=(20, 1)),
@@ -149,15 +142,32 @@ class ImuBatterLifeTest:
             [sg.Text('Euler Angles (deg): ', justification='left', font=st.DESC_FONT, size=(20, 1)),
              sg.Text(key='-TEXT-ANGLE-', text='', justification='right', font=st.DESC_FONT, size=(30, 1))]
         ]
-
+        # Test start column.
+        testStartLayout = [
+            [sg.Text(text='Start Time', font=st.DESC_FONT + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-START-', font=st.DESC_FONT, size=(15, 1))]
+        ]
+        # Test last message received column.
+        testLastLayout = [
+            [sg.Text(text='Last Message\nReceived At', font=st.DESC_FONT + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-LAST-', font=st.DESC_FONT, size=(15, 1))]
+        ]
+        # Test elapsed time column.
+        testElapsedLayout = [
+            [sg.Text(text='Elapsed Time', font=st.DESC_FONT + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-ELAPSED-', font=st.DESC_FONT, size=(15, 1))]
+        ]
+        # Test control layout.
         testControlLayout = [
             [sg.Button(key='-BUTTON-TEST-START-', button_text='Start', font=st.BUTTON_FONT, border_width=3,
                        pad=((0, 10), (20, 20)), disabled=True, button_color='#33ff77'),
-
+             sg.Column(testStartLayout, element_justification='center', vertical_alignment='top'),
+             sg.Column(testLastLayout, element_justification='center', vertical_alignment='top'),
+             sg.Column(testElapsedLayout, element_justification='center', vertical_alignment='top'),
              sg.Button(key='-BUTTON-TEST-STOP-', button_text='Stop', font=st.BUTTON_FONT, border_width=3,
                        pad=((0, 10), (20, 20)), disabled=True, button_color='#ff2121')]
         ]
-
+        # Total layout.
         layout = [
             [sg.Column(imuLayout, element_justification='center', vertical_alignment='top', justification='c')],
             [sg.HSep(pad=((0, 10), (10, 20)))],
@@ -168,6 +178,31 @@ class ImuBatterLifeTest:
         ]
 
         return layout
+
+    def toggleTest(self):
+        """
+        Toggle the testing state of the program. If true, IMU data will be stored in a .txt file, else nothing special
+        will happen.
+        """
+        self.testing = not self.testing
+        print(f'Start a test: {self.testing}')
+
+        if self.testing:
+            self.currentDataFile = open(
+                Path(self.batteryTestsPath, 'DrainTest - ' + dt.now().strftime("%d-%m-%Y-%H-%M-%S.%f")[:-3]), 'w')
+            self.imuTestCounter = 0
+            self.testStartTime = dt.now().timestamp()
+        else:
+            self.currentDataFile.close()
+            self.currentDataFile = None
+
+        # Set element states.
+        self.window['-BUTTON-TEST-START-'].update(disabled=True if self.testing else False)
+        self.window['-BUTTON-TEST-STOP-'].update(disabled=True if not self.testing else False)
+        self.window['-TEXT-TEST-START-'].update(
+            f"{dt.fromtimestamp(self.testStartTime).strftime('%H-%M-%S.%f')[:-3]}s" if self.testing else "")
+        self.window['-TEXT-TEST-LAST-'].update('' if self.testing else "No Test Running")
+        self.window['-TEXT-TEST-ELAPSED-'].update('')
 
     def refreshComPorts(self):
         """
@@ -272,11 +307,13 @@ class ImuBatterLifeTest:
 
         if msg_type is wm.protocol.AccelerationMessage:
             self.acceleration = self.imu.get_acceleration()
-        elif msg_type is wm.protocol.QuaternionMessage:
-            self.quaternion = self.imu.get_quaternion()
-            self.imuTestCounter += 1
         elif msg_type is wm.protocol.AngleMessage:
             self.angle = self.imu.get_angle()
+        elif msg_type is wm.protocol.QuaternionMessage:
+            self.quaternion = self.imu.get_quaternion()
+            self.testLastMessageTime = dt.now().timestamp()
+            self.imuTestCounter += 1
+            self.saveToFile()
 
     def updateIMUValues(self):
         """
@@ -292,6 +329,26 @@ class ImuBatterLifeTest:
                     f'{self.quaternion[3]:.4f}]')
             if self.angle and self.angle[0]:
                 self.window['-TEXT-ANGLE-'].update(f'[{self.angle[0]:.4f}, {self.angle[1]:.4f}, {self.angle[2]:.4f}]')
+
+    def saveToFile(self):
+        """
+        If a test is currently running, save the IMU data to the current test .txt. file. This function is only called
+        from within the imuCallback function, and only when a quaternion is received (which will be received after
+        the acceleration and angle values) so the .txt values should be correct.
+        """
+
+        if self.testing and self.currentDataFile:
+            timeStamp = dt.now().timestamp()
+            self.currentDataFile.write(f'{timeStamp},'
+                                       f'acc[,{self.acceleration[0]},{self.acceleration[1]},{self.acceleration[2]},]'
+                                       f'q[,{self.quaternion[0]},{self.quaternion[1]},{self.quaternion[2]},'
+                                       f'{self.quaternion[3]},] '
+                                       f'angle[,{self.angle[0]},{self.angle[1]},{self.angle[2]},]\n')
+            # Set element states
+            self.window['-TEXT-TEST-LAST-'].update(
+                f"{dt.fromtimestamp(self.testLastMessageTime).strftime('%H:%M:%S.%f')[:-3]}s")
+            self.window['-TEXT-TEST-ELAPSED-'].update(
+                f"{dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%H:%M:%S')}s")
 
 
 ImuBatterLifeTest()
