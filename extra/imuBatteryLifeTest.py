@@ -22,8 +22,8 @@ class ImuBatterLifeTest:
         self.availableComPorts = IMU.availableComPorts()
         # Number of messages received from the IMU device during a test.
         self.imuTestCounter = 0
-        # Layout creation.
-        self.layout = self.createLayout()
+        # File for saving IMU data of recording.
+        self.currentDataFile = None
         # IMU object and associated variables.
         self.imu = None
         self.comPort = 'COM3'
@@ -39,6 +39,13 @@ class ImuBatterLifeTest:
         self.lineData = None
         self.fig_agg = None
         self.bg = None
+        # Is a test currently running.
+        self.testing = False
+        # Create BatteryTests directory.
+        self.batteryTestsPath = ut.createBatteryTestDirectory()
+
+        # Layout creation.
+        self.layout = self.createLayout()
         # Create main window for display.
         self.window = sg.Window('IMU Battery Tester', self.layout, finalize=True)
 
@@ -73,6 +80,12 @@ class ImuBatterLifeTest:
             # Calibrate IMU acceleration.
             if event == '-BUTTON-IMU-CALIBRATE-':
                 self.imu.send_config_command(wm.protocol.ConfigCommand(register=wm.protocol.Register.calsw, data=0x01))
+            # Start a timed test.
+            if event == '-BUTTON-TEST-START-':
+                self.toggleTest()
+            # Stop a timed test.
+            if event == '-BUTTON-TEST-STOP-':
+                self.toggleTest()
 
         # Close IMU connections manually.
         print('Program closing down...')
@@ -80,6 +93,17 @@ class ImuBatterLifeTest:
         if self.isConnected:
             self.imu.ser.close()
             self.imu.close()
+
+    def toggleTest(self):
+        self.testing = not self.testing
+        print(f'Start a test: {self.testing}')
+
+        if self.testing:
+            pass
+
+        # Set element states.
+        self.window['-BUTTON-TEST-START-'].update(disabled=True if self.testing else False)
+        self.window['-BUTTON-TEST-STOP-'].update(disabled=True if not self.testing else False)
 
     def createLayout(self):
         """
@@ -128,10 +152,10 @@ class ImuBatterLifeTest:
 
         testControlLayout = [
             [sg.Button(key='-BUTTON-TEST-START-', button_text='Start', font=st.BUTTON_FONT, border_width=3,
-                       pad=((0, 10), (20, 20)), disabled=True),
+                       pad=((0, 10), (20, 20)), disabled=True, button_color='#33ff77'),
 
              sg.Button(key='-BUTTON-TEST-STOP-', button_text='Stop', font=st.BUTTON_FONT, border_width=3,
-                       pad=((0, 10), (20, 20)), disabled=True)]
+                       pad=((0, 10), (20, 20)), disabled=True, button_color='#ff2121')]
         ]
 
         layout = [
@@ -182,6 +206,7 @@ class ImuBatterLifeTest:
         )
         self.window['-COMBO-RETURN-RATE-'].update(disabled=True if not self.isConnected else False)
         self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if not self.isConnected else False)
+        self.window['-BUTTON-TEST-START-'].update(disabled=True if not self.isConnected else False)
 
     def createOrientationPlot(self, azimuth):
         """

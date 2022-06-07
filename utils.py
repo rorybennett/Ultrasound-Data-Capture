@@ -209,7 +209,8 @@ def createBatteryTestDirectory() -> Path:
 
     """
     # Create the directory for storing battery test IMU files.
-    batteryTestPath = Path(Path.absolute(), 'BatteryTests')
+    batteryTestPath = Path(Path.cwd(), 'BatteryTests')
     batteryTestPath.mkdir(parents=True, exist_ok=True)
+    print(f'BatteryTests directory created: {batteryTestPath.absolute()}')
     # Return a path to the created directory.
     return batteryTestPath
