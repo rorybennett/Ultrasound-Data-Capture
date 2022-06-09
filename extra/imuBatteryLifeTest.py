@@ -58,7 +58,7 @@ class ImuBatterLifeTest:
         while True:
             self.updateIMUValues()
             self.updateOrientationPlot()
-            event, values = self.window.read(20)
+            event, values = self.window.read(0)
             # Close window event (exit).
             if event == sg.WIN_CLOSED:
                 break
@@ -202,6 +202,10 @@ class ImuBatterLifeTest:
             f"{dt.fromtimestamp(self.testStartTime).strftime('%H-%M-%S.%f')[:-3]}s" if self.testing else "")
         self.window['-TEXT-TEST-LAST-'].update('' if self.testing else "No Test Running")
         self.window['-TEXT-TEST-ELAPSED-'].update('')
+        self.window['-SLIDER-AZIMUTH-'].update(disabled=True if self.testing else False)
+        self.window['-BUTTON-IMU-CONNECT-'].update(disabled=True if self.testing else False)
+        self.window['-COMBO-RETURN-RATE-'].update(disabled=True if self.testing else False)
+        self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if self.testing else False)
 
     def refreshComPorts(self):
         """
