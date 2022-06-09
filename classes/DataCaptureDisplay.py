@@ -99,11 +99,14 @@ class DataCaptureDisplay:
         imuColumnLayout = [
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
-            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (15, 0)))],
+            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (12, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)],
+            [sg.Text('Acceleration values (Ax, Ay, Az):', font=st.DESC_FONT, pad=((0, 0), (12, 0))),
+             sg.Text(key='-TEXT-ACCELERATION-VALUES-', text='', font=st.DESC_FONT, justification='right', size=(20, 1),
+                     pad=((0, 0), (12, 0)))],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (41, 0)))],
+                       border_width=3, pad=((0, 0), (10, 0)))],
             [sg.HSep(pad=((0, 10), (10, 20)))],
             [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
                      pad=((0, 0), (0, 20)))],
@@ -324,7 +327,8 @@ class DataCaptureDisplay:
 
     def updatePlot(self):
         """
-        Update the plot to show orientation of the IMU unit.
+        Update the plot to show orientation of the IMU unit. Update acceleration values if they are available, this
+        update will happen regardless of enablePlotting state.
         """
         # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
         if self.enablePlotting and self.imu.isConnected and self.imu.quaternion:
@@ -334,6 +338,10 @@ class DataCaptureDisplay:
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()
+
+        if self.imu.isConnected and self.imu.acceleration:
+            self.window['-TEXT-ACCELERATION-VALUES-'].update(
+                f'{self.imu.acceleration[0]:.2f}\t{self.imu.acceleration[1]:.2f}\t{self.imu.acceleration[2]:.2f}')
 
     def setAzimuth(self, azimuth):
         """
