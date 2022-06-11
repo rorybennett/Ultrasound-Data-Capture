@@ -14,8 +14,6 @@ import utils as ut
 
 # Location of refresh icon, stored for main program.
 refreshIcon = str(Path().absolute().parent) + '\\icons\\refresh_icon.png'
-# Location of rotate icon, stored for main program.
-rotateIcon = str(Path().absolute().parent) + '\\icons\\rotate_icon.png'
 
 
 class ImuBatterLifeTest:
