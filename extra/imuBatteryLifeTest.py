@@ -210,13 +210,10 @@ class ImuBatterLifeTest:
         self.window['-BUTTON-TEST-START-'].update(disabled=True if self.testing else False)
         self.window['-BUTTON-TEST-STOP-'].update(disabled=True if not self.testing else False)
         self.window['-TEXT-TEST-START-'].update(
-            f"{dt.fromtimestamp(self.testStartTime).strftime('%H-%M-%S.%f')[:-3]}s" if self.testing else "")
+            f"{dt.fromtimestamp(self.testStartTime).strftime('%H:%M:%S.%f')[:-3]}s" if self.testing else "")
         self.window['-TEXT-TEST-LAST-'].update('' if self.testing else "No Test Running")
         self.window['-TEXT-TEST-ELAPSED-'].update('')
-        # self.window['-SLIDER-AZIMUTH-'].update(disabled=True if self.testing else False)
         self.window['-BUTTON-IMU-CONNECT-'].update(disabled=True if self.testing else False)
-        # self.window['-COMBO-RETURN-RATE-'].update(disabled=True if self.testing else False)
-        # self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if self.testing else False)
 
     def refreshComPorts(self):
         """
