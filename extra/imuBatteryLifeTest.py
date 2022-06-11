@@ -1,8 +1,13 @@
 """
-A Python script for testing the battery life of an IMU by recording data until the IMU dies.
+A Python script for testing the battery life of an IMU by running a test and updating the GUI until the IMU dies, at
+which point the GUI will stop updating. When the test is stopped the details of the test are stored in the
+DrainTests.txt file.
 """
+# Used to get the available COM ports.
 from classes import IMU
+# Custom styling.
 import styling as st
+# Custom constants used in the program.
 import constants as c
 
 import PySimpleGUI as sg
@@ -58,7 +63,7 @@ class ImuBatterLifeTest:
         # Display loop.
         while True:
             self.updateIMUValues()
-            self.updateOrientationPlot()
+            # self.updateOrientationPlot()
             event, values = self.window.read(0)
             # Close window event (exit).
             if event == sg.WIN_CLOSED:
@@ -191,20 +196,17 @@ class ImuBatterLifeTest:
 
     def toggleTest(self):
         """
-        Toggle the testing state of the program. If true, IMU data will be stored in a .txt file, else close data file.
+        Toggle the testing state of the program. If true, reset imuTestCounter and instantiate testStartTime, else save
+        test data to file.
         """
         self.testing = not self.testing
         print(f'Start a test: {self.testing}')
 
         if self.testing:
-            self.drainTestsFile = open(
-                Path(self.batteryTestsPath, 'DrainTests.txt'), 'a')
             self.imuTestCounter = 0
             self.testStartTime = dt.now().timestamp()
         else:
             self.saveToFile()
-            self.drainTestsFile.close()
-            self.drainTestsFile = None
 
         # Set element states.
         self.window['-BUTTON-TEST-START-'].update(disabled=True if self.testing else False)
@@ -217,7 +219,7 @@ class ImuBatterLifeTest:
 
     def refreshComPorts(self):
         """
-        Refresh the available COM ports. The list of available COM ports is updated as well as the drop-down menu/list.
+        Refresh the available COM ports. The list of available COM ports is updated as well as the COMBO menu/list.
         """
         self.availableComPorts = IMU.availableComPorts()
         self.window['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
@@ -358,6 +360,9 @@ class ImuBatterLifeTest:
         a non-main thread is a problem.
         """
 
+        self.drainTestsFile = open(
+            Path(self.batteryTestsPath, 'DrainTests.txt'), 'a')
+
         self.drainTestsFile.write(
             f"{self.window['-INPUT-TEST-NAME-'].get()} "
             f"Started: {dt.fromtimestamp(self.testStartTime).strftime('%d %m %Y - %H:%M:%S')}, "
@@ -365,6 +370,8 @@ class ImuBatterLifeTest:
             f"Last Message: {dt.fromtimestamp(self.testLastMessageTime).strftime('%d %m %Y - %H:%M:%S')}, "
             f"Run Time: {dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%H:%M:%S')}, "
             f"Total Messages received: {self.imuTestCounter}\n")
+
+        self.drainTestsFile.close()
 
 
 ImuBatterLifeTest()
