@@ -131,7 +131,7 @@ class ImuBatterLifeTest:
         imuPlotLayout = [
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
-            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (15, 0)))],
+            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (5, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)],
             [sg.Text('Rotate IMU about plane: ', justification='left', font=st.DESC_FONT),
@@ -268,9 +268,10 @@ class ImuBatterLifeTest:
         Args:
             azimuth (int): Azimuth angle in degrees.
         """
-        fig = Figure(figsize=(5, 5), dpi=100)
+        fig = Figure(figsize=(4, 4), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
         fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
+        self.ax.set_position((0, 0, 1, 1))
 
         self.ax = ut.initialiseAxis(self.ax, azimuth)
         self.ax.disable_mouse_rotation()
