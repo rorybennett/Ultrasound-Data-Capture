@@ -27,7 +27,7 @@ class ImuBatterLifeTest:
         # IMU object and associated variables.
         self.imu = None
         self.comPort = 'COM3'
-        self.baudRate = 115200
+        self.baudRate = c.COMMON_BAUD_RATES[6]
         self.quaternion = None
         self.acceleration = None
         self.angle = None
@@ -114,11 +114,11 @@ class ImuBatterLifeTest:
                      pad=((0, 0), (0, 20)))],
             [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source=refreshIcon,
                        image_subsample=4, border_width=3),
-             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True),
+             sg.Combo(key='-COMBO-COM-PORT-', default_value=self.comPort, values=self.availableComPorts, size=7,
+                      font=st.COMBO_FONT, enable_events=True, readonly=True),
              sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
-             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True)],
+             sg.Combo(key='-COMBO-BAUD-RATE-', default_value=self.baudRate, values=c.COMMON_BAUD_RATES, size=7,
+                      font=st.COMBO_FONT, enable_events=True, readonly=True)],
             [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (20, 20)))],
             [sg.Text('Return Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
