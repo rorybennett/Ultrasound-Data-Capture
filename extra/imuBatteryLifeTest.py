@@ -23,7 +23,7 @@ class ImuBatterLifeTest:
         # Number of messages received from the IMU device during a test.
         self.imuTestCounter = 0
         # File for saving IMU data of recording.
-        self.currentDataFile = None
+        self.drainTestsFile = None
         # IMU object and associated variables.
         self.imu = None
         self.comPort = 'COM3'
@@ -157,6 +157,11 @@ class ImuBatterLifeTest:
             [sg.Text(text='Elapsed Time', font=st.DESC_FONT + ' underline', size=(15, 1))],
             [sg.Text(key='-TEXT-TEST-ELAPSED-', font=st.DESC_FONT, size=(15, 1))]
         ]
+        # Test counter layout
+        testCounterLayout = [
+            [sg.Text(text='Total Messages', font=st.DESC_FONT + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-COUNTER-', font=st.DESC_FONT, size=(15, 1))]
+        ]
         # Test control layout.
         testControlLayout = [
             [sg.Button(key='-BUTTON-TEST-START-', button_text='Start', font=st.BUTTON_FONT, border_width=3,
@@ -164,6 +169,7 @@ class ImuBatterLifeTest:
              sg.Column(testStartLayout, element_justification='center', vertical_alignment='top'),
              sg.Column(testLastLayout, element_justification='center', vertical_alignment='top'),
              sg.Column(testElapsedLayout, element_justification='center', vertical_alignment='top'),
+             sg.Column(testCounterLayout, element_justification='center', vertical_alignment='top'),
              sg.Button(key='-BUTTON-TEST-STOP-', button_text='Stop', font=st.BUTTON_FONT, border_width=3,
                        pad=((0, 10), (20, 20)), disabled=True, button_color='#ff2121')]
         ]
@@ -187,13 +193,14 @@ class ImuBatterLifeTest:
         print(f'Start a test: {self.testing}')
 
         if self.testing:
-            self.currentDataFile = open(
-                Path(self.batteryTestsPath, 'DrainTest - ' + dt.now().strftime("%d-%m-%Y-%H-%M-%S.%f")[:-3]), 'w')
+            self.drainTestsFile = open(
+                Path(self.batteryTestsPath, 'DrainTests.txt'), 'w')
             self.imuTestCounter = 0
             self.testStartTime = dt.now().timestamp()
         else:
-            self.currentDataFile.close()
-            self.currentDataFile = None
+            self.saveToFile()
+            self.drainTestsFile.close()
+            self.drainTestsFile = None
 
         # Set element states.
         self.window['-BUTTON-TEST-START-'].update(disabled=True if self.testing else False)
@@ -202,7 +209,7 @@ class ImuBatterLifeTest:
             f"{dt.fromtimestamp(self.testStartTime).strftime('%H-%M-%S.%f')[:-3]}s" if self.testing else "")
         self.window['-TEXT-TEST-LAST-'].update('' if self.testing else "No Test Running")
         self.window['-TEXT-TEST-ELAPSED-'].update('')
-        self.window['-SLIDER-AZIMUTH-'].update(disabled=True if self.testing else False)
+        # self.window['-SLIDER-AZIMUTH-'].update(disabled=True if self.testing else False)
         self.window['-BUTTON-IMU-CONNECT-'].update(disabled=True if self.testing else False)
         self.window['-COMBO-RETURN-RATE-'].update(disabled=True if self.testing else False)
         self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if self.testing else False)
@@ -316,7 +323,6 @@ class ImuBatterLifeTest:
             self.quaternion = self.imu.get_quaternion()
             self.testLastMessageTime = dt.now().timestamp()
             self.imuTestCounter += 1
-            self.saveToFile()
 
     def updateIMUValues(self):
         """
@@ -333,25 +339,29 @@ class ImuBatterLifeTest:
             if self.angle and self.angle[0]:
                 self.window['-TEXT-ANGLE-'].update(f'[{self.angle[0]:.4f}, {self.angle[1]:.4f}, {self.angle[2]:.4f}]')
 
+            if self.testing:
+                self.window['-TEXT-TEST-LAST-'].update(
+                    f"{dt.fromtimestamp(self.testLastMessageTime).strftime('%H:%M:%S.%f')[:-3]}s")
+                self.window['-TEXT-TEST-ELAPSED-'].update(
+                    f"{dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%H:%M:%S')}s")
+                self.window['-TEXT-TEST-COUNTER-'].update(
+                    f'{self.imuTestCounter}'
+                )
+
     def saveToFile(self):
         """
-        If a test is currently running, save the IMU data to the current test .txt. file. This function is only called
-        from within the imuCallback function, and only when a quaternion is received (which will be received after
-        the acceleration and angle values) so the .txt values should be correct.
+        Save details of the test to the DrainTests.txt file.
+
+        Future note: Calling saveToFile from the IMU callback was causing threading issues as updating GUI from
+        a non-main thread is a problem.
         """
 
-        if self.testing and self.currentDataFile:
-            timeStamp = dt.now().timestamp()
-            self.currentDataFile.write(f'{timeStamp},'
-                                       f'acc[,{self.acceleration[0]},{self.acceleration[1]},{self.acceleration[2]},]'
-                                       f'q[,{self.quaternion[0]},{self.quaternion[1]},{self.quaternion[2]},'
-                                       f'{self.quaternion[3]},] '
-                                       f'angle[,{self.angle[0]},{self.angle[1]},{self.angle[2]},]\n')
-            # Set element states
-            self.window['-TEXT-TEST-LAST-'].update(
-                f"{dt.fromtimestamp(self.testLastMessageTime).strftime('%H:%M:%S.%f')[:-3]}s")
-            self.window['-TEXT-TEST-ELAPSED-'].update(
-                f"{dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%H:%M:%S')}s")
+        self.drainTestsFile.write(
+            f"Drain Test Started: {dt.fromtimestamp(self.testStartTime).strftime('%d %m %Y - %H:%M:%S')},"
+            f"Test Completed: {dt.fromtimestamp(dt.now().timestamp()).strftime('%d %m %Y - %H:%M:%S')}"
+            f"Last Message: {dt.fromtimestamp(self.testLastMessageTime).strftime('%d %m %Y - %H:%M:%S')},"
+            f"Run Time: {dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%d %m %Y - %H:%M:%S')},"
+            f"Total Messages received: {self.imuTestCounter}\n")
 
 
 ImuBatterLifeTest()
