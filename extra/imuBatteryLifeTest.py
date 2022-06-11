@@ -78,9 +78,6 @@ class ImuBatterLifeTest:
             # Set azimuth.
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
-            # Toggle IMU XY flip/rotation.
-            if event == '-BUTTON-ROTATE-XY-':
-                self.toggleImuRotate()
             # Set the return rate of the IMU.
             if event == '-COMBO-RETURN-RATE-':
                 self.imu.set_update_rate(float(values['-COMBO-RETURN-RATE-'][:-2]))
@@ -133,9 +130,7 @@ class ImuBatterLifeTest:
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
             [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (5, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
-                       orientation='h', enable_events=True)],
-            [sg.Text('Rotate IMU about plane: ', justification='left', font=st.DESC_FONT),
-             sg.Button(key='-BUTTON-ROTATE-XY-', button_text='XY', border_width=3)]
+                       orientation='h', enable_events=True)]
         ]
         # IMU values from callback.
         imuValuesLayout = [
@@ -178,7 +173,9 @@ class ImuBatterLifeTest:
              sg.Column(testElapsedLayout, element_justification='center', vertical_alignment='top'),
              sg.Column(testCounterLayout, element_justification='center', vertical_alignment='top'),
              sg.Button(key='-BUTTON-TEST-STOP-', button_text='Stop', font=st.BUTTON_FONT, border_width=3,
-                       pad=((0, 10), (20, 20)), disabled=True, button_color='#ff2121')]
+                       pad=((0, 10), (20, 20)), disabled=True, button_color='#ff2121')],
+            [sg.Text('Test Name', font=st.DESC_FONT, justification='left'),
+             sg.Input(key='-INPUT-TEST-NAME-', justification='left', default_text='Drain Test')]
         ]
         # Total layout.
         layout = [
@@ -201,7 +198,7 @@ class ImuBatterLifeTest:
 
         if self.testing:
             self.drainTestsFile = open(
-                Path(self.batteryTestsPath, 'DrainTests.txt'), 'w')
+                Path(self.batteryTestsPath, 'DrainTests.txt'), 'a')
             self.imuTestCounter = 0
             self.testStartTime = dt.now().timestamp()
         else:
@@ -218,8 +215,8 @@ class ImuBatterLifeTest:
         self.window['-TEXT-TEST-ELAPSED-'].update('')
         # self.window['-SLIDER-AZIMUTH-'].update(disabled=True if self.testing else False)
         self.window['-BUTTON-IMU-CONNECT-'].update(disabled=True if self.testing else False)
-        self.window['-COMBO-RETURN-RATE-'].update(disabled=True if self.testing else False)
-        self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if self.testing else False)
+        # self.window['-COMBO-RETURN-RATE-'].update(disabled=True if self.testing else False)
+        # self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if self.testing else False)
 
     def refreshComPorts(self):
         """
@@ -288,11 +285,7 @@ class ImuBatterLifeTest:
         if self.isConnected and self.quaternion:
             self.fig_agg.restore_region(self.bg)
 
-            if self.rotateIMUXY:
-                # Change here to include rotation change
-                self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion)
-            else:
-                self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion)
+            self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()
@@ -355,7 +348,7 @@ class ImuBatterLifeTest:
                 self.window['-TEXT-TEST-LAST-'].update(
                     f"{dt.fromtimestamp(self.testLastMessageTime).strftime('%H:%M:%S.%f')[:-3]}s")
                 self.window['-TEXT-TEST-ELAPSED-'].update(
-                    f"{dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%H:%M:%S')}s")
+                    f"{dt.fromtimestamp(max(self.testLastMessageTime - self.testStartTime, 0)).strftime('%H:%M:%S')}s")
                 self.window['-TEXT-TEST-COUNTER-'].update(
                     f'{self.imuTestCounter}'
                 )
@@ -369,23 +362,12 @@ class ImuBatterLifeTest:
         """
 
         self.drainTestsFile.write(
-            f"Drain Test Started: {dt.fromtimestamp(self.testStartTime).strftime('%d %m %Y - %H:%M:%S')},"
-            f"Test Completed: {dt.fromtimestamp(dt.now().timestamp()).strftime('%d %m %Y - %H:%M:%S')}"
-            f"Last Message: {dt.fromtimestamp(self.testLastMessageTime).strftime('%d %m %Y - %H:%M:%S')},"
-            f"Run Time: {dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%d %m %Y - %H:%M:%S')},"
+            f"{self.window['-INPUT-TEST-NAME-'].get()} "
+            f"Started: {dt.fromtimestamp(self.testStartTime).strftime('%d %m %Y - %H:%M:%S')}, "
+            f"Test Completed: {dt.fromtimestamp(dt.now().timestamp()).strftime('%d %m %Y - %H:%M:%S')}, "
+            f"Last Message: {dt.fromtimestamp(self.testLastMessageTime).strftime('%d %m %Y - %H:%M:%S')}, "
+            f"Run Time: {dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%H:%M:%S')}, "
             f"Total Messages received: {self.imuTestCounter}\n")
-
-    def toggleImuRotate(self):
-        """
-        Toggle the state of plane rotation for the IMU orientation plot. If the IMU is installed "upside down" the
-        orientation needs to be flipped about the XY plane for the plot to match the physical movements of the IMU.
-        This flip does not affect the displayed IMU values, only the orientation plot. Only flipping about XY plane
-        for now.
-        """
-        self.rotateIMUXY = not self.rotateIMUXY
-
-        self.window['-BUTTON-ROTATE-XY-'].update(
-            button_color='#33ff77' if self.rotateIMUXY else sg.DEFAULT_BUTTON_COLOR)
 
 
 ImuBatterLifeTest()
