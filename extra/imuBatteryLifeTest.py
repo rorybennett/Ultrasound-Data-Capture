@@ -14,6 +14,8 @@ import utils as ut
 
 # Location of refresh icon, stored for main program.
 refreshIcon = str(Path().absolute().parent) + '\\icons\\refresh_icon.png'
+# Location of rotate icon, stored for main program.
+rotateIcon = str(Path().absolute().parent) + '\\icons\\rotate_icon.png'
 
 
 class ImuBatterLifeTest:
@@ -31,6 +33,7 @@ class ImuBatterLifeTest:
         self.quaternion = None
         self.acceleration = None
         self.angle = None
+        self.rotateIMUXY = False
         # Connection state of the IMU.
         self.isConnected = False
         # Plotting variables: axis, points, lines, fig_agg, and bg set to None until initialised.
@@ -77,6 +80,9 @@ class ImuBatterLifeTest:
             # Set azimuth.
             if event == '-SLIDER-AZIMUTH-':
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
+            # Toggle IMU XY flip/rotation.
+            if event == '-BUTTON-ROTATE-XY-':
+                self.toggleImuRotate()
             # Set the return rate of the IMU.
             if event == '-COMBO-RETURN-RATE-':
                 self.imu.set_update_rate(float(values['-COMBO-RETURN-RATE-'][:-2]))
@@ -121,8 +127,7 @@ class ImuBatterLifeTest:
              sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.COMBO_FONT,
                       enable_events=True, readonly=True, disabled=True),
              sg.Button(key='-BUTTON-IMU-CALIBRATE-', button_text='Calibrate Acc', size=(15, 1),
-                       font=st.BUTTON_FONT, border_width=3, pad=((40, 0), (0, 0)), disabled=True),
-             ]
+                       font=st.BUTTON_FONT, border_width=3, pad=((40, 0), (0, 0)), disabled=True)]
         ]
         # Orientation plot.
         imuPlotLayout = [
@@ -131,10 +136,12 @@ class ImuBatterLifeTest:
             [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (15, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)],
+            [sg.Text('Rotate IMU about plane: ', justification='left', font=st.DESC_FONT),
+             sg.Button(key='-BUTTON-ROTATE-XY-', button_text='XY', border_width=3)]
         ]
         # IMU values from callback.
         imuValuesLayout = [
-            [sg.Text('IMU Values', size=(40, 1), justification='center', font=st.HEADING_FONT)],
+            [sg.Text('IMU Values (Raw)', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Text('Acceleration (m/s^2): ', justification='left', font=st.DESC_FONT, size=(20, 1)),
              sg.Text(key='-TEXT-ACCELERATION-', text='', justification='right', font=st.DESC_FONT, size=(30, 1))],
             [sg.Text('Quaternion: ', justification='left', font=st.DESC_FONT, size=(20, 1)),
@@ -142,11 +149,13 @@ class ImuBatterLifeTest:
             [sg.Text('Euler Angles (deg): ', justification='left', font=st.DESC_FONT, size=(20, 1)),
              sg.Text(key='-TEXT-ANGLE-', text='', justification='right', font=st.DESC_FONT, size=(30, 1))]
         ]
+
         # Test start column.
         testStartLayout = [
             [sg.Text(text='Start Time', font=st.DESC_FONT + ' underline', size=(15, 1))],
             [sg.Text(key='-TEXT-TEST-START-', font=st.DESC_FONT, size=(15, 1))]
         ]
+
         # Test last message received column.
         testLastLayout = [
             [sg.Text(text='Last Message\nReceived At', font=st.DESC_FONT + ' underline', size=(15, 1))],
@@ -280,7 +289,11 @@ class ImuBatterLifeTest:
         if self.isConnected and self.quaternion:
             self.fig_agg.restore_region(self.bg)
 
-            self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion)
+            if self.rotateIMUXY:
+                # Change here to include rotation change
+                self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion)
+            else:
+                self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()
@@ -362,6 +375,18 @@ class ImuBatterLifeTest:
             f"Last Message: {dt.fromtimestamp(self.testLastMessageTime).strftime('%d %m %Y - %H:%M:%S')},"
             f"Run Time: {dt.fromtimestamp(self.testLastMessageTime - self.testStartTime).strftime('%d %m %Y - %H:%M:%S')},"
             f"Total Messages received: {self.imuTestCounter}\n")
+
+    def toggleImuRotate(self):
+        """
+        Toggle the state of plane rotation for the IMU orientation plot. If the IMU is installed "upside down" the
+        orientation needs to be flipped about the XY plane for the plot to match the physical movements of the IMU.
+        This flip does not affect the displayed IMU values, only the orientation plot. Only flipping about XY plane
+        for now.
+        """
+        self.rotateIMUXY = not self.rotateIMUXY
+
+        self.window['-BUTTON-ROTATE-XY-'].update(
+            button_color='#33ff77' if self.rotateIMUXY else sg.DEFAULT_BUTTON_COLOR)
 
 
 ImuBatterLifeTest()
