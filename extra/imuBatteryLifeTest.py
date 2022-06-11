@@ -219,7 +219,7 @@ class ImuBatterLifeTest:
 
     def refreshComPorts(self):
         """
-        Refresh the available COM ports. The list of available COM ports is updated as well as the COMBO menu/list.
+        Refresh the available COM ports. The list of available COM ports is updated as well as the related Combo box.
         """
         self.availableComPorts = IMU.availableComPorts()
         self.window['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
@@ -278,7 +278,11 @@ class ImuBatterLifeTest:
 
     def updateOrientationPlot(self):
         """
-        Update the plot to show orientation of the IMU unit.
+        Update the plot to show orientation of the IMU unit. Restores the axis region that does not need to be
+        recreated (bg), then adds the points to the axis. Blit is used to increase plot speed substantially. This
+        currently limits the plot to lines and points, surfaces are not used.
+
+        todo There appears to be a memory leak in this function. Possibly in Utils.
         """
         # Only plot if the IMU is connected, and a quaternion value is available.
         if self.isConnected and self.quaternion:
@@ -309,10 +313,12 @@ class ImuBatterLifeTest:
 
     def imuCallback(self, msg):
         """
-        Callback subscribed to the IMU object. Called whenever a new dataset is ready to be read. This callback is
+        Callback subscribed to the IMU object. Called whenever a new dataset is available. This callback is
         activated for every value sent by the IMU (Acceleration, Quaternion, Angle, ..etc) and not just for each
-        serial packet. Only quaternion messages are read here, and the counter only increases when a quaternion
-        message is read.
+        serial packet. The counter only increments when a quaternion message is read.
+
+        This callback is handled off the main thread, and as such no GUI updates should take place from functions
+        originating here.
 
         Args:
             msg (String): The type of dataset that is newly available.
@@ -330,7 +336,7 @@ class ImuBatterLifeTest:
 
     def updateIMUValues(self):
         """
-        Update the shown IMU values if they are available.
+        Update the shown IMU and test values if they are available.
         """
         if self.isConnected:
             if self.acceleration:
