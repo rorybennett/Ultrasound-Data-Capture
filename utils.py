@@ -1,5 +1,7 @@
+"""
+Helper script containing functions used throughout ultrasound_data_capture module.
+"""
 from pathlib import Path
-
 import cv2
 import numpy as np
 from datetime import datetime as dt
@@ -40,7 +42,7 @@ def rotatePoints(points, quaternion):
 
     Args:
         points (list([x, y, z])): List of 3D vector points to be rotated.
-        quaternion (list(q0, q1, q2, q3)): 4D vector representing a quaternion.
+        quaternion (list([q0, q1, q2, q3])): 4D vector representing a quaternion.
 
     Returns:
         rotatedPoints (np.array): A Numpy Array of rotated points
@@ -56,7 +58,7 @@ def rotatePoints(points, quaternion):
 def plotPointsOnAxis(axis, quaternion):
     """
     Plot the orientation points on the given axis once they have been rotated by the given Quaternion. The returned
-    axis is then blitted on to the figure for increased plotting speed.
+    axis is then blit on to the figure for increased plotting speed.
 
     Args:
         axis (axis): Axis on to which the points and lines must be plotted.
@@ -93,7 +95,8 @@ def plotPointsOnAxis(axis, quaternion):
 
 def initialiseAxis(axis, azimuth):
     """
-    Set the initial labels, limits, and azimuth of the given axis
+    Set the initial labels, limits, and azimuth of the given axis.
+
     Args:
         axis (axis): Axis that will have its labels, limits, and azimuth set.
         azimuth (int): Azimuth value applied to the axis.
