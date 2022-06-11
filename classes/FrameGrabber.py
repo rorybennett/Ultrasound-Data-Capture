@@ -1,3 +1,8 @@
+"""
+FrameGrabber class for handling the OpenCV portion of the program. Frames from a USB connection are returned as
+greyscale images.
+are .
+"""
 import cv2 as cv
 import constants as c
 

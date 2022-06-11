@@ -1,3 +1,6 @@
+"""
+A Python script for running the DataCaptureDisplay program.
+"""
 from classes import DataCaptureDisplay
 
 
