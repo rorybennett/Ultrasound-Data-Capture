@@ -1,3 +1,7 @@
+"""
+IMU class for handling the IMU connection and messages. The Witmotion Python module is maintained by some rando and not
+by the company. It is also not complete, as some quite basic functionality is missing. It does enough for now.
+"""
 import witmotion as wm
 import time
 import serial.tools.list_ports
@@ -5,9 +9,9 @@ import serial.tools.list_ports
 
 def availableComPorts():
     """
-    Query all available COM ports. This will return sorted COM ports that are active/inactive AND
-    ports that are not being used by a Witmotion IMU. If no data is returned from a connected
-    COM port then it may not be the correct COM port.
+    Query all available COM ports. This will return sorted COM ports that are active/inactive AND ports that are not
+    being used by a Witmotion IMU. If no data is returned from a connected COM port then it may not be the correct COM
+    port. The COM ports can represent a USB or bluetooth connection.
 
     Returns:
         allComPorts (list[str]): A list of available COM ports. Only the port number is returned, e.g. 'COM7'.
@@ -27,9 +31,10 @@ def availableComPorts():
 
 class IMU:
     """
-    Class for handling a connection to a Witmotion IMU sensor. Tested with some of their Bluetooth range
-    of sensors. During initialisation the requested COM port is opened at the specified baud rate. Then
-    a callback is subscribed that lets the class know when new IMU data is available.
+    Class for handling a connection to a Witmotion IMU sensor. Tested with some of their Bluetooth range of sensors.
+    During initialisation no connection is made, only variable instantiation. After a connection is made a callback is
+    subscribed that lets the class know when new IMU data is available. This appears to be off the main thread, which
+    can cause errors during closing of the main program, but it does not seem to be anything worth worrying about.
 
     The default values made available are acceleration, angle, and quaternion values, if other fields are
     required then the __imuCallback() method must be updated.
@@ -39,6 +44,7 @@ class IMU:
         """
         Initialises an IMU object. No connection is made, only default variables
         are set.
+
         Args :
             comPort (String, optional): Comport the IMU is connected to. Defaults to 'COM3'.
             baudRate (int, optional): Operational baud rate of the IMU. Defaults to 115200.
@@ -55,17 +61,16 @@ class IMU:
 
     def __del__(self):
         """
-        On class object delete the IMU object must be disconnected.
+        On class object delete the IMU object must be disconnected. This ensures that required connections are closed.
         """
         self.disconnect()
         self.imu = None
 
     def __imuCallback(self, msg):
         """
-        Callback subscribed to the IMU object. Called whenever a new dataset
-        is ready to be read. This callback is activated for every value sent
-        by the IMU (Acceleration, Quaternion, Angle, ..etc) and not just for
-        each serial packet.
+        Callback subscribed to the IMU object. Called whenever a new dataset is ready to be read. This callback is
+        activated for every value sent by the IMU (Acceleration, Quaternion, Angle, ..etc) and not just for each serial
+        packet.
 
         Args:
             msg (String): The type of dataset that is newly available.
@@ -82,11 +87,10 @@ class IMU:
 
     def connect(self) -> bool:
         """
-        Attempt to connect to the IMU. If the COM port and baud rate were not explicitly set, the default
-        values will be used. The callbackCounter and startTime are reset on a successful connection.
-        self.isConnected is set to True if a successful IMU object is created, and does not account for the
-        state of the callback subscription. If subscription fails the self.isConnected state can still be True but
-        the successFlag will be False.
+        Attempt to connect to the IMU. If the COM port and baud rate were not explicitly set, the default values will
+        be used. The callbackCounter and startTime are reset on a successful connection. self.isConnected is set to
+        True if a successful IMU object is created, and does not account for the state of the callback subscription.
+        If subscription fails the self.isConnected state can still be True but the successFlag will be False.
 
         Returns:
             successFlag (bool): True if the IMU connects, else False.
@@ -113,9 +117,8 @@ class IMU:
 
     def disconnect(self):
         """
-        Disconnect from IMU. This closes the IMU and the serial connection. For some reason closing
-        the IMU does not close the serial connection, this is a problem with the Witmotion
-        module.
+        Disconnect from IMU. This closes the IMU and the serial connection. For some reason closing the IMU does not
+        close the serial connection, this is a problem with the Witmotion module.
         """
         try:
             if self.imu:
@@ -143,6 +146,10 @@ class IMU:
         """
         Tell the IMU to calibrate its accelerometer. The IMU should be placed flat on a horizontal service for 5 seconds
         while the calibration continues. Nothing is returned after the calibration, but you will see the acceleration
-        values calibrate to (0, 0, 1) once the process is complete.
+        values calibrate to (0, 0, 9.8) once the process is complete.
+
+        Take note that the orientation of the IMU affects the calibration. If after calibration the IMU is rolled by
+        180 degrees and the z-acceleration is not roughly -9.8m/s^2 it means the IMU was "upside-down" during
+        calibration.
         """
         self.imu.send_config_command(wm.protocol.ConfigCommand(register=wm.protocol.Register.calsw, data=0x01))
