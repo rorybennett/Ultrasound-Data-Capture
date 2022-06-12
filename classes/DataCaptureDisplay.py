@@ -349,9 +349,9 @@ class DataCaptureDisplay:
             self.fig_agg.flush_events()
 
         if self.imu.isConnected and self.imu.acceleration:
-            self.window['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.2f}')
-            self.window['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.2f}')
-            self.window['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.2f}')
+            self.window['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
+            self.window['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
+            self.window['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
 
     def setAzimuth(self, azimuth):
         """
