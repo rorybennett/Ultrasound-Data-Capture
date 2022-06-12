@@ -258,8 +258,9 @@ class ImuBatterLifeTest:
 
     def createOrientationPlot(self, azimuth):
         """
-        Instantiate the initial plotting variables: The Figure and the axis. This is also called when changing
-        the azimuth of the plot as the entire canvas needs to be redrawn.
+        Instantiate the initial plotting variables: The Figure and the axis, and the 2 plot parameters that store the
+        line and point data. This is also called when changing the azimuth of the plot as the entire canvas needs to
+        be redrawn.
 
         Args:
             azimuth (int): Azimuth angle in degrees.
@@ -276,6 +277,9 @@ class ImuBatterLifeTest:
 
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
+        self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
+        self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
+
     def updateOrientationPlot(self):
         """
         Update the plot to show orientation of the IMU unit. Restores the axis region that does not need to be
@@ -286,7 +290,7 @@ class ImuBatterLifeTest:
         if self.isConnected and self.quaternion:
             self.fig_agg.restore_region(self.bg)
 
-            self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion)
+            self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion, self.pointData, self.lineData)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()

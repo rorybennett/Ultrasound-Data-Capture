@@ -102,8 +102,12 @@ class DataCaptureDisplay:
             [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (12, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)],
-            [sg.Text('Acceleration values (Ax, Ay, Az):', font=st.DESC_FONT, pad=((0, 0), (12, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-VALUES-', text='', font=st.DESC_FONT, justification='right', size=(20, 1),
+            [sg.Text('Acceleration values:', font=st.DESC_FONT, pad=((0, 0), (12, 0))),
+             sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                     pad=((0, 0), (12, 0))),
+             sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                     pad=((0, 0), (12, 0))),
+             sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
                      pad=((0, 0), (12, 0)))],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
@@ -308,8 +312,9 @@ class DataCaptureDisplay:
 
     def createPlot(self, azimuth):
         """
-        Instantiate the initial plotting variables: The Figure and the axis. This is also called when changing
-        the azimuth of the plot as the entire canvas needs to be redrawn.
+        Instantiate the initial plotting variables: The Figure and the axis, and the 2 plot parameters that store the
+        line and point data. This is also called when changing the azimuth of the plot as the entire canvas needs to
+        be redrawn.
 
         Args:
             azimuth (int): Azimuth angle in degrees.
@@ -317,6 +322,7 @@ class DataCaptureDisplay:
         fig = Figure(figsize=(5, 5), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
         fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
+        self.ax.set_position((0, 0, 1, 1))
 
         self.ax = ut.initialiseAxis(self.ax, azimuth)
         self.ax.disable_mouse_rotation()
@@ -324,6 +330,9 @@ class DataCaptureDisplay:
         self.fig_agg = ut.drawFigure(fig, self.window['-CANVAS-PLOT-'].TKCanvas)
 
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
+
+        self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
+        self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
 
     def updatePlot(self):
         """
@@ -334,14 +343,15 @@ class DataCaptureDisplay:
         if self.enablePlotting and self.imu.isConnected and self.imu.quaternion:
             self.fig_agg.restore_region(self.bg)
 
-            self.ax = ut.plotPointsOnAxis(self.ax, self.imu.quaternion)
+            self.ax = ut.plotPointsOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()
 
         if self.imu.isConnected and self.imu.acceleration:
-            self.window['-TEXT-ACCELERATION-VALUES-'].update(
-                f'{self.imu.acceleration[0]:.2f}\t{self.imu.acceleration[1]:.2f}\t{self.imu.acceleration[2]:.2f}')
+            self.window['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.2f}')
+            self.window['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.2f}')
+            self.window['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.2f}')
 
     def setAzimuth(self, azimuth):
         """
