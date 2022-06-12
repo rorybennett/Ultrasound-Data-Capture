@@ -63,7 +63,7 @@ class ImuBatterLifeTest:
         # Display loop.
         while True:
             self.updateIMUValues()
-            # self.updateOrientationPlot()
+            self.updateOrientationPlot()
             event, values = self.window.read(0)
             # Close window event (exit).
             if event == sg.WIN_CLOSED:
@@ -281,8 +281,6 @@ class ImuBatterLifeTest:
         Update the plot to show orientation of the IMU unit. Restores the axis region that does not need to be
         recreated (bg), then adds the points to the axis. Blit is used to increase plot speed substantially. This
         currently limits the plot to lines and points, surfaces are not used.
-
-        todo There appears to be a memory leak in this function. Possibly in Utils.
         """
         # Only plot if the IMU is connected, and a quaternion value is available.
         if self.isConnected and self.quaternion:

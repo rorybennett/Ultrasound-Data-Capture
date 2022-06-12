@@ -58,7 +58,8 @@ def rotatePoints(points, quaternion):
 def plotPointsOnAxis(axis, quaternion):
     """
     Plot the orientation points on the given axis once they have been rotated by the given Quaternion. The returned
-    axis is then blit on to the figure for increased plotting speed.
+    axis is then blit on to the figure for increased plotting speed. The axis parameter must first be cleared to avoid
+    a memory leak.
 
     Args:
         axis (axis): Axis on to which the points and lines must be plotted.
@@ -68,6 +69,8 @@ def plotPointsOnAxis(axis, quaternion):
         axis (axis): Axis containing newly plotted points and lines.
     """
     rpp = rotatePoints(c.PROBE_POINTS, quaternion)
+    # Axis must be cleared otherwise there is a memory leak.
+    axis.cla()
     pointData = axis.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
     lineData = axis.plot([], [], [], color="red", animated=True)[0]
     # Draw points
