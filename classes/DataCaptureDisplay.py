@@ -141,10 +141,13 @@ class DataCaptureDisplay:
         Main loop for displaying the GUI and reacting to events, in standard PySimpleGUI fashion.
         """
         while True:
-            # Update the image display
-            self.updateFrame()
-            # Update the plot
-            self.updatePlot()
+            self.fpsCalc1 = dt.now().timestamp()
+            # Update the image display. Check if frameGrabber is connected before fetching frame.
+            if self.frameGrabber.isConnected:
+                self.updateFrame()
+            # Update the plot.
+            if self.enablePlotting:
+                self.updatePlot()
 
             event, values = self.window.read(timeout=0)
 
@@ -191,43 +194,41 @@ class DataCaptureDisplay:
             if event == '-BUTTON-IMU-CALIBRATE-':
                 self.imu.calibrateAcceleration()
 
+            # Frame rate estimate.
+            self.fpsCalc2 = dt.now().timestamp()
+            self.window['-TEXT-FRAME-RATE-'].update(f'{int(1 / (self.fpsCalc2 - self.fpsCalc1))}')
+
     def updateFrame(self):
         """
         Updates the display with a new frame, if enableDisplay is True. If enableRecording is True then a frame, and
         associated IMU data is saved into the correct directory. If saveSingleFrame is True then a single frame is
         stored in the correct directory.
         """
-        # Check if frameGrabber is connected before fetching frame.
-        if self.frameGrabber.isConnected:
-            res, frame = self.frameGrabber.getFrame()
-            acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-            quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
-            # Check if a frame has been returned.
-            if res:
-                # Record frames?
-                if self.enableRecording:
-                    frameName = f'{self.frameGrabCounter}-{int(dt.now().timestamp() * 1000)}'
-                    self.record(frameName, frame, acceleration, quaternion)
-                    self.frameGrabCounter += 1
 
-                # Save a single frame?
-                if self.saveSingleFrame:
-                    # Only save one frame.
-                    self.saveSingleFrame = False
-                    frameName = f'{int(dt.now().timestamp() * 1000)}.png'
-                    ut.saveSingleFrame(frame,
-                                       f'{self.singleFramesPath}\\{frameName}')
+        res, frame = self.frameGrabber.getFrame()
+        acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+        quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
+        # Check if a frame has been returned.
+        if res:
+            # Record frames?
+            if self.enableRecording:
+                frameName = f'{self.frameGrabCounter}-{int(dt.now().timestamp() * 1000)}'
+                self.record(frameName, frame, acceleration, quaternion)
+                self.frameGrabCounter += 1
 
-                # Check if the display should be updated.
-                if self.enableDisplay:
-                    resizedFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
-                    frameBytes = ut.frameToBytes(resizedFrame)
-                    self.window['-IMAGE-FRAME-'].update(data=frameBytes)
+            # Save a single frame?
+            if self.saveSingleFrame:
+                # Only save one frame.
+                self.saveSingleFrame = False
+                frameName = f'{int(dt.now().timestamp() * 1000)}.png'
+                ut.saveSingleFrame(frame,
+                                   f'{self.singleFramesPath}\\{frameName}')
 
-                # Frame rate estimate.
-                self.fpsCalc2 = dt.now().timestamp()
-                self.window['-TEXT-FRAME-RATE-'].update(f'{int(1 / (self.fpsCalc2 - self.fpsCalc1))}')
-                self.fpsCalc1 = self.fpsCalc2
+            # Check if the display should be updated.
+            if self.enableDisplay:
+                resizedFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
+                frameBytes = ut.frameToBytes(resizedFrame)
+                self.window['-IMAGE-FRAME-'].update(data=frameBytes)
 
     def record(self, frameName, frame, acceleration, quaternion):
         """
@@ -340,7 +341,7 @@ class DataCaptureDisplay:
         update will happen regardless of enablePlotting state.
         """
         # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
-        if self.enablePlotting and self.imu.isConnected and self.imu.quaternion:
+        if self.imu.isConnected and self.imu.quaternion:
             self.fig_agg.restore_region(self.bg)
 
             self.ax = ut.plotPointsOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
