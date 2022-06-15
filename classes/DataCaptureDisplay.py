@@ -139,6 +139,10 @@ class DataCaptureDisplay:
     def run(self):
         """
         Main loop for displaying the GUI and reacting to events, in standard PySimpleGUI fashion.
+
+        todo if timeout not set the program waits for an event. This may be how to do the threading. If display is
+        enabled, attempt to fetch a frame and resize it, then call an event to display the resized frame all with
+        a timeout not set.
         """
         while True:
             self.fpsCalc1 = dt.now().timestamp()
