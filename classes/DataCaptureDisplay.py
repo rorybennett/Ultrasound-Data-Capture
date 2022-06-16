@@ -131,10 +131,12 @@ class DataCaptureDisplay:
              ]
         ]
 
-        layout = [[sg.Menu(key='-MENU-', menu_definition=[['Video Source', ['1']],
-                                                          ['IMU', ['Connect/Disconnect::-IMU-CONNECT-',
-                                                                   'Set Return Rate::-IMU-RATE-',
-                                                                   'Calibrate Acceleration::-IMU-CALIBRATE']]]),
+        menuDefinition = [['Video Source', ['1']],
+                          ['IMU', ['Connect/Disconnect::-MENU-IMU-CONNECT-',
+                                   '!Set Return Rate', [f'{i}::-MENU-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
+                                   '!Calibrate Acceleration::-MENU-IMU-CALIBRATE-']]]
+
+        layout = [[sg.Menu(key='-MENU-', menu_definition=menuDefinition),
                    sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
                    sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
 
@@ -159,9 +161,18 @@ class DataCaptureDisplay:
 
             event, values = self.window.read(timeout=0)
 
-            if event == sg.WIN_CLOSED:
+            if event in [sg.WIN_CLOSED, 'None']:
                 self.close()
                 break
+
+            if event.endswith('::-MENU-IMU-CONNECT-'):
+                self.toggleImuConnect()
+            elif event.endswith('::-MENU-IMU-RATE-'):
+                print(f"Will set rate to: {float(event.split('Hz')[0])}")
+                # self.imu.setReturnRate(float(event.split('Hz')[0]))
+            elif event.endswith('::-MENU-IMU-CALIBRATE-'):
+                print('Will calibrate IMU.')
+                # self.imu.calibrateAcceleration()
 
             if event == '-BUTTON-DISPLAY-TOGGLE-':
                 self.toggleDisplay()
