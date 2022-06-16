@@ -131,7 +131,11 @@ class DataCaptureDisplay:
              ]
         ]
 
-        layout = [[sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
+        layout = [[sg.Menu(key='-MENU-', menu_definition=[['Video Source', ['1']],
+                                                          ['IMU', ['Connect/Disconnect::-IMU-CONNECT-',
+                                                                   'Set Return Rate::-IMU-RATE-',
+                                                                   'Calibrate Acceleration::-IMU-CALIBRATE']]]),
+                   sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
                    sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
 
         return layout
@@ -201,7 +205,7 @@ class DataCaptureDisplay:
             # Frame rate estimate.
             self.fpsCalc2 = dt.now().timestamp()
             et = self.fpsCalc2 - self.fpsCalc1
-            fps = int(1/et) if et > 70 else '70+'
+            fps = int(1 / et) if et > 70 else '70+'
             self.window['-TEXT-FRAME-RATE-'].update(f'{fps}')
 
     def updateFrame(self):
