@@ -200,7 +200,9 @@ class DataCaptureDisplay:
 
             # Frame rate estimate.
             self.fpsCalc2 = dt.now().timestamp()
-            self.window['-TEXT-FRAME-RATE-'].update(f'{int(1 / (self.fpsCalc2 - self.fpsCalc1))}')
+            et = self.fpsCalc2 - self.fpsCalc1
+            fps = int(1/et) if et > 70 else '70+'
+            self.window['-TEXT-FRAME-RATE-'].update(f'{fps}')
 
     def updateFrame(self):
         """
