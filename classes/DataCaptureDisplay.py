@@ -48,7 +48,7 @@ class DataCaptureDisplay:
         # Create overall layout.
         self.layout = self.createLayout()
 
-        self.window = sg.Window('Ultrasound Data Capture', self.layout, finalize=True)
+        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout, finalize=True)
 
         self.createPlot(c.DEFAULT_AZIMUTH)
 
@@ -111,24 +111,7 @@ class DataCaptureDisplay:
                      pad=((0, 0), (12, 0)))],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
-            [sg.HSep(pad=((0, 10), (10, 20)))],
-            [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
-                     pad=((0, 0), (0, 20)))],
-            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-                       image_subsample=4, border_width=3),
-             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.comPort),
-             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
-             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.baudRate)],
-            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (20, 20)))],
-            [sg.Text('Return Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
-             sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, disabled=True),
-             sg.Button(key='-BUTTON-IMU-CALIBRATE-', button_text='Calibrate Acc', size=(15, 1),
-                       font=st.BUTTON_FONT, border_width=3, pad=((40, 0), (0, 0)), disabled=True),
-             ]
+            [sg.HSep(pad=((0, 10), (10, 20)))]
         ]
 
         menuDefinition = [['Video Source', ['1']],
@@ -159,14 +142,15 @@ class DataCaptureDisplay:
             if self.enablePlotting:
                 self.updatePlot()
 
-            event, values = self.window.read(timeout=0)
+            event, values = self.windowMain.read(timeout=0)
 
             if event in [sg.WIN_CLOSED, 'None']:
                 self.close()
                 break
 
             if event.endswith('::-MENU-IMU-CONNECT-'):
-                self.toggleImuConnect()
+                # If the imu is not connected, show connection window, else disconnect.
+                self.showImuConnectWindow() if not self.imu.isConnected else self.imu.disconnect()
             elif event.endswith('::-MENU-IMU-RATE-'):
                 print(f"Will set rate to: {float(event.split('Hz')[0])}")
                 # self.imu.setReturnRate(float(event.split('Hz')[0]))
@@ -194,30 +178,21 @@ class DataCaptureDisplay:
 
             if event == '-BUTTON-PLOT-TOGGLE-':
                 self.togglePlotting()
-
-            if event == '-BUTTON-COM-REFRESH-':
-                self.refreshComPorts()
-
-            if event == '-COMBO-COM-PORT-':
-                self.imu.comPort = values['-COMBO-COM-PORT-']
-
-            if event == '-COMBO-BAUD-RATE-':
-                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
-
-            if event == '-BUTTON-IMU-CONNECT-':
-                self.toggleImuConnect()
-
-            if event == '-COMBO-RETURN-RATE-':
-                self.imu.setReturnRate(float(values['-COMBO-RETURN-RATE-'][:-2]))
-
-            if event == '-BUTTON-IMU-CALIBRATE-':
-                self.imu.calibrateAcceleration()
+            #
+            # if event == '-BUTTON-IMU-CONNECT-':
+            #     self.toggleImuConnect()
+            #
+            # if event == '-COMBO-RETURN-RATE-':
+            #     self.imu.setReturnRate(float(values['-COMBO-RETURN-RATE-'][:-2]))
+            #
+            # if event == '-BUTTON-IMU-CALIBRATE-':
+            #     self.imu.calibrateAcceleration()
 
             # Frame rate estimate.
             self.fpsCalc2 = dt.now().timestamp()
             et = self.fpsCalc2 - self.fpsCalc1
             fps = int(1 / et) if et > 70 else '70+'
-            self.window['-TEXT-FRAME-RATE-'].update(f'{fps}')
+            self.windowMain['-TEXT-FRAME-RATE-'].update(f'{fps}')
 
     def updateFrame(self):
         """
@@ -249,7 +224,7 @@ class DataCaptureDisplay:
             if self.enableDisplay:
                 resizedFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
                 frameBytes = ut.frameToBytes(resizedFrame)
-                self.window['-IMAGE-FRAME-'].update(data=frameBytes)
+                self.windowMain['-IMAGE-FRAME-'].update(data=frameBytes)
 
     def record(self, frameName, frame, acceleration, quaternion):
         """
@@ -277,7 +252,7 @@ class DataCaptureDisplay:
         especially when recording frames.
         """
         self.enableDisplay = not self.enableDisplay
-        self.window['-BUTTON-DISPLAY-TOGGLE-'].update(
+        self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display')
 
     def setSignalSource(self, signalSource):
@@ -290,11 +265,11 @@ class DataCaptureDisplay:
         self.frameGrabber.signalSource = signalSource
         self.frameGrabber.connect()
         # Set element states.
-        self.window['-BUTTON-SNAPSHOT-'].update(disabled=False if self.frameGrabber.isConnected else True)
-        self.window['-BUTTON-RECORD-TOGGLE-'].update(disabled=False if self.frameGrabber.isConnected else True)
-        self.window['-TEXT-SIGNAL-DIMENSIONS-'].update(
+        self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=False if self.frameGrabber.isConnected else True)
+        self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=False if self.frameGrabber.isConnected else True)
+        self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
-        self.window['-COMBO-SIGNAL-DIMENSIONS-'].update(disabled=False if self.frameGrabber.isConnected else True)
+        self.windowMain['-COMBO-SIGNAL-DIMENSIONS-'].update(disabled=False if self.frameGrabber.isConnected else True)
 
     def toggleRecording(self):
         self.enableRecording = not self.enableRecording
@@ -309,11 +284,11 @@ class DataCaptureDisplay:
             self.currentDataFile.close()
 
         # Set element states.
-        self.window['-BUTTON-RECORD-TOGGLE-'].update(
+        self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(
             button_color='#ff2121' if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
-        self.window['-COMBO-SIGNAL-SOURCE-'].update(disabled=True if self.enableRecording else False)
-        self.window['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
+        self.windowMain['-COMBO-SIGNAL-SOURCE-'].update(disabled=True if self.enableRecording else False)
+        self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
     def setSignalDimensions(self, dimensions):
         """
@@ -329,7 +304,7 @@ class DataCaptureDisplay:
         height = int(dimensions[1])
         self.frameGrabber.setGrabberProperties(width=width, height=height, fps=c.DEFAULT_FRAME_RATE)
         # Set element states.
-        self.window['-TEXT-SIGNAL-DIMENSIONS-'].update(
+        self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
     def createPlot(self, azimuth):
@@ -349,7 +324,7 @@ class DataCaptureDisplay:
         self.ax = ut.initialiseAxis(self.ax, azimuth)
         self.ax.disable_mouse_rotation()
 
-        self.fig_agg = ut.drawFigure(fig, self.window['-CANVAS-PLOT-'].TKCanvas)
+        self.fig_agg = ut.drawFigure(fig, self.windowMain['-CANVAS-PLOT-'].TKCanvas)
 
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
@@ -371,9 +346,9 @@ class DataCaptureDisplay:
             self.fig_agg.flush_events()
 
         if self.imu.isConnected and self.imu.acceleration:
-            self.window['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
-            self.window['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
-            self.window['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
+            self.windowMain['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
+            self.windowMain['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
+            self.windowMain['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
 
     def setAzimuth(self, azimuth):
         """
@@ -399,36 +374,49 @@ class DataCaptureDisplay:
         with blit the improvement tends to be marginal.
         """
         self.enablePlotting = not self.enablePlotting
-        self.window['-BUTTON-PLOT-TOGGLE-'].update(
+        self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(
             text='Disable Plotting' if self.enablePlotting else 'Enable Plotting')
 
     def refreshComPorts(self):
         """
-        Refresh the available COM ports. The list of available COM ports is updated as well as the drop-down menu/list.
+        Refresh the available COM ports displayed in windowImuConnect. The variable list of available COM ports is
+        updated as well as the drop-down menu/list.
         """
         self.availableComPorts = IMU.availableComPorts()
-        self.window['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
+        self.windowImuConnect['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
 
-    def toggleImuConnect(self):
-        """
-        Toggles the connection state of the IMU object. If the IMU is connected, it will be disconnected, else it will
-        be connected using the values set in the Combo boxes or using the default initialisation values.
-        """
+    def showImuConnectWindow(self):
+        print('Show IMU connection window.')
 
-        # If imu is not connected it must be connected, else disconnected.
-        if not self.imu.isConnected:
-            self.imu.connect()
-        else:
-            self.imu.disconnect()
-        # Set element states
-        self.window['-COMBO-COM-PORT-'].update(disabled=True if self.imu.isConnected else False)
-        self.window['-COMBO-BAUD-RATE-'].update(disabled=True if self.imu.isConnected else False)
-        self.window['-BUTTON-IMU-CONNECT-'].update(
-            button_color='#ff2121' if self.imu.isConnected else sg.DEFAULT_BUTTON_COLOR,
-            text='Disconnect IMU' if self.imu.isConnected else 'Connect IMU'
-        )
-        self.window['-COMBO-RETURN-RATE-'].update(disabled=True if not self.imu.isConnected else False)
-        self.window['-BUTTON-IMU-CALIBRATE-'].update(disabled=True if not self.imu.isConnected else False)
+        layout = [
+            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+                       image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
+             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True, default_value=self.imu.comPort, pad=((0, 0), (20, 0))),
+             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (20, 0))),
+             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True, default_value=self.imu.baudRate, pad=((0, 0), (20, 0)))],
+            [sg.HSeparator(pad=((10, 10), (20, 20)))],
+            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
+        ]
+
+        self.windowImuConnect = sg.Window('Connect to IMU', layout, element_justification='center', modal=True)
+
+        while True:
+            event, values = self.windowImuConnect.read()
+            if event in [sg.WIN_CLOSED, 'None']:
+                break
+            elif event == '-BUTTON-COM-REFRESH-':
+                self.refreshComPorts()
+            elif event == '-COMBO-COM-PORT-':
+                self.imu.comPort = values['-COMBO-COM-PORT-']
+            elif event == '-COMBO-BAUD-RATE-':
+                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
+            elif event == '-BUTTON-IMU-CONNECT-':
+                self.imu.connect()
+                break
+
+        self.windowImuConnect.close()
 
     def close(self):
         """
