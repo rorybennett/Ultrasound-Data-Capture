@@ -3,6 +3,7 @@ from classes import IMU
 from classes import FrameGrabber
 import styling as st
 import constants as c
+import menus as m
 
 import PySimpleGUI as sg
 from datetime import datetime as dt
@@ -44,6 +45,9 @@ class DataCaptureDisplay:
         self.lineData = None
         self.fig_agg = None
         self.bg = None
+
+        # IMU connect window
+        self.windowImuConnect = None
 
         # Create overall layout.
         self.layout = self.createLayout()
@@ -114,12 +118,7 @@ class DataCaptureDisplay:
             [sg.HSep(pad=((0, 10), (10, 20)))]
         ]
 
-        menuDefinition = [['Video Source', ['1']],
-                          ['IMU', ['Connect/Disconnect::-MENU-IMU-CONNECT-',
-                                   '!Set Return Rate', [f'{i}::-MENU-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
-                                   '!Calibrate Acceleration::-MENU-IMU-CALIBRATE-']]]
-
-        layout = [[sg.Menu(key='-MENU-', menu_definition=menuDefinition),
+        layout = [[sg.Menu(key='-MENU-', menu_definition=[m.menuVideoSource, m.menuImuDisconnected]),
                    sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
                    sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
 
@@ -148,15 +147,21 @@ class DataCaptureDisplay:
                 self.close()
                 break
 
+            # IMU menu events.
             if event.endswith('::-MENU-IMU-CONNECT-'):
-                # If the imu is not connected, show connection window, else disconnect.
+                # Show connect to IMU window.
                 self.showImuConnectWindow() if not self.imu.isConnected else self.imu.disconnect()
+            elif event.endswith('::-MENU-IMU-DISCONNECT-'):
+                # Disconnect from IMU and update menus.
+                self.imu.disconnect()
+                if not self.imu.isConnected:
+                    self.windowMain['-MENU-'].update(menu_definition=[m.menuVideoSource, m.menuImuDisconnected])
             elif event.endswith('::-MENU-IMU-RATE-'):
-                print(f"Will set rate to: {float(event.split('Hz')[0])}")
-                # self.imu.setReturnRate(float(event.split('Hz')[0]))
+                # Set the IMU return rate.
+                self.imu.setReturnRate(float(event.split('Hz')[0]))
             elif event.endswith('::-MENU-IMU-CALIBRATE-'):
-                print('Will calibrate IMU.')
-                # self.imu.calibrateAcceleration()
+                # Calibrate the IMU acceleration values.
+                self.imu.calibrateAcceleration()
 
             if event == '-BUTTON-DISPLAY-TOGGLE-':
                 self.toggleDisplay()
@@ -178,15 +183,6 @@ class DataCaptureDisplay:
 
             if event == '-BUTTON-PLOT-TOGGLE-':
                 self.togglePlotting()
-            #
-            # if event == '-BUTTON-IMU-CONNECT-':
-            #     self.toggleImuConnect()
-            #
-            # if event == '-COMBO-RETURN-RATE-':
-            #     self.imu.setReturnRate(float(values['-COMBO-RETURN-RATE-'][:-2]))
-            #
-            # if event == '-BUTTON-IMU-CALIBRATE-':
-            #     self.imu.calibrateAcceleration()
 
             # Frame rate estimate.
             self.fpsCalc2 = dt.now().timestamp()
@@ -383,9 +379,22 @@ class DataCaptureDisplay:
         updated as well as the drop-down menu/list.
         """
         self.availableComPorts = IMU.availableComPorts()
-        self.windowImuConnect['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
+        # Set elements
+        self.windowImuConnect['-COMBO-COM-PORT-'].update(values=self.availableComPorts, default_value=self.imu.comPort)
 
     def showImuConnectWindow(self):
+        """
+        Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
+        can refresh available COM ports, select a COM port, and select a baud rate from this window. When the CONNECT
+        button is clicked an attempt is made to open the requested COM port at the specified baud rate.
+
+        When the COM port and baud rate are changed from the combo boxes, the self.imu variable has its properties
+        modified immediately (self.imu.comPort, self.imu.baudrate).
+
+        The window will close if there is a successful connection to the COM port. There is no test to see if the
+        port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
+        are being updated in the main GUI.
+        """
         print('Show IMU connection window.')
 
         layout = [
@@ -403,18 +412,29 @@ class DataCaptureDisplay:
         self.windowImuConnect = sg.Window('Connect to IMU', layout, element_justification='center', modal=True)
 
         while True:
+
             event, values = self.windowImuConnect.read()
+
             if event in [sg.WIN_CLOSED, 'None']:
+                # On window close.
                 break
             elif event == '-BUTTON-COM-REFRESH-':
+                # On refresh available COM ports clicked.
                 self.refreshComPorts()
             elif event == '-COMBO-COM-PORT-':
+                # On COM port changed.
                 self.imu.comPort = values['-COMBO-COM-PORT-']
             elif event == '-COMBO-BAUD-RATE-':
+                # On baud rate changed.
                 self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
             elif event == '-BUTTON-IMU-CONNECT-':
+                # On connect button clicked.
                 self.imu.connect()
-                break
+                if self.imu.isConnected:
+                    self.windowMain['-MENU-'].update(menu_definition=[m.menuVideoSource, m.menuImuConnected])
+                    break
+
+        print('Close IMU connection window.')
 
         self.windowImuConnect.close()
 
