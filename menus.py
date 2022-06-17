@@ -24,7 +24,7 @@ menuSignalConnected = ['Signal Source', ['Change Source',
                                          [f'{i}::-MENU-SIGNAL-CONNECT-' for i in range(0, c.SIGNAL_SOURCES)],
                                          '---',
                                          'Change Signal Dimensions',
-                                         [f'{i}::-MENU-SIGNAL-DIMENSIONS-' for i in c.COMMON_SIGNAL_DIMENSIONS]
+                                         [f'{i[0]}::-MENU-SIGNAL-DIMENSIONS-' for i in c.COMMON_SIGNAL_DIMENSIONS]
                                          ]
                        ]
 

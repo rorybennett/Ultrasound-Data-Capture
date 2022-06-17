@@ -144,7 +144,11 @@ class DataCaptureDisplay:
 
             # Signal source menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
-                self.setSignalSource(int(event.split('::')[0]))
+                # Connect to signal source.
+                self.setSignalSourceAndConnect(int(event.split('::')[0]))
+            elif event.endswith('::-MENU-SIGNAL-DIMENSIONS-'):
+                # Change signal dimensions.
+                self.setSignalDimensions(event.split('::')[0])
 
             # IMU menu events.
             if event.endswith('::-MENU-IMU-CONNECT-'):
@@ -153,8 +157,7 @@ class DataCaptureDisplay:
             elif event.endswith('::-MENU-IMU-DISCONNECT-'):
                 # Disconnect from IMU and update menus.
                 self.imu.disconnect()
-                if not self.imu.isConnected:
-                    self.windowMain['-MENU-'].update(menu_definition=[m.menuVideoSource, m.menuImuDisconnected])
+                self.updateMenus()
             elif event.endswith('::-MENU-IMU-RATE-'):
                 # Set the IMU return rate.
                 self.imu.setReturnRate(float(event.split('Hz')[0]))
@@ -166,7 +169,7 @@ class DataCaptureDisplay:
                 self.toggleDisplay()
 
             if event == '-COMBO-SIGNAL-SOURCE-':
-                self.setSignalSource(int(values['-COMBO-SIGNAL-SOURCE-']))
+                self.setSignalSourceAndConnect(int(values['-COMBO-SIGNAL-SOURCE-']))
 
             if event == '-BUTTON-SNAPSHOT-':
                 self.saveSingleFrame = True
@@ -189,19 +192,6 @@ class DataCaptureDisplay:
             fps = int(1 / et) if et > 70 else '70+'
             self.windowMain['-TEXT-FRAME-RATE-'].update(f'{fps}')
 
-    def updateMenu(self):
-        """
-        Helper function that updates the main window's menu based on the current states of the self.frameGrabber and
-        self.imu objects. Each menu has items that are either enabled or disable based on these two objects, and it is
-        possible to mix and match the two.
-        """
-        # Signal Source menu.
-        menuSignal = [m.menuSignalConnected if self.frameGrabber.isConnected else m.menuSignalDisconnected]
-        # IMU menu.
-        menuImu = [m.menuImuConnected if self.imu.isConnected else m.menuImuDisconnected]
-        # Set elements.
-        self.windowMain['-MENU-'].update(menu_definition=[menuSignal, menuImu])
-
     def showImuConnectWindow(self):
         """
         Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
@@ -215,8 +205,6 @@ class DataCaptureDisplay:
         port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
         are being updated in the main GUI.
         """
-        print('Show IMU connection window.')
-
         imuConnectLayout = [
             [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
                        image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
@@ -233,7 +221,6 @@ class DataCaptureDisplay:
                                           modal=True)
 
         while True:
-
             event, values = self.windowImuConnect.read()
 
             if event in [sg.WIN_CLOSED, 'None']:
@@ -252,11 +239,9 @@ class DataCaptureDisplay:
                 # On connect button clicked.
                 self.imu.connect()
                 if self.imu.isConnected:
-                    self.windowMain['-MENU-'].update(menu_definition=[m.menuVideoSource, m.menuImuConnected])
                     break
 
-        print('Close IMU connection window.')
-
+        self.updateMenus()
         self.windowImuConnect.close()
 
     def updateFrame(self):
@@ -265,7 +250,6 @@ class DataCaptureDisplay:
         associated IMU data is saved into the correct directory. If saveSingleFrame is True then a single frame is
         stored in the correct directory.
         """
-
         res, frame = self.frameGrabber.getFrame()
         acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
         quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
@@ -320,18 +304,20 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display')
 
-    def setSignalSource(self, signalSource):
+    def setSignalSourceAndConnect(self, signalSource):
         """
         Set the source of the video signal then attempt to connect to the new source.
 
         Args:
             signalSource (int): Location of the video signal source as an integer, representing a USB port or webcam.
         """
+        # Set source.
         self.frameGrabber.signalSource = signalSource
+        # Attempt to connect to source (internally disconnect if currently connected).
         self.frameGrabber.connect()
+        # Update menus.
+        self.updateMenus()
         # Set element states.
-        # todo create a function for updating menus
-
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=False if self.frameGrabber.isConnected else True)
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=False if self.frameGrabber.isConnected else True)
         self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
@@ -364,7 +350,6 @@ class DataCaptureDisplay:
         Args:
             dimensions (str): Dimensions formatted as a string (width x height), sans white spaces.
         """
-
         dimensions = dimensions.split('x')
         width = int(dimensions[0])
         height = int(dimensions[1])
@@ -450,7 +435,20 @@ class DataCaptureDisplay:
         """
         self.availableComPorts = IMU.availableComPorts()
         # Set elements
-        self.windowImuConnect['-COMBO-COM-PORT-'].update(values=self.availableComPorts, default_value=self.imu.comPort)
+        self.windowImuConnect['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
+
+    def updateMenus(self):
+        """
+        Helper function that updates the main window's menu based on the current states of the self.frameGrabber and
+        self.imu objects. Each menu has items that are either enabled or disable based on these two objects, and it is
+        possible to mix and match the two.
+        """
+        # Signal Source menu.
+        menuSignal = m.menuSignalConnected if self.frameGrabber.isConnected else m.menuSignalDisconnected
+        # IMU menu.
+        menuImu = m.menuImuConnected if self.imu.isConnected else m.menuImuDisconnected
+        # Set elements.
+        self.windowMain['-MENU-'].update(menu_definition=[menuSignal, menuImu])
 
     def close(self):
         """
