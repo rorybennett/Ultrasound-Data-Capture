@@ -13,7 +13,8 @@ menuSignalDisconnected:     Menu to show when the signal source is not connected
 menuSignalConnected:        Menu to show when the signal source is connected. Now that the source is connected, the 
                             source signal can be changed, it can be disconnected, and properties can be changed.
 """
-menuSignalDisconnected = ['Signal Source', ['Connect to Source::-MENU-SIGNAL-CONNECT-',
+menuSignalDisconnected = ['Signal Source', ['Connect to Source',
+                                            [f'{i}::-MENU-SIGNAL-CONNECT-' for i in range(0, c.SIGNAL_SOURCES + 1)],
                                             '!Disconnect from Source::-MENU-SIGNAL-DISCONNECT-',
                                             '---',
                                             '!Change Signal Dimensions::-MENU-SIGNAL-DIMENSIONS',
@@ -21,6 +22,7 @@ menuSignalDisconnected = ['Signal Source', ['Connect to Source::-MENU-SIGNAL-CON
                           ]
 
 menuSignalConnected = ['Signal Source', ['Change Source::-MENU-SIGNAL-CHANGE-',
+                                         [f'{i}::-MENU-SIGNAL-CONNECT-' for i in range(0, c.SIGNAL_SOURCES)],
                                          'Disconnect from Source::-MENU-SIGNAL-DISCONNECT-',
                                          '---',
                                          'Change Signal Dimensions::-MENU-SIGNAL-DIMENSIONS',

@@ -66,9 +66,6 @@ class DataCaptureDisplay:
             layout (list): 2D list used by PySimpleGUI as the layout format.
         """
         videoControlsLayout1 = [
-            [sg.Text('Signal Source: ', justification='right', font=st.DESC_FONT),
-             sg.Combo(key='-COMBO-SIGNAL-SOURCE-', values=list(range(0, c.VIDEO_SOURCES + 1)), size=3,
-                      font=st.COMBO_FONT, enable_events=True, readonly=True)],
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (20, 0)), disabled=True)],
             [sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
@@ -78,10 +75,7 @@ class DataCaptureDisplay:
         videoControlsLayout2 = [
             [sg.Text(text='Estimated Frame Rate: ', justification='right', font=st.DESC_FONT),
              sg.Text(key='-TEXT-FRAME-RATE-', text='0', justification='left', font=st.DESC_FONT,
-                     size=(4, 1))],
-            [sg.Text('Change Signal Dimensions: ', justification='right', font=st.DESC_FONT, pad=((0, 0), (20, 0))),
-             sg.Combo(key='-COMBO-SIGNAL-DIMENSIONS-', values=c.COMMON_SIGNAL_DIMENSIONS, size=10,
-                      font=st.COMBO_FONT, enable_events=True, readonly=True, pad=((0, 0), (20, 0)), disabled=True)]
+                     size=(4, 1))]
         ]
 
         displayColumnLayout = [
@@ -118,7 +112,7 @@ class DataCaptureDisplay:
             [sg.HSep(pad=((0, 10), (10, 20)))]
         ]
 
-        layout = [[sg.Menu(key='-MENU-', menu_definition=[m.menuVideoSource, m.menuImuDisconnected]),
+        layout = [[sg.Menu(key='-MENU-', menu_definition=[m.menuSignalDisconnected, m.menuImuDisconnected]),
                    sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
                    sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
 
@@ -144,8 +138,13 @@ class DataCaptureDisplay:
             event, values = self.windowMain.read(timeout=0)
 
             if event in [sg.WIN_CLOSED, 'None']:
+                # On window close clicked.
                 self.close()
                 break
+
+            # Signal source menu events.
+            if event.endswith('::-MENU-SIGNAL-CONNECT-'):
+                self.setSignalSource(int(event.split('::')[0]))
 
             # IMU menu events.
             if event.endswith('::-MENU-IMU-CONNECT-'):
@@ -189,6 +188,63 @@ class DataCaptureDisplay:
             et = self.fpsCalc2 - self.fpsCalc1
             fps = int(1 / et) if et > 70 else '70+'
             self.windowMain['-TEXT-FRAME-RATE-'].update(f'{fps}')
+
+    def showImuConnectWindow(self):
+        """
+        Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
+        can refresh available COM ports, select a COM port, and select a baud rate from this window. When the CONNECT
+        button is clicked an attempt is made to open the requested COM port at the specified baud rate.
+
+        When the COM port and baud rate are changed from the combo boxes, the self.imu variable has its properties
+        modified immediately (self.imu.comPort, self.imu.baudrate).
+
+        The window will close if there is a successful connection to the COM port. There is no test to see if the
+        port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
+        are being updated in the main GUI.
+        """
+        print('Show IMU connection window.')
+
+        imuConnectLayout = [
+            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+                       image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
+             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True, default_value=self.imu.comPort, pad=((0, 0), (20, 0))),
+             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (20, 0))),
+             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True, default_value=self.imu.baudRate, pad=((0, 0), (20, 0)))],
+            [sg.HSeparator(pad=((10, 10), (20, 20)))],
+            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
+        ]
+
+        self.windowImuConnect = sg.Window('Connect to IMU', imuConnectLayout, element_justification='center',
+                                          modal=True)
+
+        while True:
+
+            event, values = self.windowImuConnect.read()
+
+            if event in [sg.WIN_CLOSED, 'None']:
+                # On window close.
+                break
+            elif event == '-BUTTON-COM-REFRESH-':
+                # On refresh available COM ports clicked.
+                self.refreshComPorts()
+            elif event == '-COMBO-COM-PORT-':
+                # On COM port changed.
+                self.imu.comPort = values['-COMBO-COM-PORT-']
+            elif event == '-COMBO-BAUD-RATE-':
+                # On baud rate changed.
+                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
+            elif event == '-BUTTON-IMU-CONNECT-':
+                # On connect button clicked.
+                self.imu.connect()
+                if self.imu.isConnected:
+                    self.windowMain['-MENU-'].update(menu_definition=[m.menuVideoSource, m.menuImuConnected])
+                    break
+
+        print('Close IMU connection window.')
+
+        self.windowImuConnect.close()
 
     def updateFrame(self):
         """
@@ -261,11 +317,12 @@ class DataCaptureDisplay:
         self.frameGrabber.signalSource = signalSource
         self.frameGrabber.connect()
         # Set element states.
+        # todo create a function for updating menus
+
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=False if self.frameGrabber.isConnected else True)
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=False if self.frameGrabber.isConnected else True)
         self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
-        self.windowMain['-COMBO-SIGNAL-DIMENSIONS-'].update(disabled=False if self.frameGrabber.isConnected else True)
 
     def toggleRecording(self):
         self.enableRecording = not self.enableRecording
@@ -381,62 +438,6 @@ class DataCaptureDisplay:
         self.availableComPorts = IMU.availableComPorts()
         # Set elements
         self.windowImuConnect['-COMBO-COM-PORT-'].update(values=self.availableComPorts, default_value=self.imu.comPort)
-
-    def showImuConnectWindow(self):
-        """
-        Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
-        can refresh available COM ports, select a COM port, and select a baud rate from this window. When the CONNECT
-        button is clicked an attempt is made to open the requested COM port at the specified baud rate.
-
-        When the COM port and baud rate are changed from the combo boxes, the self.imu variable has its properties
-        modified immediately (self.imu.comPort, self.imu.baudrate).
-
-        The window will close if there is a successful connection to the COM port. There is no test to see if the
-        port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
-        are being updated in the main GUI.
-        """
-        print('Show IMU connection window.')
-
-        imuConnectLayout = [
-            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-                       image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
-             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.comPort, pad=((0, 0), (20, 0))),
-             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (20, 0))),
-             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.baudRate, pad=((0, 0), (20, 0)))],
-            [sg.HSeparator(pad=((10, 10), (20, 20)))],
-            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
-        ]
-
-        self.windowImuConnect = sg.Window('Connect to IMU', imuConnectLayout, element_justification='center', modal=True)
-
-        while True:
-
-            event, values = self.windowImuConnect.read()
-
-            if event in [sg.WIN_CLOSED, 'None']:
-                # On window close.
-                break
-            elif event == '-BUTTON-COM-REFRESH-':
-                # On refresh available COM ports clicked.
-                self.refreshComPorts()
-            elif event == '-COMBO-COM-PORT-':
-                # On COM port changed.
-                self.imu.comPort = values['-COMBO-COM-PORT-']
-            elif event == '-COMBO-BAUD-RATE-':
-                # On baud rate changed.
-                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
-            elif event == '-BUTTON-IMU-CONNECT-':
-                # On connect button clicked.
-                self.imu.connect()
-                if self.imu.isConnected:
-                    self.windowMain['-MENU-'].update(menu_definition=[m.menuVideoSource, m.menuImuConnected])
-                    break
-
-        print('Close IMU connection window.')
-
-        self.windowImuConnect.close()
 
     def close(self):
         """

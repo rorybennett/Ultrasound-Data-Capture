@@ -43,7 +43,7 @@ IMU_RATE_OPTIONS = [
 
 # Number of available video sources. It is highly unlikely that more than 5 sources will be present, but if there are
 # more this value can be increased. The values will range from 0 (inclusive) to VIDEO_SOURCES (inclusive)
-VIDEO_SOURCES = 5
+SIGNAL_SOURCES = 5
 
 # The width and height of the displayed image. The input signal will be resized to fit these dimensions.
 DEFAULT_DISPLAY_DIMENSIONS = (1024, 576)
