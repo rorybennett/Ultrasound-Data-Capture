@@ -397,7 +397,7 @@ class DataCaptureDisplay:
         """
         print('Show IMU connection window.')
 
-        layout = [
+        imuConnectLayout = [
             [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
                        image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
              sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
@@ -409,7 +409,7 @@ class DataCaptureDisplay:
             [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
         ]
 
-        self.windowImuConnect = sg.Window('Connect to IMU', layout, element_justification='center', modal=True)
+        self.windowImuConnect = sg.Window('Connect to IMU', imuConnectLayout, element_justification='center', modal=True)
 
         while True:
 
