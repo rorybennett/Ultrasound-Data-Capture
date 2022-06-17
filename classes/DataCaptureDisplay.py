@@ -192,58 +192,6 @@ class DataCaptureDisplay:
             fps = int(1 / et) if et > 70 else '70+'
             self.windowMain['-TEXT-FRAME-RATE-'].update(f'{fps}')
 
-    def showImuConnectWindow(self):
-        """
-        Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
-        can refresh available COM ports, select a COM port, and select a baud rate from this window. When the CONNECT
-        button is clicked an attempt is made to open the requested COM port at the specified baud rate.
-
-        When the COM port and baud rate are changed from the combo boxes, the self.imu variable has its properties
-        modified immediately (self.imu.comPort, self.imu.baudrate).
-
-        The window will close if there is a successful connection to the COM port. There is no test to see if the
-        port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
-        are being updated in the main GUI.
-        """
-        imuConnectLayout = [
-            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-                       image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
-             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.comPort, pad=((0, 0), (20, 0))),
-             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (20, 0))),
-             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.baudRate, pad=((0, 0), (20, 0)))],
-            [sg.HSeparator(pad=((10, 10), (20, 20)))],
-            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
-        ]
-
-        self.windowImuConnect = sg.Window('Connect to IMU', imuConnectLayout, element_justification='center',
-                                          modal=True)
-
-        while True:
-            event, values = self.windowImuConnect.read()
-
-            if event in [sg.WIN_CLOSED, 'None']:
-                # On window close.
-                break
-            elif event == '-BUTTON-COM-REFRESH-':
-                # On refresh available COM ports clicked.
-                self.refreshComPorts()
-            elif event == '-COMBO-COM-PORT-':
-                # On COM port changed.
-                self.imu.comPort = values['-COMBO-COM-PORT-']
-            elif event == '-COMBO-BAUD-RATE-':
-                # On baud rate changed.
-                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
-            elif event == '-BUTTON-IMU-CONNECT-':
-                # On connect button clicked.
-                self.imu.connect()
-                if self.imu.isConnected:
-                    break
-
-        self.updateMenus()
-        self.windowImuConnect.close()
-
     def updateFrame(self):
         """
         Updates the display with a new frame, if enableDisplay is True. If enableRecording is True then a frame, and
@@ -367,7 +315,7 @@ class DataCaptureDisplay:
         Args:
             azimuth (int): Azimuth angle in degrees.
         """
-        fig = Figure(figsize=(5, 5), dpi=100)
+        fig = Figure(figsize=(4, 4), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
         fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
         self.ax.set_position((0, 0, 1, 1))
@@ -436,6 +384,59 @@ class DataCaptureDisplay:
         self.availableComPorts = IMU.availableComPorts()
         # Set elements
         self.windowImuConnect['-COMBO-COM-PORT-'].update(values=self.availableComPorts)
+
+    def showImuConnectWindow(self):
+        """
+        Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
+        can refresh available COM ports, select a COM port, and select a baud rate from this window. When the CONNECT
+        button is clicked an attempt is made to open the requested COM port at the specified baud rate.
+
+        When the COM port and baud rate are changed from the combo boxes, the self.imu variable has its properties
+        modified immediately (self.imu.comPort, self.imu.baudrate). If CONNECT is clicked while the COM port box is
+        empty (post refresh), the currently stored self.imu.comPort will be used.
+
+        The window will close if there is a successful connection to the COM port. There is no test to see if the
+        port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
+        are being updated in the main GUI.
+        """
+        imuConnectLayout = [
+            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+                       image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
+             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True, default_value=self.imu.comPort, pad=((0, 0), (20, 0))),
+             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (20, 0))),
+             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
+                      enable_events=True, readonly=True, default_value=self.imu.baudRate, pad=((0, 0), (20, 0)))],
+            [sg.HSeparator(pad=((10, 10), (20, 20)))],
+            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
+        ]
+
+        self.windowImuConnect = sg.Window('Connect to IMU', imuConnectLayout, element_justification='center',
+                                          modal=True)
+
+        while True:
+            event, values = self.windowImuConnect.read()
+
+            if event in [sg.WIN_CLOSED, 'None']:
+                # On window close.
+                break
+            elif event == '-BUTTON-COM-REFRESH-':
+                # On refresh available COM ports clicked.
+                self.refreshComPorts()
+            elif event == '-COMBO-COM-PORT-':
+                # On COM port changed.
+                self.imu.comPort = values['-COMBO-COM-PORT-']
+            elif event == '-COMBO-BAUD-RATE-':
+                # On baud rate changed.
+                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
+            elif event == '-BUTTON-IMU-CONNECT-':
+                # On connect button clicked.
+                self.imu.connect()
+                if self.imu.isConnected:
+                    break
+
+        self.updateMenus()
+        self.windowImuConnect.close()
 
     def updateMenus(self):
         """
