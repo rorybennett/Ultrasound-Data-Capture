@@ -189,6 +189,19 @@ class DataCaptureDisplay:
             fps = int(1 / et) if et > 70 else '70+'
             self.windowMain['-TEXT-FRAME-RATE-'].update(f'{fps}')
 
+    def updateMenu(self):
+        """
+        Helper function that updates the main window's menu based on the current states of the self.frameGrabber and
+        self.imu objects. Each menu has items that are either enabled or disable based on these two objects, and it is
+        possible to mix and match the two.
+        """
+        # Signal Source menu.
+        menuSignal = [m.menuSignalConnected if self.frameGrabber.isConnected else m.menuSignalDisconnected]
+        # IMU menu.
+        menuImu = [m.menuImuConnected if self.imu.isConnected else m.menuImuDisconnected]
+        # Set elements.
+        self.windowMain['-MENU-'].update(menu_definition=[menuSignal, menuImu])
+
     def showImuConnectWindow(self):
         """
         Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
