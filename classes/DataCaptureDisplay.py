@@ -3,7 +3,7 @@ from classes import IMU
 from classes import FrameGrabber
 import styling as st
 import constants as c
-import menus as m
+from classes import Menus
 
 import PySimpleGUI as sg
 from datetime import datetime as dt
@@ -14,6 +14,8 @@ class DataCaptureDisplay:
     def __init__(self):
         # Create initial directories for storing data.
         self.singleFramesPath, self.videosPath = ut.createInitialDirectories()
+        # Menu object.
+        self.menu = Menus()
         # Record state of the program.
         self.enableRecording = False
         # Directory where recorded frames are stored.
@@ -112,7 +114,7 @@ class DataCaptureDisplay:
             [sg.HSep(pad=((0, 10), (10, 20)))]
         ]
 
-        layout = [[sg.Menu(key='-MENU-', menu_definition=[m.menuSignalDisconnected, m.menuImuDisconnected]),
+        layout = [[sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
                    sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
                    sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
 
@@ -441,15 +443,11 @@ class DataCaptureDisplay:
     def updateMenus(self):
         """
         Helper function that updates the main window's menu based on the current states of the self.frameGrabber and
-        self.imu objects. Each menu has items that are either enabled or disable based on these two objects, and it is
-        possible to mix and match the two.
+        self.imu objects.
         """
-        # Signal Source menu.
-        menuSignal = m.menuSignalConnected if self.frameGrabber.isConnected else m.menuSignalDisconnected
-        # IMU menu.
-        menuImu = m.menuImuConnected if self.imu.isConnected else m.menuImuDisconnected
         # Set elements.
-        self.windowMain['-MENU-'].update(menu_definition=[menuSignal, menuImu])
+        self.windowMain['-MENU-'].update(
+            menu_definition=self.menu.getMenu(self.frameGrabber.isConnected, self.imu.isConnected))
 
     def close(self):
         """
