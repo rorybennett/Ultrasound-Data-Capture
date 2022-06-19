@@ -3,7 +3,7 @@ from classes import IMU
 from classes import FrameGrabber
 import styling as st
 import constants as c
-from classes import Menus
+from classes import Menu
 
 import PySimpleGUI as sg
 from datetime import datetime as dt
@@ -15,7 +15,7 @@ class DataCaptureDisplay:
         # Create initial directories for storing data.
         self.singleFramesPath, self.videosPath = ut.createInitialDirectories()
         # Menu object.
-        self.menu = Menus()
+        self.menu = Menu.Menu()
         # Record state of the program.
         self.enableRecording = False
         # Directory where recorded frames are stored.
