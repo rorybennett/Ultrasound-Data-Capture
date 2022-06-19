@@ -1,7 +1,9 @@
+"""
+Main class for capturing frames from the output of an ultrasound scanner and adding IMU orientation data to the frames.
+"""
 import utils as ut
 from classes import IMU
 from classes import FrameGrabber
-import styling as st
 import constants as c
 from classes import Menu
 from classes import Layout
