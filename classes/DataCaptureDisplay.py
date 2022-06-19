@@ -4,6 +4,7 @@ from classes import FrameGrabber
 import styling as st
 import constants as c
 from classes import Menu
+from classes import Layout
 
 import PySimpleGUI as sg
 from datetime import datetime as dt
@@ -16,6 +17,8 @@ class DataCaptureDisplay:
         self.singleFramesPath, self.videosPath = ut.createInitialDirectories()
         # Menu object.
         self.menu = Menu.Menu()
+        # Layout object.
+        self.layout = Layout.Layout(self.menu)
         # Record state of the program.
         self.enableRecording = False
         # Directory where recorded frames are stored.
@@ -51,74 +54,11 @@ class DataCaptureDisplay:
         # IMU connect window
         self.windowImuConnect = None
 
-        # Create overall layout.
-        self.layout = self.createLayout()
-
-        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout, finalize=True)
+        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getMainWindowLayout(), finalize=True)
 
         self.createPlot(c.DEFAULT_AZIMUTH)
 
         self.run()
-
-    def createLayout(self):
-        """
-        Create the layout for the program.
-
-        Returns:
-            layout (list): 2D list used by PySimpleGUI as the layout format.
-        """
-        videoControlsLayout1 = [
-            [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (20, 0)), disabled=True)],
-            [sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (20, 0)), disabled=True)]
-        ]
-
-        videoControlsLayout2 = [
-            [sg.Text(text='Estimated Frame Rate: ', justification='right', font=st.DESC_FONT),
-             sg.Text(key='-TEXT-FRAME-RATE-', text='0', justification='left', font=st.DESC_FONT,
-                     size=(4, 1))]
-        ]
-
-        displayColumnLayout = [
-            [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000')],
-            [sg.Text(text=f'Display Dimensions: {c.DEFAULT_DISPLAY_DIMENSIONS}.', font=st.DESC_FONT,
-                     justification='left', expand_x=True),
-             sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.DESC_FONT)],
-            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (10, 0)))],
-            [sg.HSep(pad=((10, 0), (10, 20)))],
-            [sg.Text('Video Signal Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
-                     pad=((0, 0), (0, 20)))],
-            [sg.Column(videoControlsLayout1, element_justification='center', expand_x=True),
-             sg.Column(videoControlsLayout2, element_justification='center', expand_x=True)]
-
-        ]
-
-        imuColumnLayout = [
-            [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
-            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (12, 0)))],
-            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
-                       orientation='h', enable_events=True)],
-            [sg.Text('Acceleration values:', font=st.DESC_FONT, pad=((0, 0), (12, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (12, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (12, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (12, 0)))],
-            [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (10, 0)))],
-            [sg.HSep(pad=((0, 10), (10, 20)))]
-        ]
-
-        layout = [[sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
-                   sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
-                   sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
-
-        return layout
 
     def run(self):
         """
@@ -401,20 +341,10 @@ class DataCaptureDisplay:
         port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
         are being updated in the main GUI.
         """
-        imuConnectLayout = [
-            [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-                       image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
-             sg.Combo(key='-COMBO-COM-PORT-', values=self.availableComPorts, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.comPort, pad=((0, 0), (20, 0))),
-             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (20, 0))),
-             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.COMBO_FONT,
-                      enable_events=True, readonly=True, default_value=self.imu.baudRate, pad=((0, 0), (20, 0)))],
-            [sg.HSeparator(pad=((10, 10), (20, 20)))],
-            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
-        ]
-
-        self.windowImuConnect = sg.Window('Connect to IMU', imuConnectLayout, element_justification='center',
-                                          modal=True)
+        self.windowImuConnect = sg.Window('Connect to IMU',
+                                          self.layout.getImuWindowLayout(self.availableComPorts, self.imu.comPort,
+                                                                         self.imu.baudRate),
+                                          element_justification='center', modal=True)
 
         while True:
             event, values = self.windowImuConnect.read()
