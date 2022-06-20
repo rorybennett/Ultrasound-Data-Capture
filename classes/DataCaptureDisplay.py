@@ -231,7 +231,6 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(
             button_color='#ff2121' if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
-        self.windowMain['-COMBO-SIGNAL-SOURCE-'].update(disabled=True if self.enableRecording else False)
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
     def setSignalDimensions(self, dimensions):
