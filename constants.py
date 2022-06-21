@@ -38,7 +38,8 @@ IMU_RATE_OPTIONS = [
     "10Hz",
     "20Hz",
     "50Hz",
-    "100Hz"
+    "100Hz",
+    "200Hz"
 ]
 
 # Number of available video sources. It is highly unlikely that more than 5 sources will be present, but if there are

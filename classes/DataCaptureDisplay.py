@@ -64,7 +64,7 @@ class DataCaptureDisplay:
 
     def run(self):
         """
-        Main loop for displaying the GUI and reacting to events, in standard PySimpleGUI fashion.
+        Main loop/thread for displaying the GUI and reacting to events, in standard PySimpleGUI fashion.
 
         todo if timeout not set the program waits for an event. This may be how to do the threading. If display is
         enabled, attempt to fetch a frame and resize it, then call an event to display the resized frame all with
@@ -79,7 +79,7 @@ class DataCaptureDisplay:
             if self.enablePlotting:
                 self.updatePlot()
 
-            event, values = self.windowMain.read(timeout=0)
+            event, values = self.windowMain.read(timeout=1)
 
             if event in [sg.WIN_CLOSED, 'None']:
                 # On window close clicked.
@@ -133,7 +133,8 @@ class DataCaptureDisplay:
             # Frame rate estimate.
             self.fpsCalc2 = dt.now().timestamp()
             et = self.fpsCalc2 - self.fpsCalc1
-            fps = int(1 / et) if et > 70 else '70+'
+            fps = int(1 / et) if et > 0.00999 else '100+'
+
             self.windowMain['-TEXT-FRAME-RATE-'].update(f'{fps}')
 
     def updateFrame(self):
