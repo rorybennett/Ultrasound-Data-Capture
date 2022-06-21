@@ -109,25 +109,23 @@ class DataCaptureDisplay:
                 # Calibrate the IMU acceleration values.
                 self.imu.calibrateAcceleration()
 
+            # Signal Display Events.
             if event == '-BUTTON-DISPLAY-TOGGLE-':
+                # Toggle display.
                 self.toggleDisplay()
-
-            if event == '-COMBO-SIGNAL-SOURCE-':
-                self.setSignalSourceAndConnect(int(values['-COMBO-SIGNAL-SOURCE-']))
-
-            if event == '-BUTTON-SNAPSHOT-':
+            elif event == '-BUTTON-SNAPSHOT-':
+                # Capture single frame.
                 self.saveSingleFrame = True
-
-            if event == '-BUTTON-RECORD-TOGGLE-':
+            elif event == '-BUTTON-RECORD-TOGGLE-':
+                # Toggle recording.
                 self.toggleRecording()
 
-            if event == '-COMBO-SIGNAL-DIMENSIONS-':
-                self.setSignalDimensions(values['-COMBO-SIGNAL-DIMENSIONS-'][0])
-
+            # IMU Display Events.
             if event == '-SLIDER-AZIMUTH-':
+                # Change azimuth.
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
-
-            if event == '-BUTTON-PLOT-TOGGLE-':
+            elif event == '-BUTTON-PLOT-TOGGLE-':
+                # Toggle plotting.
                 self.togglePlotting()
 
             # Frame rate estimate.
