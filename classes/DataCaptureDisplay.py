@@ -46,9 +46,6 @@ class DataCaptureDisplay:
         self.saveSingleFrame = False
         # Counter for labelling frame number in a recording.
         self.frameGrabCounter = 0
-        # Time variables used to estimate frame rate of program.
-        self.fpsCalc1 = dt.now().timestamp()
-        self.fpsCalc2 = dt.now().timestamp()
         # IMU object instantiated with default values.
         self.imu = IMU.IMU()
         # Display FrameGrabber results.
@@ -84,7 +81,7 @@ class DataCaptureDisplay:
         a timeout not set.
         """
         while True:
-            self.fpsCalc1 = dt.now().timestamp()
+            guiFps1 = dt.now().timestamp()
             # Update the image display. Check if frameGrabber is connected before fetching frame.
             if self.frameGrabber.isConnected:
                 self.updateFrame()
@@ -142,11 +139,11 @@ class DataCaptureDisplay:
                 self.togglePlotting()
 
             # Frame rate estimate.
-            self.fpsCalc2 = dt.now().timestamp()
-            et = self.fpsCalc2 - self.fpsCalc1
-            fps = int(1 / et) if et > 0.00999 else '100+'
+            guiFps2 = dt.now().timestamp()
+            guiDt = guiFps2 - guiFps1
+            guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
-            self.windowMain['-TEXT-FRAME-RATE-'].update(f'{fps}')
+            self.windowMain['-TEXT-SIGNAL-RATE-'].update(f'{guiFps}')
 
     def updateFrame(self):
         """

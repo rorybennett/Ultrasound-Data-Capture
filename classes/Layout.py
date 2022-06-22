@@ -28,8 +28,11 @@ class Layout:
         ]
 
         videoControlsLayout2 = [
-            [sg.Text(text='Estimated Frame Rate: ', justification='right', font=st.DESC_FONT),
-             sg.Text(key='-TEXT-FRAME-RATE-', text='0', justification='left', font=st.DESC_FONT,
+            [sg.Text(text='GUI Frame Rate: ', justification='right', font=st.DESC_FONT),
+             sg.Text(key='-TEXT-GUI-RATE-', text='0', justification='left', font=st.DESC_FONT,
+                     size=(4, 1))],
+            [sg.Text(text='Signal Frame Rate: ', justification='right', font=st.DESC_FONT),
+             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='left', font=st.DESC_FONT,
                      size=(4, 1))]
         ]
 
