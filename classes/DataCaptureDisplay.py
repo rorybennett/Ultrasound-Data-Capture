@@ -11,6 +11,7 @@ from classes import Layout
 import PySimpleGUI as sg
 from datetime import datetime as dt
 from matplotlib.figure import Figure
+import threading
 
 """
 todo: Change implementation to have a global frame variable and constant window update rate.
@@ -62,6 +63,11 @@ class DataCaptureDisplay:
         self.lineData = None
         self.fig_agg = None
         self.bg = None
+        # Threading variables.
+        self.threadGetFrames = None
+        self.threadResizeFrames = None
+        self.frameRaw = None
+        self.frameRawNew = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -83,8 +89,8 @@ class DataCaptureDisplay:
         while True:
             guiFps1 = dt.now().timestamp()
             # Update the image display. Check if frameGrabber is connected before fetching frame.
-            if self.frameGrabber.isConnected:
-                self.updateFrame()
+            # if self.frameGrabber.isConnected:
+            #     self.updateFrame()
             # Update the plot.
             if self.enablePlotting:
                 self.updatePlot()
@@ -138,43 +144,88 @@ class DataCaptureDisplay:
                 # Toggle plotting.
                 self.togglePlotting()
 
-            # Frame rate estimate.
+            # Thread events.
+            if event == '-THREAD-SIGNAL-RATE-':
+                self.windowMain['-TEXT-SIGNAL-RATE-'].update(f'{values[event]}')
+            if event == '-THREAD-RESIZED-FRAME-':
+                self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
+
+            # GUI frame rate estimate.
             guiFps2 = dt.now().timestamp()
             guiDt = guiFps2 - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
-            self.windowMain['-TEXT-SIGNAL-RATE-'].update(f'{guiFps}')
+            self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
 
-    def updateFrame(self):
-        """
-        Updates the display with a new frame, if enableDisplay is True. If enableRecording is True then a frame, and
-        associated IMU data is saved into the correct directory. If saveSingleFrame is True then a single frame is
-        stored in the correct directory.
-        """
-        res, frame = self.frameGrabber.getFrame()
-        acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-        quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
-        # Check if a frame has been returned.
-        if res:
-            # Record frames?
-            if self.enableRecording:
-                frameName = f'{self.frameGrabCounter}-{int(dt.now().timestamp() * 1000)}'
-                self.record(frameName, frame, acceleration, quaternion)
-                self.frameGrabCounter += 1
+    def getFramesThread(self):
+        print('Thread starting up: getFramesThread.')
+        while self.frameGrabber.isConnected:
+            signalFps1 = dt.now().timestamp()
 
-            # Save a single frame?
-            if self.saveSingleFrame:
-                # Only save one frame.
-                self.saveSingleFrame = False
-                frameName = f'{int(dt.now().timestamp() * 1000)}.png'
-                ut.saveSingleFrame(frame,
-                                   f'{self.singleFramesPath}\\{frameName}')
+            res, frame = self.frameGrabber.getFrame()
 
-            # Check if the display should be updated.
-            if self.enableDisplay:
-                resizedFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
+            if res:
+                self.frameRaw = frame
+                acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+                quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
+                self.frameRawNew = True
+
+            # Signal frame rate estimate.
+            signalFps2 = dt.now().timestamp()
+            signalDt = signalFps2 - signalFps1
+            signalFps = int(1 / signalDt) if signalDt > 0.00999 else '100+'
+            self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
+
+        print('Thread closing down: getFramesThread.')
+
+    def resizeFramesThread(self):
+        print('Thread starting up: resizeFramesThread.')
+        while self.frameGrabber.isConnected:
+            if self.frameRawNew and self.enableDisplay:
+                resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS)
                 frameBytes = ut.frameToBytes(resizedFrame)
-                self.windowMain['-IMAGE-FRAME-'].update(data=frameBytes)
+                self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-', value=frameBytes)
+                self.frameRawNew = False
+        print('Thread closing down: resizeFramesThread.')
+
+    def toggleFrameThreads(self):
+        if self.frameGrabber.isConnected:
+            self.threadGetFrames = threading.Thread(target=self.getFramesThread).start()
+            self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread).start()
+        else:
+            self.threadGetFrames.join()
+            self.threadResizeFrames.join()
+
+    # def updateFrame(self):
+    #     """
+    #     Updates the display with a new frame, if enableDisplay is True. If enableRecording is True then a frame, and
+    #     associated IMU data is saved into the correct directory. If saveSingleFrame is True then a single frame is
+    #     stored in the correct directory.
+    #     """
+    #     res, frame = self.frameGrabber.getFrame()
+    #     acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+    #     quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
+    #     # Check if a frame has been returned.
+    #     if res:
+    #         # Record frames?
+    #         if self.enableRecording:
+    #             frameName = f'{self.frameGrabCounter}-{int(dt.now().timestamp() * 1000)}'
+    #             self.record(frameName, frame, acceleration, quaternion)
+    #             self.frameGrabCounter += 1
+    #
+    #         # Save a single frame?
+    #         if self.saveSingleFrame:
+    #             # Only save one frame.
+    #             self.saveSingleFrame = False
+    #             frameName = f'{int(dt.now().timestamp() * 1000)}.png'
+    #             ut.saveSingleFrame(frame,
+    #                                f'{self.singleFramesPath}\\{frameName}')
+    #
+    #         # Check if the display should be updated.
+    #         if self.enableDisplay:
+    #             resizedFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
+    #             frameBytes = ut.frameToBytes(resizedFrame)
+    #             self.windowMain['-IMAGE-FRAME-'].update(data=frameBytes)
 
     def record(self, frameName, frame, acceleration, quaternion):
         """
@@ -216,6 +267,8 @@ class DataCaptureDisplay:
         self.frameGrabber.signalSource = signalSource
         # Attempt to connect to source (internally disconnect if currently connected).
         self.frameGrabber.connect()
+        # Start frame threads.
+        self.toggleFrameThreads()
         # Update menus.
         self.updateMenus()
         # Set element states.
