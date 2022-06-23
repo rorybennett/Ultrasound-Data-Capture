@@ -9,7 +9,7 @@ from classes import Menu
 from classes import Layout
 
 import PySimpleGUI as sg
-from datetime import datetime as dt
+import time
 from matplotlib.figure import Figure
 import threading
 
@@ -87,7 +87,7 @@ class DataCaptureDisplay:
         a timeout not set.
         """
         while True:
-            guiFps1 = dt.now().timestamp()
+            guiFps1 = time.time()
             # Update the image display. Check if frameGrabber is connected before fetching frame.
             # if self.frameGrabber.isConnected:
             #     self.updateFrame()
@@ -151,7 +151,7 @@ class DataCaptureDisplay:
                 self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
             # GUI frame rate estimate.
-            guiFps2 = dt.now().timestamp()
+            guiFps2 = time.time()
             guiDt = guiFps2 - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
@@ -159,24 +159,29 @@ class DataCaptureDisplay:
 
     def getFramesThread(self):
         print('Thread starting up: getFramesThread.')
-        while self.frameGrabber.isConnected:
-            signalFps1 = dt.now().timestamp()
+        frame_rates = []
+        while True:
+
+            if not self.frameGrabber.isConnected:
+                break
+            signalFps1 = time.time()
 
             res, frame = self.frameGrabber.getFrame()
 
-            if res:
-                self.frameRaw = frame
-                acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-                quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
-                self.frameRawNew = True
+            # if res:
+            #     self.frameRaw = frame
+            #     acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+            #     quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
+            #     self.frameRawNew = True
 
             # Signal frame rate estimate.
-            signalFps2 = dt.now().timestamp()
+            signalFps2 = time.time()
             signalDt = signalFps2 - signalFps1
-            signalFps = int(1 / signalDt) if signalDt > 0.00999 else '100+'
+            signalFps = int(1/signalDt) if signalDt != 0 else 100
+            frame_rates.append(signalFps)
             self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
 
-        print('Thread closing down: getFramesThread.')
+        print(f'Thread closing down: getFramesThread. Average fps: {sum(frame_rates)/len(frame_rates)}')
 
     def resizeFramesThread(self):
         print('Thread starting up: resizeFramesThread.')
@@ -191,10 +196,10 @@ class DataCaptureDisplay:
     def toggleFrameThreads(self):
         if self.frameGrabber.isConnected:
             self.threadGetFrames = threading.Thread(target=self.getFramesThread).start()
-            self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread).start()
+            # self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread).start()
         else:
             self.threadGetFrames.join()
-            self.threadResizeFrames.join()
+            # self.threadResizeFrames.join()
 
     # def updateFrame(self):
     #     """
