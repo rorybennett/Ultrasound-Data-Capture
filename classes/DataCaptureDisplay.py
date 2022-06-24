@@ -243,11 +243,9 @@ class DataCaptureDisplay:
 
     def toggleFrameThreads(self):
         if self.frameGrabber.isConnected:
-            self.threadGetFrames = threading.Thread(target=self.getFramesThread)
-            self.threadGetFrames.daemon = True
+            self.threadGetFrames = threading.Thread(target=self.getFramesThread, daemon=True)
             self.threadGetFrames.start()
-            self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread)
-            self.threadResizeFrames.daemon = True
+            self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread, daemon=True)
             self.threadResizeFrames.start()
         else:
             pass
