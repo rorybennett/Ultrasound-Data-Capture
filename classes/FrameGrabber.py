@@ -76,7 +76,7 @@ class FrameGrabber:
             print(f'Error connecting to source: {e}')
 
     def disconnect(self):
-        """"
+        """
         Function to disconnect signal source. This releases the self.vid device and sets the self.isConnected
         variable to False, so no new frames are read.
         """
