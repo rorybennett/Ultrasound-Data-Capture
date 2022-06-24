@@ -103,7 +103,6 @@ class DataCaptureDisplay:
                 # Disconnect from current source.
                 self.frameGrabber.disconnect()
                 self.updateMenus()
-                self.toggleFrameThreads()
             elif event.endswith('::-MENU-SIGNAL-DIMENSIONS-'):
                 # Change signal dimensions.
                 self.setSignalDimensions(event.split('::')[0])
@@ -241,13 +240,6 @@ class DataCaptureDisplay:
               'resizeFramesThread.\n-------------------------------------------')
         self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=0)
 
-    def toggleFrameThreads(self):
-        if self.frameGrabber.isConnected:
-            self.threadGetFrames = threading.Thread(target=self.getFramesThread, daemon=True)
-            self.threadGetFrames.start()
-            self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread, daemon=True)
-            self.threadResizeFrames.start()
-
     # def updateFrame(self):
     #     """
     #     Updates the display with a new frame, if enableDisplay is True. If enableRecording is True then a frame, and
@@ -320,7 +312,10 @@ class DataCaptureDisplay:
         # Attempt to connect to source (internally disconnect if currently connected).
         self.frameGrabber.connect()
         # Start frame threads.
-        self.toggleFrameThreads()
+        self.threadGetFrames = threading.Thread(target=self.getFramesThread, daemon=True)
+        self.threadGetFrames.start()
+        self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread, daemon=True)
+        self.threadResizeFrames.start()
         # Update menus.
         self.updateMenus()
         # Set element states.
