@@ -33,6 +33,9 @@ class Layout:
                      size=(4, 1))],
             [sg.Text(text='Signal Frame Rate: ', justification='right', font=st.DESC_FONT),
              sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='left', font=st.DESC_FONT,
+                     size=(4, 1))],
+            [sg.Text(text='Resize Frame Rate: ', justification='right', font=st.DESC_FONT),
+             sg.Text(key='-TEXT-RESIZE-RATE-', text='0', justification='left', font=st.DESC_FONT,
                      size=(4, 1))]
         ]
 
