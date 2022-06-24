@@ -55,8 +55,7 @@ class Menu:
                                                  ]
                                ]
         else:
-            self.signalMenu = ['Signal Source', ['Change Source',
-                                                 [f'{i}::-MENU-SIGNAL-CONNECT-' for i in range(0, c.SIGNAL_SOURCES)],
+            self.signalMenu = ['Signal Source', ['Disconnect from Source::-MENU-SIGNAL-DISCONNECT-',
                                                  '---',
                                                  'Change Signal Dimensions',
                                                  [f'{i[0]}::-MENU-SIGNAL-DIMENSIONS-' for i in

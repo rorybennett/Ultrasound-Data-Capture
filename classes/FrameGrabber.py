@@ -51,19 +51,14 @@ class FrameGrabber:
 
     def connect(self):
         """
-        Attempt to create a VideoCapture object. If the object is already connected, disconnect it and connect it again.
+        Attempt to create a VideoCapture object. First attempt to disconnect the object using self.disconnect().
         If the object is successfully created the MJPG codec is used and the dimensions and frame rate are set
         (via the setProperties() method). At a future date the codec may need to be changed to improve performance
         (frame rate).
         """
         try:
-            print(f'Checking if FrameGrabber is already open...')
-            if self.isConnected:
-                print(f'{self.isConnected}. Attempting to release current source...')
-                self.vid.release()
-                self.isConnected = False
-            else:
-                print(f'{self.isConnected}. No previous connection open.')
+            # Disconnect.
+            self.disconnect()
 
             print(
                 f'Attempting to connect to source: {self.signalSource}, with dimensions: {self.width}x{self.height}...')
@@ -79,6 +74,18 @@ class FrameGrabber:
             self.setGrabberProperties(self.width, self.height, self.fps)
         except Exception as e:
             print(f'Error connecting to source: {e}')
+
+    def disconnect(self):
+        """"
+        Function to disconnect signal source. This releases the self.vid device and sets the self.isConnected
+        variable to False, so no new frames are read.
+        """
+        print(f'Attempting to disconnected from source: {self.signalSource}.')
+        if self.isConnected:
+            print(f'{self.isConnected}. Attempting to release current source...')
+            self.vid.release()
+            self.isConnected = False
+            print(f'Source {self.signalSource} has been released.')
 
     def setGrabberProperties(self, width, height, fps=100) -> bool:
         """

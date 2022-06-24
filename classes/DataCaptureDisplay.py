@@ -16,14 +16,7 @@ import threading
 """
 todo: Change implementation to have a global frame variable and constant window update rate.
 
-Place frame collection on separate thread, with another thread for frame resizing. 2 global booleans, one for new frame
-available, and one for new resized frame available.
-
-Requires:   Global frame variable
-            Global resizedFrame
-            Global newFrameAvailable boolean. Used to tell the resizing thread that a new frame is ready.
-            Global newResizedFrameAvailable. Used to tell the main thread that a new resized frame is ready to be
-            displayed.
+todo: Make method to disconnect frameGrabber without needing to delete it. 
 """
 
 
@@ -106,6 +99,11 @@ class DataCaptureDisplay:
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
                 # Connect to signal source.
                 self.setSignalSourceAndConnect(int(event.split('::')[0]))
+            elif event.endswith('::-MENU-SIGNAL-DISCONNECT-'):
+                # Disconnect from current source.
+                self.frameGrabber.disconnect()
+                self.updateMenus()
+                self.toggleFrameThreads()
             elif event.endswith('::-MENU-SIGNAL-DIMENSIONS-'):
                 # Change signal dimensions.
                 self.setSignalDimensions(event.split('::')[0])
@@ -161,7 +159,6 @@ class DataCaptureDisplay:
         print('Thread starting up: getFramesThread.')
         frame_rates = []
         while True:
-
             if not self.frameGrabber.isConnected:
                 break
             signalFps1 = time.time()
@@ -195,11 +192,11 @@ class DataCaptureDisplay:
 
     def toggleFrameThreads(self):
         if self.frameGrabber.isConnected:
-            self.threadGetFrames = threading.Thread(target=self.getFramesThread).start()
+            self.threadGetFrames = threading.Thread(target=self.getFramesThread)
+            self.threadGetFrames.start()
             # self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread).start()
         else:
-            self.threadGetFrames.join()
-            # self.threadResizeFrames.join()
+            pass
 
     # def updateFrame(self):
     #     """
