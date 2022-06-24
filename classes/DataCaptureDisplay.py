@@ -149,12 +149,16 @@ class DataCaptureDisplay:
 
             # Thread events.
             if event == '-THREAD-SIGNAL-RATE-':
+                # Signal rate update.
                 self.windowMain['-TEXT-SIGNAL-RATE-'].update(f'{values[event]}')
             elif event == '-THREAD-RESIZE-RATE-':
+                # Resize rate update.
                 self.windowMain['-TEXT-RESIZE-RATE-'].update(f'{values[event]}')
             elif event == '-THREAD-FRAMES-SAVED-':
+                # Frames saved update.
                 self.windowMain['-TEXT-FRAMES-SAVED-'].update(f'{values[event]}')
             elif event == '-THREAD-RESIZED-FRAME-':
+                # Resized frame available.
                 self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
             # GUI frame rate estimate.
@@ -273,7 +277,7 @@ class DataCaptureDisplay:
                 self.frameGrabCounter += 1
                 self.windowMain.write_event_value(key='-THREAD-FRAMES-SAVED-', value=self.frameGrabCounter)
 
-            # When not recording the empty while loop causes issues with the controlling process.
+            # When not recording the empty while loop causes issues for the controlling process.
             time.sleep(0.001)
 
         print('-------------------------------------------\nThread closing down: '
