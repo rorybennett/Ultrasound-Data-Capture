@@ -140,6 +140,7 @@ def resizeFrame(frame, newDimensions) -> Image:
     """
     Resize the given frame to the given dimensions. This is used to make the returned frame fit in the display box, and
     may result in some distortion if the video signal does not match the DEFAULT_DISPLAY_DIMENSIONS' aspect ratio.
+    The interpolation method used is cv2.INTER_NEAREST, which preliminary tests show to be the fastest.
 
     Args:
         frame (Image): A CV2 image.
@@ -150,7 +151,7 @@ def resizeFrame(frame, newDimensions) -> Image:
 
     """
 
-    resizedFrame = cv2.resize(frame, newDimensions)
+    resizedFrame = cv2.resize(frame, newDimensions, interpolation=cv2.INTER_NEAREST)
     return resizedFrame
 
 
