@@ -247,8 +247,6 @@ class DataCaptureDisplay:
             self.threadGetFrames.start()
             self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread, daemon=True)
             self.threadResizeFrames.start()
-        else:
-            pass
 
     # def updateFrame(self):
     #     """
