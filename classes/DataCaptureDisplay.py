@@ -171,6 +171,8 @@ class DataCaptureDisplay:
         and its associated IMU values, but for now it should be accurate enough. Threads seem to cause trouble
         if the while loop does nothing.
 
+        if self.enableRecording is True, the current frame will be saved with the IMU data available.
+
         If self.enableDisplay is True, the new frame will be resized and displayed in the main GUI.
 
         This thread will run as long as the self.frameGrabber object is connected to a signal source. On disconnect
@@ -247,6 +249,17 @@ class DataCaptureDisplay:
         self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=0)
 
     def saveFramesThread(self):
+        """
+        Thread for recording frames and IMU data as a series of frames. The getFramesThread checks if recording is
+        enabled, if it is then the getFramesThread sets the self.saveFrame variable to True. When the self.saveFrame
+        variable is True in the saveFramesThread the frame and IMU data is recorded. The IMU data will most
+        likely be out of sync with the frames, but only marginally.
+
+        This thread will run as long as the self.frameGrabber object is connected to a signal source, but will only
+        save a frame if the self.saveFrame variable is set to True in the getFramesThread. On disconnect
+        of the signal source the thread will be closed. Joining the thread to the parent thread does not seem
+        to be necessary.
+        """
         print('Thread starting up: saveFramesThread.')
         while True:
             # End thread if frameGrabber not connected.
@@ -324,11 +337,11 @@ class DataCaptureDisplay:
     def toggleRecording(self):
         self.enableRecording = not self.enableRecording
         print(f'Enable Recording: {self.enableRecording}')
-        self.frameGrabCounter = 0
         # Create video directory for saving frames.
         if self.enableRecording:
             self.currentRecordingPath, self.currentDataFilePath = ut.createRecordingDirectory(self.videosPath)
             self.currentDataFile = open(self.currentDataFilePath, 'w')
+            self.frameGrabCounter = 0
         else:
             print(f'Closing data file {self.currentDataFilePath}...')
             self.currentDataFile.close()
