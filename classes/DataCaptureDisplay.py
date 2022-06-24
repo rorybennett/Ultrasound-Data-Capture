@@ -145,19 +145,32 @@ class DataCaptureDisplay:
             # Thread events.
             if event == '-THREAD-SIGNAL-RATE-':
                 self.windowMain['-TEXT-SIGNAL-RATE-'].update(f'{values[event]}')
-            if event == '-THREAD-RESIZED-FRAME-':
+            elif event == '-THREAD-RESIZE-RATE-':
+                self.windowMain['-TEXT-RESIZE-RATE-'].update(f'{values[event]}')
+            elif event == '-THREAD-RESIZED-FRAME-':
                 self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
             # GUI frame rate estimate.
-            guiFps2 = time.time()
-            guiDt = guiFps2 - guiFps1
+            guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
 
     def getFramesThread(self):
+        """
+        Thread for acquiring frames from FrameGrabber object. Removed from main thread to provide a more consistent
+        frame rate from the signal source. As soon as a frame is acquired from the FrameGrabber object the currently
+        stored IMU values are copied to local variables. This may result in a slight time delay between the frame
+        and its associated IMU values, but for now it should be accurate enough. Threads seem to cause trouble
+        if the while loop does nothing.
+
+        If self.enableDisplay is True, the new frame will be resized and displayed in the main GUI.
+
+        This thread will run as long as the self.frameGrabber object is connected to a signal source. On disconnect
+        of the signal source the thread will be closed. Joining the thread to the parent thread does not seem
+        to be necessary.
+        """
         print('Thread starting up: getFramesThread.')
-        frame_rates = []
         while True:
             if not self.frameGrabber.isConnected:
                 break
@@ -165,36 +178,77 @@ class DataCaptureDisplay:
 
             res, frame = self.frameGrabber.getFrame()
 
-            # if res:
-            #     self.frameRaw = frame
-            #     acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-            #     quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
-            #     self.frameRawNew = True
+            acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+            quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
+            # Successful frame read?
+            if res:
+                # Save a single frame?
+                if self.saveSingleFrame:
+                    # Only save one frame.
+                    self.saveSingleFrame = False
+                    frameName = f'{int(time.time() * 1000)}.png'
+                    ut.saveSingleFrame(frame,
+                                       f'{self.singleFramesPath}\\{frameName}')
+                # Display enabled?
+                if self.enableDisplay:
+                    self.frameRaw = frame
+                    self.frameRawNew = True
 
             # Signal frame rate estimate.
-            signalFps2 = time.time()
-            signalDt = signalFps2 - signalFps1
-            signalFps = int(1/signalDt) if signalDt != 0 else 100
-            frame_rates.append(signalFps)
+            signalDt = time.time() - signalFps1
+            signalFps = int(1 / signalDt) if signalDt != 0 else 100
+
             self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
 
-        print(f'Thread closing down: getFramesThread. Average fps: {sum(frame_rates)/len(frame_rates)}')
+        print('-------------------------------------------\nThread closing down: '
+              'getFramesThread.\n-------------------------------------------')
+        self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=0)
 
     def resizeFramesThread(self):
+        """
+        Thread for resizing a frame to be displayed in the GUI window. Removed from main thread to prevent blocking when
+        resizing the frame. This is quite CPU heavy and affects all return rates. This thread is limited in its
+        speed by the sleep call in the while loop. Currently, this thread is capped at 1/0.033=30Hz, any frames
+        that are received during this threads sleep time are skipped over and not displayed to the user. This
+        does not affect the saving of frames.
+
+
+        This thread will run as long as the self.frameGrabber object is connected to a signal source, but will only
+        resize a frame if the self.frameRawNew variable is set to True in the getFramesThread. On disconnect
+        of the signal source the thread will be closed. Joining the thread to the parent thread does not seem
+        to be necessary.
+        """
         print('Thread starting up: resizeFramesThread.')
-        while self.frameGrabber.isConnected:
-            if self.frameRawNew and self.enableDisplay:
+        while True:
+            if not self.frameGrabber.isConnected:
+                break
+            resizeFps1 = time.time()
+
+            if self.frameRawNew:
+                self.frameRawNew = False
                 resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS)
                 frameBytes = ut.frameToBytes(resizedFrame)
                 self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-', value=frameBytes)
-                self.frameRawNew = False
-        print('Thread closing down: resizeFramesThread.')
+
+            # Sleep thread.
+            time.sleep(0.03)
+            # Resize frame rate estimate.
+            resizeFpsDt = time.time() - resizeFps1
+            resizeFps = int(1 / resizeFpsDt)
+            self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=resizeFps)
+
+        print('-------------------------------------------\nThread closing down: '
+              'resizeFramesThread.\n-------------------------------------------')
+        self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=0)
 
     def toggleFrameThreads(self):
         if self.frameGrabber.isConnected:
             self.threadGetFrames = threading.Thread(target=self.getFramesThread)
+            self.threadGetFrames.daemon = True
             self.threadGetFrames.start()
-            # self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread).start()
+            self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread)
+            self.threadResizeFrames.daemon = True
+            self.threadResizeFrames.start()
         else:
             pass
 
