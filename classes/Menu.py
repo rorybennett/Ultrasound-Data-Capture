@@ -65,7 +65,7 @@ class Menu:
 
     def __generateImuMenu(self):
         """
-        Function for creating imu menus based on the connectino status of the IMU object. For controlling the
+        Function for creating imu menus based on the connection status of the IMU object. For controlling the
         connection to the IMU. if self.imuConnected:
 
         False (initial state):      Menu to show when the IMU is not connected. Since the IMU is not connected the
