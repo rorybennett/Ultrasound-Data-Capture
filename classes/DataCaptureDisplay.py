@@ -335,6 +335,9 @@ class DataCaptureDisplay:
             f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
     def toggleRecording(self):
+        """
+        Toggle whether recording is enabled or not. When in the recording state various elements are disabled.
+        """
         self.enableRecording = not self.enableRecording
         print(f'Enable Recording: {self.enableRecording}')
         # Create video directory for saving frames.
