@@ -59,8 +59,14 @@ class DataCaptureDisplay:
         # Threading variables.
         self.threadGetFrames = None
         self.threadResizeFrames = None
+        self.threadSaveFrames = None
+
         self.frameRaw = None
-        self.frameRawNew = False
+        self.acceleration = None
+        self.quaternion = None
+
+        self.resizeFrame = False
+        self.saveFrame = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -128,7 +134,7 @@ class DataCaptureDisplay:
                 self.toggleDisplay()
             elif event == '-BUTTON-SNAPSHOT-':
                 # Capture single frame.
-                self.saveSingleFrame = True
+                ut.saveSingleFrame(self.frameRaw, f'{self.singleFramesPath}\\{int(time.time() * 1000)}.png')
             elif event == '-BUTTON-RECORD-TOGGLE-':
                 # Toggle recording.
                 self.toggleRecording()
@@ -171,27 +177,24 @@ class DataCaptureDisplay:
         """
         print('Thread starting up: getFramesThread.')
         while True:
+            # End thread if frameGrabber not connected.
             if not self.frameGrabber.isConnected:
                 break
             signalFps1 = time.time()
 
-            res, frame = self.frameGrabber.getFrame()
+            res, self.frameRaw = self.frameGrabber.getFrame()
 
-            acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-            quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
+            self.acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+            self.quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
             # Successful frame read?
             if res:
-                # Save a single frame?
-                if self.saveSingleFrame:
-                    # Only save one frame.
-                    self.saveSingleFrame = False
-                    frameName = f'{int(time.time() * 1000)}.png'
-                    ut.saveSingleFrame(frame,
-                                       f'{self.singleFramesPath}\\{frameName}')
+                # Record frames?
+                if self.enableRecording:
+                    self.saveFrame = True
+
                 # Display enabled?
                 if self.enableDisplay:
-                    self.frameRaw = frame
-                    self.frameRawNew = True
+                    self.resizeFrame = True
 
             # Signal frame rate estimate.
             signalDt = time.time() - signalFps1
@@ -219,12 +222,13 @@ class DataCaptureDisplay:
         """
         print('Thread starting up: resizeFramesThread.')
         while True:
+            # End thread if frameGrabber not connected.
             if not self.frameGrabber.isConnected:
                 break
             resizeFps1 = time.time()
 
-            if self.frameRawNew:
-                self.frameRawNew = False
+            if self.resizeFrame:
+                self.resizeFrame = False
                 resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS)
                 frameBytes = ut.frameToBytes(resizedFrame)
                 self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-', value=frameBytes)
@@ -239,6 +243,22 @@ class DataCaptureDisplay:
         print('-------------------------------------------\nThread closing down: '
               'resizeFramesThread.\n-------------------------------------------')
         self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=0)
+
+    def saveFramesThread(self):
+        print('Thread starting up: saveFramesThread.')
+        while True:
+            # End thread if frameGrabber not connected.
+            if not self.frameGrabber.isConnected:
+                break
+
+            if self.saveFrame:
+                self.saveFrame = False
+                frameName = f'{self.frameGrabCounter}-{int(time.time() * 1000)}'
+                self.record(frameName, self.frameRaw, self.acceleration, self.quaternion)
+                self.frameGrabCounter += 1
+
+        print('-------------------------------------------\nThread closing down: '
+              'resizeFramesThread.\n-------------------------------------------')
 
     # def updateFrame(self):
     #     """
