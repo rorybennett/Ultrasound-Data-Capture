@@ -111,7 +111,11 @@ class DataCaptureDisplay:
                 self.updateMenus()
             elif event.endswith('::-MENU-SIGNAL-DIMENSIONS-'):
                 # Change signal dimensions.
-                self.setSignalDimensions(event.split('::')[0])
+                dimensions = event.split('::')[0].split('x')
+                self.frameGrabber.setGrabberProperties(width=int(dimensions[0]), height=int(dimensions[1]),
+                                                       fps=c.DEFAULT_FRAME_RATE)
+                self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
+                    f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
             # IMU menu events.
             if event.endswith('::-MENU-IMU-CONNECT-'):
@@ -360,22 +364,6 @@ class DataCaptureDisplay:
             button_color='#ff2121' if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
-
-    def setSignalDimensions(self, dimensions):
-        """
-        Attempt to set the dimensions of the video signal to the chosen dimensions. All tests are taken care of in the
-        FrameGrabber class, and the displayed signal dimensions are the only GUI element to be updated.
-
-        Args:
-            dimensions (str): Dimensions formatted as a string (width x height), sans white spaces.
-        """
-        dimensions = dimensions.split('x')
-        width = int(dimensions[0])
-        height = int(dimensions[1])
-        self.frameGrabber.setGrabberProperties(width=width, height=height, fps=c.DEFAULT_FRAME_RATE)
-        # Set element states.
-        self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
-            f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
     def createPlot(self, azimuth):
         """
