@@ -19,18 +19,45 @@ class Layout:
                             saving/recording frames.
         IMU:                Contains a display that shows the orientation of the IMU.
         """
-        videoControlsLayout1 = [
+        recordControls = [
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (20, 0)), disabled=True)],
-            [sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1),
-                       font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (20, 0)), disabled=True)]
+                       border_width=3, pad=((0, 20), (0, 0)), disabled=True),
+             sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (0, 0)), disabled=True)]
         ]
 
-        videoControlsLayout2 = [
-            [sg.Text(text='Frames saved: ', justification='right', font=st.DESC_FONT),
-             sg.Text(key='-TEXT-FRAMES-SAVED-', text='0', justification='left', font=st.DESC_FONT,
-                     size=(4, 1))]
+        displayControls = [
+            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (0, 0)))]
+        ]
+
+        recordStartColumn = [
+            [sg.Text(text='Record Start', font=st.DESC_FONT)],
+            [sg.Text(key='-TEXT-RECORD-START-', text='--:--:--', font=st.DESC_FONT, size=(12, 1),
+                     justification='center')]
+        ]
+
+        recordEndColumn = [
+            [sg.Text(text='Record End', font=st.DESC_FONT)],
+            [sg.Text(key='-TEXT-RECORD-END-', text='--:--:--', font=st.DESC_FONT, size=(12, 1), justification='center')]
+        ]
+
+        recordElapsedColumn = [
+            [sg.Text(text='Elapsed Time', font=st.DESC_FONT)],
+            [sg.Text(key='-TEXT-RECORD-ELAPSED-', text='--:--:--', font=st.DESC_FONT, size=(12, 1),
+                     justification='center')]
+        ]
+
+        recordFramesColumn = [
+            [sg.Text(text='Frames saved', font=st.DESC_FONT)],
+            [sg.Text(key='-TEXT-FRAMES-SAVED-', text='0', font=st.DESC_FONT, size=(12, 1), justification='center')]
+        ]
+
+        recordColumn = [
+            [sg.Column(recordStartColumn, element_justification='center', pad=(0, 0)),
+             sg.Column(recordEndColumn, element_justification='center', pad=(0, 0)),
+             sg.Column(recordElapsedColumn, element_justification='center', pad=(0, 0)),
+             sg.Column(recordFramesColumn, element_justification='center', pad=(0, 0))]
         ]
 
         displayColumnLayout = [
@@ -39,16 +66,13 @@ class Layout:
                      justification='left', pad=(0, 0)),
              sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
              sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
-                     pad=(0, 0))
-             ],
-            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
-                       font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (10, 0)))],
-            [sg.HSep(pad=((10, 0), (10, 20)))],
-            [sg.Text('Video Signal Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
-                     pad=((0, 0), (0, 20)))],
-            [sg.Column(videoControlsLayout1, element_justification='center', expand_x=True),
-             sg.Column(videoControlsLayout2, element_justification='center', expand_x=True)]
+                     pad=(0, 0))],
+            [sg.HSep(pad=((0, 0), (10, 20)))],
+            [sg.Column(recordControls, element_justification='left', expand_x=True),
+             sg.Column(displayControls, element_justification='right', expand_x=True)],
+            [sg.Column(recordColumn, element_justification='left', expand_x=True)],
+            [sg.HSep(pad=((0, 0), (10, 20)))]
+
         ]
 
         miscellaneous = [
@@ -83,12 +107,12 @@ class Layout:
 
         ]
 
-        return [[sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
-                 sg.Column(displayColumnLayout, element_justification='center',
-                           vertical_alignment='top'),
-                 sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top'),
-                 ],
-                [miscellaneous]]
+        return [
+            [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
+             sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
+             sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')],
+            [miscellaneous]
+        ]
 
     def getImuWindowLayout(self, availableComPorts, comPort, baudRate) -> list:
         """
