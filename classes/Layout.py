@@ -34,11 +34,13 @@ class Layout:
         ]
 
         displayColumnLayout = [
-            [sg.Text('Video Signal', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000')],
-            [sg.Text(text=f'Display Dimensions: {c.DEFAULT_DISPLAY_DIMENSIONS}.', font=st.DESC_FONT,
-                     justification='left', expand_x=True),
-             sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.DESC_FONT)],
+            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000', pad=(0, 0))],
+            [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
+                     justification='left', pad=(0, 0)),
+             sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
+             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
+                     pad=(0, 0))
+             ],
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
                        font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
@@ -49,17 +51,16 @@ class Layout:
              sg.Column(videoControlsLayout2, element_justification='center', expand_x=True)]
         ]
 
-        signalDetails = [
+        miscellaneous = [
             [sg.HSep(pad=((0, 0), (0, 10)))],
-            [sg.Text(text='GUI: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN),
+            [sg.Text(text='GUI: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
+                     border_width=2),
              sg.Text(key='-TEXT-GUI-RATE-', text='0', justification='center', font=st.INFO_TEXT,
-                     size=(4, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN),
-             sg.Text(text=' Signal: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN),
-             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT,
-                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN),
-             sg.Text(text=' Resize: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN),
+                     size=(4, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2),
+             sg.Text(text=' Resize: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
+                     border_width=2),
              sg.Text(key='-TEXT-RESIZE-RATE-', text='0', justification='center', font=st.INFO_TEXT,
-                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN)]
+                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
         ]
 
         imuColumnLayout = [
@@ -87,7 +88,7 @@ class Layout:
                            vertical_alignment='top'),
                  sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top'),
                  ],
-                [signalDetails]]
+                [miscellaneous]]
 
     def getImuWindowLayout(self, availableComPorts, comPort, baudRate) -> list:
         """

@@ -192,6 +192,12 @@ class DataCaptureDisplay:
 
             res, self.frameRaw = self.frameGrabber.getFrame()
 
+            # Signal frame rate estimate.
+            signalDt = time.time() - signalFps1
+            signalFps = int(1 / signalDt) if signalDt != 0 else 100
+
+            self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
+
             self.acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
             self.quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
             # Successful frame read?
@@ -203,12 +209,6 @@ class DataCaptureDisplay:
                 # Display enabled?
                 if self.enableDisplay:
                     self.resizeFrame = True
-
-            # Signal frame rate estimate.
-            signalDt = time.time() - signalFps1
-            signalFps = int(1 / signalDt) if signalDt != 0 else 100
-
-            self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
 
         print('-------------------------------------------\nThread closing down: '
               'getFramesThread.\n-------------------------------------------')
@@ -233,20 +233,22 @@ class DataCaptureDisplay:
             # End thread if frameGrabber not connected.
             if not self.frameGrabber.isConnected:
                 break
-            resizeFps1 = time.time()
 
             if self.resizeFrame:
                 self.resizeFrame = False
+                resizeFps1 = time.time()
                 resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS)
                 frameBytes = ut.frameToBytes(resizedFrame)
                 self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-', value=frameBytes)
+                # Resize frame rate estimate.
+                resizeFpsDt = time.time() - resizeFps1
+                resizeFps = int(1 / resizeFpsDt)
+                self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=resizeFps)
+            else:
+                self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=0)
 
             # Sleep thread.
             time.sleep(0.03)
-            # Resize frame rate estimate.
-            resizeFpsDt = time.time() - resizeFps1
-            resizeFps = int(1 / resizeFpsDt)
-            self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=resizeFps)
 
         print('-------------------------------------------\nThread closing down: '
               'resizeFramesThread.\n-------------------------------------------')
@@ -276,9 +278,9 @@ class DataCaptureDisplay:
                 self.record(frameName, self.frameRaw, self.acceleration, self.quaternion)
                 self.frameGrabCounter += 1
                 self.windowMain.write_event_value(key='-THREAD-FRAMES-SAVED-', value=self.frameGrabCounter)
-
-            # When not recording the empty while loop causes issues for the controlling process.
-            time.sleep(0.001)
+            else:
+                # When not recording the empty while loop causes issues for the controlling process.
+                time.sleep(0.001)
 
         print('-------------------------------------------\nThread closing down: '
               'saveFramesThread.\n-------------------------------------------')
