@@ -152,6 +152,8 @@ class DataCaptureDisplay:
                 self.windowMain['-TEXT-SIGNAL-RATE-'].update(f'{values[event]}')
             elif event == '-THREAD-RESIZE-RATE-':
                 self.windowMain['-TEXT-RESIZE-RATE-'].update(f'{values[event]}')
+            elif event == '-THREAD-FRAMES-SAVED-':
+                self.windowMain['-TEXT-FRAMES-SAVED-'].update(f'{values[event]}')
             elif event == '-THREAD-RESIZED-FRAME-':
                 self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
@@ -256,9 +258,10 @@ class DataCaptureDisplay:
                 frameName = f'{self.frameGrabCounter}-{int(time.time() * 1000)}'
                 self.record(frameName, self.frameRaw, self.acceleration, self.quaternion)
                 self.frameGrabCounter += 1
+                self.windowMain.write_event_value(key='-THREAD-FRAMES-SAVED-', value=self.frameGrabCounter)
 
         print('-------------------------------------------\nThread closing down: '
-              'resizeFramesThread.\n-------------------------------------------')
+              'saveFramesThread.\n-------------------------------------------')
 
     # def updateFrame(self):
     #     """
