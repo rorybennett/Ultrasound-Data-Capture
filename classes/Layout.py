@@ -28,15 +28,6 @@ class Layout:
         ]
 
         videoControlsLayout2 = [
-            [sg.Text(text='GUI Frame Rate: ', justification='right', font=st.DESC_FONT),
-             sg.Text(key='-TEXT-GUI-RATE-', text='0', justification='left', font=st.DESC_FONT,
-                     size=(4, 1))],
-            [sg.Text(text='Signal Frame Rate: ', justification='right', font=st.DESC_FONT),
-             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='left', font=st.DESC_FONT,
-                     size=(4, 1))],
-            [sg.Text(text='Resize Frame Rate: ', justification='right', font=st.DESC_FONT),
-             sg.Text(key='-TEXT-RESIZE-RATE-', text='0', justification='left', font=st.DESC_FONT,
-                     size=(4, 1))],
             [sg.Text(text='Frames saved: ', justification='right', font=st.DESC_FONT),
              sg.Text(key='-TEXT-FRAMES-SAVED-', text='0', justification='left', font=st.DESC_FONT,
                      size=(4, 1))]
@@ -56,7 +47,19 @@ class Layout:
                      pad=((0, 0), (0, 20)))],
             [sg.Column(videoControlsLayout1, element_justification='center', expand_x=True),
              sg.Column(videoControlsLayout2, element_justification='center', expand_x=True)]
+        ]
 
+        signalDetails = [
+            [sg.HSep(pad=((0, 0), (0, 10)))],
+            [sg.Text(text='GUI: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN),
+             sg.Text(key='-TEXT-GUI-RATE-', text='0', justification='center', font=st.INFO_TEXT,
+                     size=(4, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN),
+             sg.Text(text=' Signal: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN),
+             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT,
+                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN),
+             sg.Text(text=' Resize: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN),
+             sg.Text(key='-TEXT-RESIZE-RATE-', text='0', justification='center', font=st.INFO_TEXT,
+                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN)]
         ]
 
         imuColumnLayout = [
@@ -76,12 +79,15 @@ class Layout:
                        font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (10, 0)))],
             [sg.HSep(pad=((0, 10), (10, 20)))]
+
         ]
 
         return [[sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
                  sg.Column(displayColumnLayout, element_justification='center',
                            vertical_alignment='top'),
-                 sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')]]
+                 sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top'),
+                 ],
+                [signalDetails]]
 
     def getImuWindowLayout(self, availableComPorts, comPort, baudRate) -> list:
         """

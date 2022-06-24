@@ -8,5 +8,7 @@ HEADING_FONT = 'Helvetica 20 bold'
 COMBO_FONT = 'Helvetica 14'
 # Font used for description text.
 DESC_FONT = 'Helvetica 12'
+# Font used for info text.
+INFO_TEXT = 'Helvetica 10'
 # Font used on buttons.
 BUTTON_FONT = 'Helvetica 14 bold'
