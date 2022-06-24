@@ -260,39 +260,11 @@ class DataCaptureDisplay:
                 self.frameGrabCounter += 1
                 self.windowMain.write_event_value(key='-THREAD-FRAMES-SAVED-', value=self.frameGrabCounter)
 
+            # When not recording the empty while loop causes issues with the controlling process.
+            time.sleep(0.001)
+
         print('-------------------------------------------\nThread closing down: '
               'saveFramesThread.\n-------------------------------------------')
-
-    # def updateFrame(self):
-    #     """
-    #     Updates the display with a new frame, if enableDisplay is True. If enableRecording is True then a frame, and
-    #     associated IMU data is saved into the correct directory. If saveSingleFrame is True then a single frame is
-    #     stored in the correct directory.
-    #     """
-    #     res, frame = self.frameGrabber.getFrame()
-    #     acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-    #     quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
-    #     # Check if a frame has been returned.
-    #     if res:
-    #         # Record frames?
-    #         if self.enableRecording:
-    #             frameName = f'{self.frameGrabCounter}-{int(dt.now().timestamp() * 1000)}'
-    #             self.record(frameName, frame, acceleration, quaternion)
-    #             self.frameGrabCounter += 1
-    #
-    #         # Save a single frame?
-    #         if self.saveSingleFrame:
-    #             # Only save one frame.
-    #             self.saveSingleFrame = False
-    #             frameName = f'{int(dt.now().timestamp() * 1000)}.png'
-    #             ut.saveSingleFrame(frame,
-    #                                f'{self.singleFramesPath}\\{frameName}')
-    #
-    #         # Check if the display should be updated.
-    #         if self.enableDisplay:
-    #             resizedFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS)
-    #             frameBytes = ut.frameToBytes(resizedFrame)
-    #             self.windowMain['-IMAGE-FRAME-'].update(data=frameBytes)
 
     def record(self, frameName, frame, acceleration, quaternion):
         """
@@ -339,6 +311,8 @@ class DataCaptureDisplay:
         self.threadGetFrames.start()
         self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread, daemon=True)
         self.threadResizeFrames.start()
+        self.threadSaveFrames = threading.Thread(target=self.saveFramesThread, daemon=True)
+        self.threadSaveFrames.start()
         # Update menus.
         self.updateMenus()
         # Set element states.
