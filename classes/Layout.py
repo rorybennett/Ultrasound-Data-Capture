@@ -67,7 +67,7 @@ class Layout:
              sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
              sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
                      pad=(0, 0))],
-            [sg.HSep(pad=((0, 0), (10, 20)))],
+            [sg.HSep(pad=((0, 0), (10, 10)))],
             [sg.Column(recordControls, element_justification='left', expand_x=True),
              sg.Column(displayControls, element_justification='right', expand_x=True)],
             [sg.Column(recordColumn, element_justification='left', expand_x=True)],
@@ -88,7 +88,6 @@ class Layout:
         ]
 
         imuColumnLayout = [
-            [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
             [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (12, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
