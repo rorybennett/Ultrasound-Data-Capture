@@ -26,11 +26,6 @@ class Layout:
                        border_width=3, pad=((0, 0), (0, 0)), disabled=True)]
         ]
 
-        displayControls = [
-            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (0, 0)))]
-        ]
-
         recordStartColumn = [
             [sg.Text(text='Record Start', font=st.DESC_FONT)],
             [sg.Text(key='-TEXT-RECORD-START-', text='--:--:--', font=st.DESC_FONT, size=(12, 1),
@@ -68,8 +63,7 @@ class Layout:
              sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
                      pad=(0, 0))],
             [sg.HSep(pad=((0, 0), (10, 10)))],
-            [sg.Column(recordControls, element_justification='left', expand_x=True),
-             sg.Column(displayControls, element_justification='right', expand_x=True)],
+            [sg.Column(recordControls, element_justification='left', expand_x=True)],
             [sg.Column(recordColumn, element_justification='left', expand_x=True)],
             [sg.HSep(pad=((0, 0), (10, 20)))]
 
@@ -88,27 +82,29 @@ class Layout:
         ]
 
         imuColumnLayout = [
-            [sg.Canvas(key='-CANVAS-PLOT-')],
-            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (12, 0)))],
-            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
-                       orientation='h', enable_events=True)],
-            [sg.Text('Acceleration values:', font=st.DESC_FONT, pad=((0, 0), (20, 20))),
+            [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 10))),
              sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (12, 0))),
+                     pad=((0, 0), (10, 10))),
              sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (12, 0))),
+                     pad=((0, 0), (10, 10))),
              sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (12, 0)))],
-            [sg.HSep(pad=((0, 0), (10, 20)))],
+                     pad=((0, 0), (10, 10)))],
+            [sg.Canvas(key='-CANVAS-PLOT-')],
+            [sg.Text('Azimuth', font=st.DESC_FONT, pad=((0, 0), (5, 0)))],
+            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
+                       orientation='h', enable_events=True, pad=((0, 0), (0, 23)))],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (0, 15)))]
+                       border_width=3, pad=((0, 0), (0, 20)))],
+            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (5, 0)))],
+            [sg.HSep(pad=((0, 0), (21, 0)))]
 
         ]
 
         return [
             [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
              sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top', pad=(0, 0)),
-             sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='center', pad=(0, 0))],
+             sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top', pad=(0, 0))],
             [miscellaneous]
         ]
 
