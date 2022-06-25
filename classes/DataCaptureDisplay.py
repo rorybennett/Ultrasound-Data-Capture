@@ -193,9 +193,8 @@ class DataCaptureDisplay:
             if not self.frameGrabber.isConnected:
                 break
             signalFps1 = time.time()
-
+            # Grab frame.
             res, self.frameRaw = self.frameGrabber.getFrame()
-
             # Successful frame read?
             if res:
                 # Update data from IMU object.
@@ -204,7 +203,6 @@ class DataCaptureDisplay:
                 # Signal frame rate estimate.
                 signalDt = time.time() - signalFps1
                 signalFps = int(1 / signalDt) if signalDt != 0 else 100
-
                 self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
                 # Record frames?
                 if self.enableRecording:
