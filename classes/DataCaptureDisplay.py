@@ -202,10 +202,10 @@ class DataCaptureDisplay:
 
             self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
 
-            self.acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-            self.quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
             # Successful frame read?
             if res:
+                self.acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
+                self.quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
                 # Record frames?
                 if self.enableRecording:
                     self.saveFrame = True
@@ -215,7 +215,6 @@ class DataCaptureDisplay:
                     self.resizeFrame = True
                 # Update rate only if frame was returned.
                 self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=0)
-
 
         print('-------------------------------------------\nThread closing down: '
               'getFramesThread.\n-------------------------------------------')
