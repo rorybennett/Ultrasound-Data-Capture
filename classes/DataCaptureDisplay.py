@@ -321,7 +321,8 @@ class DataCaptureDisplay:
         """
         self.enableDisplay = not self.enableDisplay
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(
-            text='Disable Display' if self.enableDisplay else 'Enable Display')
+            text='Disable Display' if self.enableDisplay else 'Enable Display',
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enableDisplay else '#ff2121')
 
     def setSignalSourceAndConnect(self, signalSource):
         """
@@ -454,7 +455,8 @@ class DataCaptureDisplay:
         """
         self.enablePlotting = not self.enablePlotting
         self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(
-            text='Disable Plotting' if self.enablePlotting else 'Enable Plotting')
+            text='Disable Plotting' if self.enablePlotting else 'Enable Plotting',
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else '#ff2121')
 
     def refreshComPorts(self):
         """

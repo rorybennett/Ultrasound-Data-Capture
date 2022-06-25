@@ -94,9 +94,9 @@ class Layout:
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
                        orientation='h', enable_events=True, pad=((0, 0), (0, 23)))],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (0, 20)))],
+                       border_width=3, pad=((0, 0), (0, 20)), button_color='#ff2121')],
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (5, 0)))],
+                       border_width=3, pad=((0, 0), (5, 0)), button_color='#ff2121')],
             [sg.HSep(pad=((0, 0), (21, 0)))]
 
         ]
