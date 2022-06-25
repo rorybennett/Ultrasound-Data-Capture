@@ -88,14 +88,13 @@ class Layout:
              sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
                      pad=((0, 0), (10, 10)))],
             [sg.Canvas(key='-CANVAS-PLOT-')],
-            [sg.Text('Azimuth', font=st.DESC_FONT, pad=((0, 0), (5, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
-                       orientation='h', enable_events=True, pad=((0, 0), (0, 23)))],
+                       orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (0, 5)), button_color=st.BUTTON_ACTIVE)],
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)],
-            [sg.HSep(pad=((0, 0), (36, 0)))]
+            [sg.HSep(pad=((0, 0), (71, 0)))]
 
         ]
 
