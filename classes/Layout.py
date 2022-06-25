@@ -19,13 +19,6 @@ class Layout:
                             saving/recording frames.
         IMU:                Contains a display that shows the orientation of the IMU.
         """
-        recordControls = [
-            [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 20), (0, 0)), disabled=True),
-             sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (0, 0)), disabled=True)]
-        ]
-
         recordStartColumn = [
             [sg.Text(text='Record Start', font=st.DESC_FONT)],
             [sg.Text(key='-TEXT-RECORD-START-', text='--:--:--', font=st.DESC_FONT, size=(12, 1),
@@ -48,8 +41,12 @@ class Layout:
             [sg.Text(key='-TEXT-FRAMES-SAVED-', text='0', font=st.DESC_FONT, size=(12, 1), justification='center')]
         ]
 
-        recordColumn = [
-            [sg.Column(recordStartColumn, element_justification='center', pad=(0, 0)),
+        recordControls = [
+            [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 20), (0, 0)), disabled=True),
+             sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (0, 0)), disabled=True),
+             sg.Column(recordStartColumn, element_justification='center', pad=(0, 0)),
              sg.Column(recordEndColumn, element_justification='center', pad=(0, 0)),
              sg.Column(recordElapsedColumn, element_justification='center', pad=(0, 0)),
              sg.Column(recordFramesColumn, element_justification='center', pad=(0, 0))]
@@ -63,8 +60,7 @@ class Layout:
              sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
                      pad=(0, 0))],
             [sg.HSep(pad=((0, 0), (10, 10)))],
-            [sg.Column(recordControls, element_justification='left', expand_x=True)],
-            [sg.Column(recordColumn, element_justification='left', expand_x=True)]
+            [sg.Column(recordControls, element_justification='left', expand_x=True)]
         ]
 
         miscellaneous = [
