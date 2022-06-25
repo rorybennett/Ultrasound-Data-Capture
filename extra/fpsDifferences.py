@@ -48,8 +48,8 @@ def main():
     print(f'Estimated frame rate: {estimatedFps} fps')
     print(f'Theoretical time difference based on frame rate: {int(1000 / estimatedFps)} ms')
     print(f'Mean time difference based on frame names: {int(np.average(timeDiff))} ms')
-    print(f'Minimum time difference: {int(np.amin(timeDiff))}')
-    print(f'Maximum time difference: {int(np.amax(timeDiff))}')
+    print(f'Minimum time difference: {int(np.amin(timeDiff))} ms')
+    print(f'Maximum time difference: {int(np.amax(timeDiff))} ms')
 
     # Plotting variables
     fig = plt.figure(figsize=(10, 5), dpi=100)
