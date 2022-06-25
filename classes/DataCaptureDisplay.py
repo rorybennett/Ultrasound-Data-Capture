@@ -60,12 +60,13 @@ class DataCaptureDisplay:
         self.threadGetFrames = None
         self.threadResizeFrames = None
         self.threadSaveFrames = None
-
+        # Recording variables for storing.
         self.frameRaw = None
         self.acceleration = None
         self.quaternion = None
-
+        # Is frame available for resize?
         self.resizeFrame = False
+        # Must the frame be saved?
         self.saveFrame = False
 
         # IMU connect window
