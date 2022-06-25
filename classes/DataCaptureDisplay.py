@@ -1,6 +1,7 @@
 """
 Main class for capturing frames from the output of an ultrasound scanner and adding IMU orientation data to the frames.
 """
+import styling as st
 import utils as ut
 from classes import IMU
 from classes import FrameGrabber
@@ -322,7 +323,7 @@ class DataCaptureDisplay:
         self.enableDisplay = not self.enableDisplay
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display',
-            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enableDisplay else '#ff2121')
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enableDisplay else st.BUTTON_ACTIVE)
 
     def setSignalSourceAndConnect(self, signalSource):
         """
@@ -383,7 +384,7 @@ class DataCaptureDisplay:
 
         # Set element states.
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(
-            button_color='#ff2121' if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
+            button_color=st.BUTTON_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
@@ -456,7 +457,7 @@ class DataCaptureDisplay:
         self.enablePlotting = not self.enablePlotting
         self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(
             text='Disable Plotting' if self.enablePlotting else 'Enable Plotting',
-            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else '#ff2121')
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else st.BUTTON_ACTIVE)
 
     def refreshComPorts(self):
         """

@@ -64,9 +64,7 @@ class Layout:
                      pad=(0, 0))],
             [sg.HSep(pad=((0, 0), (10, 10)))],
             [sg.Column(recordControls, element_justification='left', expand_x=True)],
-            [sg.Column(recordColumn, element_justification='left', expand_x=True)],
-            [sg.HSep(pad=((0, 0), (10, 20)))]
-
+            [sg.Column(recordColumn, element_justification='left', expand_x=True)]
         ]
 
         miscellaneous = [
@@ -82,7 +80,7 @@ class Layout:
         ]
 
         imuColumnLayout = [
-            [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 10))),
+            [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 0))),
              sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
                      pad=((0, 0), (10, 10))),
              sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
@@ -94,10 +92,10 @@ class Layout:
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
                        orientation='h', enable_events=True, pad=((0, 0), (0, 23)))],
             [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (0, 20)), button_color='#ff2121')],
+                       border_width=3, pad=((0, 0), (0, 5)), button_color=st.BUTTON_ACTIVE)],
             [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (5, 0)), button_color='#ff2121')],
-            [sg.HSep(pad=((0, 0), (21, 0)))]
+                       border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)],
+            [sg.HSep(pad=((0, 0), (36, 0)))]
 
         ]
 
