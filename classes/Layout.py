@@ -88,28 +88,27 @@ class Layout:
         ]
 
         imuColumnLayout = [
-            [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
+            [sg.Canvas(key='-CANVAS-PLOT-')],
             [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (12, 0)))],
-            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
+            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
                        orientation='h', enable_events=True)],
-            [sg.Text('Acceleration values:', font=st.DESC_FONT, pad=((0, 0), (12, 0))),
+            [sg.Text('Acceleration values:', font=st.DESC_FONT, pad=((0, 0), (20, 20))),
              sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
                      pad=((0, 0), (12, 0))),
              sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
                      pad=((0, 0), (12, 0))),
              sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
                      pad=((0, 0), (12, 0)))],
-            [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1),
-                       font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (10, 0)))],
-            [sg.HSep(pad=((0, 10), (10, 20)))]
+            [sg.HSep(pad=((0, 0), (10, 20)))],
+            [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (0, 15)))]
 
         ]
 
         return [
             [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
-             sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top'),
-             sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top')],
+             sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top', pad=(0, 0)),
+             sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='center', pad=(0, 0))],
             [miscellaneous]
         ]
 

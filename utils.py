@@ -105,12 +105,13 @@ def initialiseAxis(axis, azimuth):
     Returns:
         axis (axis): Axis containing newly plotted points and lines.
     """
-    axis.set_xlabel('X')
-    axis.set_ylabel('Y')
-    axis.set_zlabel('Z')
     axis.set_xlim((-5, 5))
     axis.set_ylim((-5, 5))
     axis.set_zlim((-5, 5))
+
+    axis.set_xticklabels([])
+    axis.set_yticklabels([])
+    axis.set_zticklabels([])
 
     axis.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
 

@@ -395,7 +395,7 @@ class DataCaptureDisplay:
         Args:
             azimuth (int): Azimuth angle in degrees.
         """
-        fig = Figure(figsize=(4, 4), dpi=100)
+        fig = Figure(figsize=(3.5, 3.5), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
         fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
         self.ax.set_position((0, 0, 1, 1))
