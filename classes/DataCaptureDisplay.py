@@ -213,10 +213,12 @@ class DataCaptureDisplay:
                 # Display enabled?
                 if self.enableDisplay:
                     self.resizeFrame = True
+                # Update rate only if frame was returned.
+                self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=0)
+
 
         print('-------------------------------------------\nThread closing down: '
               'getFramesThread.\n-------------------------------------------')
-        self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=0)
 
     def resizeFramesThread(self):
         """
