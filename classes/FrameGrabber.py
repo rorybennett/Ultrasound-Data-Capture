@@ -126,7 +126,7 @@ class FrameGrabber:
             fourcc = cv.VideoWriter_fourcc('M', 'J', 'P', 'G')
             self.vid.set(cv.CAP_PROP_FOURCC, fourcc)
             if self.width == width or self.height == height:
-                print(f'Dimensions correctly set to {self.width}x{self.height}.')
+                print(f'Dimensions correctly set to {self.width}x{self.height}.\n')
                 successFlag = True
             else:
                 print(f'An error occurred setting dimensions. Default dimensions of '

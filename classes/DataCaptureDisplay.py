@@ -68,6 +68,8 @@ class DataCaptureDisplay:
         self.resizeFrame = False
         # Must the frame be saved?
         self.saveFrame = False
+        # Time a recording was started.
+        self.recordStartTime = None
 
         # IMU connect window
         self.windowImuConnect = None
@@ -94,6 +96,9 @@ class DataCaptureDisplay:
             # Update the plot.
             if self.enablePlotting:
                 self.updatePlot()
+            # Update times.
+            if self.enableRecording:
+                self.updateTimes()
 
             event, values = self.windowMain.read(timeout=1)
 
@@ -270,7 +275,7 @@ class DataCaptureDisplay:
         of the signal source the thread will be closed. Joining the thread to the parent thread does not seem
         to be necessary.
         """
-        print('Thread starting up: saveFramesThread.')
+        print('Thread starting up: saveFramesThread.\n')
         while True:
             # End thread if frameGrabber not connected.
             if not self.frameGrabber.isConnected:
@@ -344,17 +349,33 @@ class DataCaptureDisplay:
         self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
+    def updateTimes(self):
+        """
+        Update the displayed times related to a recording that is currently taking place. The start time is initially
+        set, and its GUI element updated, in the self.toggleRecording method. Only the end time and elapsed time
+        are calculated and updated here. The main thread currently does not do too much so time updates will be
+        left on the main thread for now.
+        """
+        endTime = time.time()
+        elapsedTime = endTime - self.recordStartTime
+        # Set element states.
+        self.windowMain['-TEXT-RECORD-END-'].update(time.strftime('%H:%M:%S', time.localtime(endTime)))
+        self.windowMain['-TEXT-RECORD-ELAPSED-'].update(time.strftime('%H:%M:%S', time.localtime(elapsedTime)))
+
     def toggleRecording(self):
         """
         Toggle whether recording is enabled or not. When in the recording state various elements are disabled.
         """
         self.enableRecording = not self.enableRecording
         print(f'Enable Recording: {self.enableRecording}')
+
         # Create video directory for saving frames.
         if self.enableRecording:
             self.currentRecordingPath, self.currentDataFilePath = ut.createRecordingDirectory(self.videosPath)
             self.currentDataFile = open(self.currentDataFilePath, 'w')
             self.frameGrabCounter = 0
+            self.recordStartTime = time.time()
+            self.windowMain['-TEXT-RECORD-START-'].update(time.strftime('%H:%M:%S'))
         else:
             print(f'Closing data file {self.currentDataFilePath}...')
             self.currentDataFile.close()
@@ -498,12 +519,13 @@ class DataCaptureDisplay:
 
     def close(self):
         """
-        Delete references to IMU and FrameGrabber objects for garbage collection. This ensures the resources are freed
-        up for future use. Only called as the program is shutting down.
+        Delete references to IMU object for garbage collection. This ensures the resources are freed
+        up for future use. Only called as the program is shutting down. The FrameGrabber object is disconnected, the
+        release takes place in the FrameGrabber __del__ method.
         """
         if self.imu.isConnected:
             self.imu.disconnect()
             del self.imu
 
         if self.frameGrabber.isConnected:
-            del self.frameGrabber
+            self.frameGrabber.disconnect()
