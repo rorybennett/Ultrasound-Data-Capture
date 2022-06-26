@@ -34,7 +34,7 @@ def createInitialDirectories() -> (Path, Path):
     return singleFramesPath, videosPath
 
 
-def getSavedRecordingsList(videosPath: Path):
+def getSavedRecordingsList(videosPath: Path) -> list:
     """
     Return a list of all the stored recording directories in the Generated/Videos directory. This list is used
     in a COMBO element when editing so the user can select which folder they want to edit/browse the frames of.
@@ -47,7 +47,7 @@ def getSavedRecordingsList(videosPath: Path):
     return videoDirectories
 
 
-def rotatePoints(points, quaternion):
+def rotatePoints(points: list, quaternion: list) -> np.array:
     """
     Rotate the list of points [[x1, y1, z1], [x2, y2, z2], ...] using the given quaternion (given as 4D vector). First
     the given quaternion parameter is converted into a Quaternion object (from a 4D list). Then the points are rotated
