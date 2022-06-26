@@ -129,7 +129,7 @@ class DataCaptureDisplay:
             # IMU menu events.
             if event.endswith('::-MENU-IMU-CONNECT-'):
                 # Show connect to IMU window.
-                self.showImuConnectWindow() if not self.imu.isConnected else self.imu.disconnect()
+                self.showImuConnectWindow()
             elif event.endswith('::-MENU-IMU-DISCONNECT-'):
                 # Disconnect from IMU and update menus.
                 self.imu.disconnect()
@@ -190,6 +190,7 @@ class DataCaptureDisplay:
         # Editing has been enabled.
         if self.enableEditing:
             self.frameGrabber.disconnect()
+            self.imu.disconnect()
 
         # Set element states.
         self.updateMenus()
