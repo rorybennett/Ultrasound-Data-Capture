@@ -34,6 +34,19 @@ def createInitialDirectories() -> (Path, Path):
     return singleFramesPath, videosPath
 
 
+def getSavedRecordingsList(videosPath: Path):
+    """
+    Return a list of all the stored recording directories in the Generated/Videos directory. This list is used
+    in a COMBO element when editing so the user can select which folder they want to edit/browse the frames of.
+
+    Returns:
+        recordedVideos (list): List of recorded videos directories as strings.
+    """
+    videoDirectories = [vd for vd in videosPath.iterdir() if vd.is_dir()]
+
+    return videoDirectories
+
+
 def rotatePoints(points, quaternion):
     """
     Rotate the list of points [[x1, y1, z1], [x2, y2, z2], ...] using the given quaternion (given as 4D vector). First
