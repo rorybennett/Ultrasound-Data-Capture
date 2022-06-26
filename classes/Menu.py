@@ -15,7 +15,7 @@ class Menu:
         # Initial creation of menus.
         self.__generateMenus()
 
-    def getMenu(self, frameGrabberConnected=False, imuConnected=False, editingEnabled=False) -> (bool, bool, bool):
+    def getMenu(self, frameGrabberConnected=False, imuConnected=False, editingEnabled=False):
         """
         Return the current menu bar based on the parameter values given. The local parameter values are updated based on
         the given parameters and the menus are generated. The generated menus are combined into a single menu bar layout
