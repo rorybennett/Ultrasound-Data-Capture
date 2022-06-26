@@ -191,6 +191,7 @@ class DataCaptureDisplay:
         if self.enableEditing:
             self.frameGrabber.disconnect()
             self.imu.disconnect()
+            time.sleep(0.2)
 
         # Set element states.
         self.updateMenus()
@@ -201,6 +202,13 @@ class DataCaptureDisplay:
                                                      values=ut.getRecordingDirectories(self.videosPath))
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True)
+        print('Removing image')
+        self.windowMain['-IMAGE-FRAME-'].update(source=None,
+                                                filename=None,
+                                                data=None,
+                                                size=(None, None),
+                                                subsample=None,
+                                                visible=None)
 
     def getFramesThread(self):
         """
