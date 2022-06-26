@@ -19,6 +19,83 @@ class Layout:
                             saving/recording frames.
         IMU:                Contains a display that shows the orientation of the IMU.
         """
+
+        displayRow = self.__createDisplayRow()
+
+        recordRow = self.__createRecordRow()
+
+        editingRow = self.__createEditingRow()
+
+        miscellaneousRow = self.__createMiscellaneousRow()
+
+        return [
+            [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu())],
+            [displayRow],
+            [sg.HSep(pad=((0, 0), (0, 10)))],
+            [recordRow],
+            [sg.HSep(pad=((0, 0), (0, 10)))],
+            [editingRow],
+            [sg.HSep(pad=((0, 0), (0, 10)))],
+            [miscellaneousRow]
+        ]
+
+    def __createEditingRow(self):
+        """
+        Create the editing row of the main window. This is a work in progress: todo
+        """
+        detailsColumn = [
+            [sg.Button(key='-BUTTON-EDIT-TOGGLE-', button_text='Enable Editing', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (0, 5)))],
+            [sg.Combo(key='-COMBO-RECORDINGS-', size=7, font=st.COMBO_FONT, disabled=True, values=[None, None],
+                      enable_events=True, readonly=True, pad=((0, 0), (0, 0)))],
+            []
+        ]
+
+        return [
+            detailsColumn
+        ]
+
+    def __createDisplayRow(self):
+        """
+        Create the display row of the main window. This contains the image that displays frames and the plot that
+        shows the orientation of the IMU, along with some buttons and text information.
+        """
+        displayColumn = [
+            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000', pad=(0, 0))],
+            [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
+                     justification='left', pad=(0, 0)),
+             sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
+             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
+                     pad=(0, 0))]
+        ]
+
+        imuColumn = [
+            [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 0))),
+             sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                     pad=((0, 0), (10, 10))),
+             sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                     pad=((0, 0), (10, 10))),
+             sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                     pad=((0, 0), (10, 10)))],
+            [sg.Canvas(key='-CANVAS-PLOT-')],
+            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
+                       orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
+            [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (0, 5)), button_color=st.BUTTON_ACTIVE)],
+            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
+                       border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)]
+        ]
+
+        return [
+            [sg.Column(displayColumn, vertical_alignment='top'),
+             sg.Column(imuColumn, vertical_alignment='top', element_justification='center')]
+        ]
+
+    def __createRecordRow(self):
+        """
+        Create the record row of the main window. This contains the recording buttons and details about the current
+        recording session.
+        """
         recordStartColumn = [
             [sg.Text(text='Record Start', font=st.DESC_FONT)],
             [sg.Text(key='-TEXT-RECORD-START-', text='--:--:--', font=st.DESC_FONT, size=(12, 1),
@@ -41,7 +118,7 @@ class Layout:
             [sg.Text(key='-TEXT-FRAMES-SAVED-', text='0', font=st.DESC_FONT, size=(12, 1), justification='center')]
         ]
 
-        recordControls = [
+        return [
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 20), (0, 0)), disabled=True),
              sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
@@ -50,55 +127,6 @@ class Layout:
              sg.Column(recordEndColumn, element_justification='center', pad=(0, 0)),
              sg.Column(recordElapsedColumn, element_justification='center', pad=(0, 0)),
              sg.Column(recordFramesColumn, element_justification='center', pad=(0, 0))]
-        ]
-
-        displayColumnLayout = [
-            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000', pad=(0, 0))],
-            [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
-                     justification='left', pad=(0, 0)),
-             sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
-             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
-                     pad=(0, 0))],
-            [sg.HSep(pad=((0, 0), (10, 10)))],
-            [sg.Column(recordControls, element_justification='left', expand_x=True)]
-        ]
-
-        miscellaneous = [
-            [sg.HSep(pad=((0, 0), (0, 10)))],
-            [sg.Text(text='GUI: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
-                     border_width=2),
-             sg.Text(key='-TEXT-GUI-RATE-', text='0', justification='center', font=st.INFO_TEXT,
-                     size=(4, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2),
-             sg.Text(text=' Resize: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
-                     border_width=2),
-             sg.Text(key='-TEXT-RESIZE-RATE-', text='0', justification='center', font=st.INFO_TEXT,
-                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
-        ]
-
-        imuColumnLayout = [
-            [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (10, 10))),
-             sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (10, 10))),
-             sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (10, 10)))],
-            [sg.Canvas(key='-CANVAS-PLOT-')],
-            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
-                       orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
-            [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (0, 5)), button_color=st.BUTTON_ACTIVE)],
-            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)],
-            [sg.HSep(pad=((0, 0), (71, 0)))]
-
-        ]
-
-        return [
-            [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu()),
-             sg.Column(displayColumnLayout, element_justification='center', vertical_alignment='top', pad=(0, 0)),
-             sg.Column(imuColumnLayout, element_justification='center', vertical_alignment='top', pad=(0, 0))],
-            [miscellaneous]
         ]
 
     def getImuWindowLayout(self, availableComPorts, comPort, baudRate) -> list:
@@ -123,4 +151,24 @@ class Layout:
                       enable_events=True, readonly=True, default_value=baudRate, pad=((0, 0), (20, 0)))],
             [sg.HSeparator(pad=((10, 10), (20, 20)))],
             [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
+        ]
+
+    def __createMiscellaneousRow(self):
+        """
+        Create the bottom row of the main window. This shows exrta information about what is happening during the running
+        of the program
+        """
+        frameRateDetails = [
+            [sg.Text(text='GUI: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
+                     border_width=2),
+             sg.Text(key='-TEXT-GUI-RATE-', text='0', justification='center', font=st.INFO_TEXT,
+                     size=(4, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2),
+             sg.Text(text=' Resize: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
+                     border_width=2),
+             sg.Text(key='-TEXT-RESIZE-RATE-', text='0', justification='center', font=st.INFO_TEXT,
+                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
+        ]
+
+        return [
+            [frameRateDetails]
         ]
