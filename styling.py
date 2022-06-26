@@ -6,6 +6,8 @@ This file contains styling values used by the program.
 HEADING_FONT = 'Helvetica 20 bold'
 # Font used for Combo boxes.
 COMBO_FONT = 'Helvetica 14'
+# Font used for Combo boxes with small font.
+COMBO_FONT_SMALL = 'Helvetica 12'
 # Font used for description text.
 DESC_FONT = 'Helvetica 12'
 # Font used for info text.
