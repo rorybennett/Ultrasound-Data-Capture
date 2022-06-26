@@ -190,9 +190,9 @@ class DataCaptureDisplay:
         # Editing has been enabled.
         if self.enableEditing:
             self.frameGrabber.disconnect()
-            self.updateMenus()
 
         # Set element states.
+        self.updateMenus()
         self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(
             text='End Editing' if self.enableEditing else 'Start Editing',
             button_color=st.BUTTON_ACTIVE if self.enableEditing else sg.DEFAULT_BUTTON_COLOR)
@@ -540,7 +540,7 @@ class DataCaptureDisplay:
         """
         # Set elements.
         self.windowMain['-MENU-'].update(
-            menu_definition=self.menu.getMenu(self.frameGrabber.isConnected, self.imu.isConnected))
+            menu_definition=self.menu.getMenu(self.frameGrabber.isConnected, self.imu.isConnected, self.enableEditing))
 
     def close(self):
         """

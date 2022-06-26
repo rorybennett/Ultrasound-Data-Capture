@@ -9,12 +9,13 @@ class Menu:
         # Set initial values
         self.frameGrabberConnected = False
         self.imuConnected = False
+        self.editingEnabled = False
         self.signalMenu = None
         self.imuImenu = None
         # Initial creation of menus.
         self.__generateMenus()
 
-    def getMenu(self, frameGrabberConnected=False, imuConnected=False) -> (bool, bool):
+    def getMenu(self, frameGrabberConnected=False, imuConnected=False, editingEnabled=False) -> (bool, bool, bool):
         """
         Return the current menu bar based on the parameter values given. The local parameter values are updated based on
         the given parameters and the menus are generated. The generated menus are combined into a single menu bar layout
@@ -22,7 +23,8 @@ class Menu:
 
         Args:
             frameGrabberConnected (bool): True if FrameGrabber object is connected, else False.
-            imuConnected (bool): True is IMU object is connected, else False.
+            imuConnected (bool): True if IMU object is connected, else False.
+            editingEnabled (bool): True if editing is enabled, else False.
 
         Returns:
 
@@ -30,6 +32,7 @@ class Menu:
         # Local variable update.
         self.frameGrabberConnected = frameGrabberConnected
         self.imuConnected = imuConnected
+        self.editingEnabled = editingEnabled
         # Generate menus.
         self.__generateMenus()
         # Return menu bar layout.
@@ -45,6 +48,7 @@ class Menu:
         True (post connection):     Menu to show when the signal source is connected. Now that the source is connected,
                                     the source signal can be changed, it can be disconnected, and properties can be
                                     changed.
+        If self.editingEnabled is True the menu is disabled.
         """
         if not self.frameGrabberConnected:
             self.signalMenu = ['Signal Source', ['Connect to Source',
@@ -54,7 +58,7 @@ class Menu:
                                                  '!Change Signal Dimensions',
                                                  ]
                                ]
-        else:
+        if self.frameGrabberConnected:
             self.signalMenu = ['Signal Source', ['Disconnect from Source::-MENU-SIGNAL-DISCONNECT-',
                                                  '---',
                                                  'Change Signal Dimensions',
@@ -62,6 +66,8 @@ class Menu:
                                                   c.COMMON_SIGNAL_DIMENSIONS]
                                                  ]
                                ]
+        if self.editingEnabled:
+            self.signalMenu = ['!Signal Source']
 
     def __generateImuMenu(self):
         """
@@ -73,7 +79,7 @@ class Menu:
                                     options are disabled.
         True (post connection):     Menu to show when the IMU has been connected, enabling return rate and acceleration
                                     calibration.
-
+        If self.editingEnabled is True the menu is disabled.
         """
         if not self.imuConnected:
             self.imuImenu = ['IMU', ['Connect::-MENU-IMU-CONNECT-',
@@ -81,12 +87,14 @@ class Menu:
                                      '!Set Return Rate',
                                      '!Calibrate Acceleration::-MENU-IMU-CALIBRATE-']
                              ]
-        else:
+        if self.imuConnected:
             self.imuImenu = ['IMU', ['Disconnect::-MENU-IMU-DISCONNECT-',
                                      '---',
                                      'Set Return Rate', [f'{i}::-MENU-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
                                      'Calibrate Acceleration::-MENU-IMU-CALIBRATE-']
                              ]
+        if self.editingEnabled:
+            self.imuImenu = ['!IMU']
 
     def __generateMenus(self):
         """
