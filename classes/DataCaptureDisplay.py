@@ -172,6 +172,10 @@ class DataCaptureDisplay:
                 # Resized frame available.
                 self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
+            # Editing events.
+            if event == '-BUTTON-EDIT-TOGGLE-':
+                print('Toggle edit selected.')
+
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
@@ -387,6 +391,7 @@ class DataCaptureDisplay:
             button_color=st.BUTTON_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
+        self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(disabled=True if self.enableRecording else False)
 
     def createPlot(self, azimuth):
         """
