@@ -44,7 +44,7 @@ class Layout:
         Create the editing row of the main window. This is a work in progress: todo
         """
         detailsColumn = [
-            [sg.Button(key='-BUTTON-EDIT-TOGGLE-', button_text='Enable Editing', size=(15, 1), font=st.BUTTON_FONT,
+            [sg.Button(key='-BUTTON-EDIT-TOGGLE-', button_text='Start Editing', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (0, 5)))],
             [sg.Combo(key='-COMBO-RECORDINGS-', size=16, font=st.COMBO_FONT, disabled=True, values=[None, None],
                       enable_events=True, readonly=True, pad=((0, 0), (0, 0)))],

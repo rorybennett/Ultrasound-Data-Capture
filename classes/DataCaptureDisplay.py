@@ -187,6 +187,17 @@ class DataCaptureDisplay:
     def toggleEditing(self):
         self.enableEditing = not self.enableEditing
         print(f'Has editing been enabled: {self.enableEditing}')
+        # Editing has been enabled.
+        if self.enableEditing:
+            self.frameGrabber.disconnect()
+            self.updateMenus()
+
+        # Set element states.
+        self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(
+            text='End Editing' if self.enableEditing else 'Start Editing',
+            button_color=st.BUTTON_ACTIVE if self.enableEditing else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
+        self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True)
 
     def getFramesThread(self):
         """
