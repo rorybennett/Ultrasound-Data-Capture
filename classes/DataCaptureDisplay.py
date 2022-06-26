@@ -71,6 +71,8 @@ class DataCaptureDisplay:
         self.saveFrame = False
         # Time a recording was started.
         self.recordStartTime = None
+        # Editing state.
+        self.enableEditing = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -174,13 +176,17 @@ class DataCaptureDisplay:
 
             # Editing events.
             if event == '-BUTTON-EDIT-TOGGLE-':
-                print('Toggle edit selected.')
+                self.toggleEditing()
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
+
+    def toggleEditing(self):
+        self.enableEditing = not self.enableEditing
+        print(f'Has editing been enabled: {self.enableEditing}')
 
     def getFramesThread(self):
         """
