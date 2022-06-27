@@ -175,6 +175,8 @@ class DataCaptureDisplay:
             # Editing events.
             if event == '-BUTTON-EDIT-TOGGLE-':
                 self.toggleEditing()
+            elif event == '-COMBO-RECORDINGS-':
+                print(f'Create editing data for: {values[event]}')
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
