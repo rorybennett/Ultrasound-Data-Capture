@@ -230,7 +230,7 @@ def createRecordingDirectory(videosPath) -> tuple[Path, str]:
 
     """
     # Create the new recording directory.
-    currentRecordingPath = Path(videosPath, dt.now().strftime("%d-%m-%Y-%H-%M-%S.%f")[:-3])
+    currentRecordingPath = Path(videosPath, dt.now().strftime("%d %m %Y %H-%M-%S,%f")[:-3])
     currentRecordingPath.mkdir(parents=True, exist_ok=True)
     # Return a path to the new directory's data.txt file for IMU data recording.
     dataFilePath = str(Path(currentRecordingPath, 'data.txt'))
