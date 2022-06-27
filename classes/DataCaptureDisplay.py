@@ -186,8 +186,7 @@ class DataCaptureDisplay:
 
     def selectVideoForEdit(self, videoDirectory):
         print(f'Create editing data for: {videoDirectory}')
-        videoDetails = ut.getVideoDetails(videoDirectory)
-
+        videoDetails = ut.getVideoDetails(self.videosPath, videoDirectory)
 
     def toggleEditing(self):
         """

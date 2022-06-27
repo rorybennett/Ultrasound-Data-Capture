@@ -1,6 +1,7 @@
 """
 Helper script containing functions used throughout ultrasound_data_capture module.
 """
+import time
 from pathlib import Path
 import cv2
 import numpy as np
@@ -168,20 +169,30 @@ def resizeFrame(frame, newDimensions) -> Image:
     resizedFrame = cv2.resize(frame, newDimensions, interpolation=cv2.INTER_NEAREST)
     return resizedFrame
 
-def getVideoDetails(videoDirectory: str) -> dict:
+def getVideoDetails(videosPath: Path, videoDirectory: str) -> dict:
     """
     Get details about the current video directory that has been opened for Editing. The following details are returned
     in a dictionary to be used to populate an information block on the selected video:
-            Date (str)       -       Date and time recording was started (in a more easy to read format).
-            Duration (str)   -       How long the test was run for (in HH:MM:SS).
+            Path (str)          -       Full path to the video directory.
+            Date (str)          -       Date and time recording was started (in a more easy to read format).
+            Duration (str)      -       How long the test was run for (in HH:MM:SS).
 
     Args:
+        videosPath (Path): Path to the Generated/Videos directory (parent of the recording).
         videoDirectory (str): Local path to the selected video directory.
 
     Returns:
         videoDetails (dict): Dictionary of details about the video. Keys above.
     """
     videoDetails = {}
+    # Adding the Path to the dictionary.
+    videoPath = Path(videosPath, videoDirectory)
+    videoDetails['Path'] = videoPath.as_posix()
+    # Adding Date to the dictionary.
+    videoDetails['Date'] = time.strftime('%H:%M:%S on %d %B %Y', time.strptime(videoDirectory, '%d %m %Y %H-%M-%S,%f'))
+
+    print(videoDetails)
+    return videoDetails
 
 def frameToBytes(frame) -> bytes:
     """
