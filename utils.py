@@ -168,6 +168,20 @@ def resizeFrame(frame, newDimensions) -> Image:
     resizedFrame = cv2.resize(frame, newDimensions, interpolation=cv2.INTER_NEAREST)
     return resizedFrame
 
+def getVideoDetails(videoDirectory: str) -> dict:
+    """
+    Get details about the current video directory that has been opened for Editing. The following details are returned
+    in a dictionary to be used to populate an information block on the selected video:
+            Date (str)       -       Date and time recording was started (in a more easy to read format).
+            Duration (str)   -       How long the test was run for (in HH:MM:SS).
+
+    Args:
+        videoDirectory (str): Local path to the selected video directory.
+
+    Returns:
+        videoDetails (dict): Dictionary of details about the video. Keys above.
+    """
+    videoDetails = {}
 
 def frameToBytes(frame) -> bytes:
     """
