@@ -187,8 +187,10 @@ class DataCaptureDisplay:
         print(f'Has editing been enabled: {self.enableEditing}')
         # Editing has been enabled.
         if self.enableEditing:
-            self.frameGrabber.disconnect()
-            self.imu.disconnect()
+            if self.frameGrabber.isConnected:
+                self.frameGrabber.disconnect()
+            if self.imu.isConnected:
+                self.imu.disconnect()
             time.sleep(0.5)
 
         # Set element states.
