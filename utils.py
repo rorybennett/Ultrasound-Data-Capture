@@ -169,6 +169,7 @@ def resizeFrame(frame, newDimensions) -> Image:
     resizedFrame = cv2.resize(frame, newDimensions, interpolation=cv2.INTER_NEAREST)
     return resizedFrame
 
+
 def getVideoDetails(videosPath: Path, videoDirectory: str) -> dict:
     """
     Get details about the current video directory that has been opened for Editing. The following details are returned
@@ -190,9 +191,12 @@ def getVideoDetails(videosPath: Path, videoDirectory: str) -> dict:
     videoDetails['Path'] = videoPath.as_posix()
     # Adding Date to the dictionary.
     videoDetails['Date'] = time.strftime('%H:%M:%S on %d %B %Y', time.strptime(videoDirectory, '%d %m %Y %H-%M-%S,%f'))
+    # Adding duration to the dictionary.
+
 
     print(videoDetails)
     return videoDetails
+
 
 def frameToBytes(frame) -> bytes:
     """
