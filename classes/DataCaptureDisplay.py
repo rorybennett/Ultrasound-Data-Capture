@@ -206,8 +206,9 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(
             text='End Editing' if self.enableEditing else 'Start Editing',
             button_color=st.BUTTON_ACTIVE if self.enableEditing else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-COMBO-RECORDINGS-'].update(disabled=False if self.enableEditing else True,
-                                                     values=ut.getRecordingDirectories(self.videosPath))
+        self.windowMain['-COMBO-RECORDINGS-'].update(
+            values=ut.getRecordingDirectories(self.videosPath) if self.enableEditing else [],
+            disabled=False if self.enableEditing else True)
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True)
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
