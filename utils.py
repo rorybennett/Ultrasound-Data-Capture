@@ -196,7 +196,7 @@ def pngAsBytes(pngPath: str) -> bytes:
     # Convert local path to full path.
     pngPath = Path(Path.cwd(), pngPath)
     # Read image using openCV
-    img = cv2.imread(pngPath)
+    img = cv2.imread(str(pngPath))
     # Convert image to bytes
     pngBytes = frameToBytes(img)
 

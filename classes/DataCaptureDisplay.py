@@ -12,7 +12,7 @@ from classes import Layout
 import PySimpleGUI as sg
 import time
 from matplotlib.figure import Figure
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 """
 todo: Change implementation to have a global frame variable and constant window update rate.
@@ -57,10 +57,8 @@ class DataCaptureDisplay:
         self.lineData = None
         self.fig_agg = None
         self.bg = None
-        # Threading variables.
-        self.threadGetFrames = None
-        self.threadResizeFrames = None
-        self.threadSaveFrames = None
+        # Threading executor.
+        self.threadExecutor = ThreadPoolExecutor()
         # Recording variables for storing.
         self.frameRaw = None
         self.acceleration = None
@@ -191,7 +189,7 @@ class DataCaptureDisplay:
         if self.enableEditing:
             self.frameGrabber.disconnect()
             self.imu.disconnect()
-            time.sleep(0.2)
+            time.sleep(0.5)
 
         # Set element states.
         self.updateMenus()
@@ -202,13 +200,8 @@ class DataCaptureDisplay:
                                                      values=ut.getRecordingDirectories(self.videosPath))
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True)
-        print('Removing image')
-        self.windowMain['-IMAGE-FRAME-'].update(source=None,
-                                                filename=None,
-                                                data=None,
-                                                size=(None, None),
-                                                subsample=None,
-                                                visible=None)
+        self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-',
+                                          value=ut.pngAsBytes('icons/blank_background.png'))
 
     def getFramesThread(self):
         """
@@ -250,7 +243,6 @@ class DataCaptureDisplay:
                 # Display enabled?
                 if self.enableDisplay:
                     self.resizeFrame = True
-                # Update rate only if frame was returned.
 
         print('-------------------------------------------\nThread closing down: '
               'getFramesThread.\n-------------------------------------------')
@@ -271,11 +263,7 @@ class DataCaptureDisplay:
         to be necessary.
         """
         print('Thread starting up: resizeFramesThread.')
-        while True:
-            # End thread if frameGrabber not connected.
-            if not self.frameGrabber.isConnected:
-                break
-
+        while self.frameGrabber.isConnected:
             if self.resizeFrame:
                 self.resizeFrame = False
                 resizeFps1 = time.time()
@@ -309,11 +297,7 @@ class DataCaptureDisplay:
         to be necessary.
         """
         print('Thread starting up: saveFramesThread.\n')
-        while True:
-            # End thread if frameGrabber not connected.
-            if not self.frameGrabber.isConnected:
-                break
-
+        while self.frameGrabber.isConnected:
             if self.saveFrame:
                 self.saveFrame = False
                 frameName = f'{self.frameGrabCounter}-{int(time.time() * 1000)}'
@@ -369,12 +353,9 @@ class DataCaptureDisplay:
         # Attempt to connect to source (internally disconnect if currently connected).
         self.frameGrabber.connect()
         # Start frame threads.
-        self.threadGetFrames = threading.Thread(target=self.getFramesThread, daemon=True)
-        self.threadGetFrames.start()
-        self.threadResizeFrames = threading.Thread(target=self.resizeFramesThread, daemon=True)
-        self.threadResizeFrames.start()
-        self.threadSaveFrames = threading.Thread(target=self.saveFramesThread, daemon=True)
-        self.threadSaveFrames.start()
+        self.threadExecutor.submit(self.getFramesThread)
+        self.threadExecutor.submit(self.resizeFramesThread)
+        self.threadExecutor.submit(self.saveFramesThread)
         # Update menus.
         self.updateMenus()
         # Set element states.
