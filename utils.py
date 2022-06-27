@@ -254,3 +254,55 @@ def createBatteryTestDirectory() -> Path:
     print(f'BatteryTests directory created: {batteryTestPath.absolute()}')
     # Return a path to the created directory.
     return batteryTestPath
+
+def getTimeFromName(frameName: str) -> int:
+    """
+    Extract time from the frame name. The frame name is composed as such: (frame number)-(time).(png).
+
+    Args:
+        frameName (str): Name of the frame as a string.
+
+    Returns:
+        timeAsInt (int): Time as an integer.
+    """
+    timeAsInt = int(frameName.split('-')[1].split('.')[0])
+    return timeAsInt
+
+def getAccelerationFromRow(row: list) -> list:
+    """
+    Extract the acceleration from a row. The third, fourth, and fifth elements in the row.
+
+    Args:
+        row (str): Pulled from csv.reader.
+
+    Returns:
+        acceleration (list): List of the three acceleration values in the x, y, and z directions.
+    """
+    acceleration = [float(row[2]), float(row[3]), float(row[4])]
+    return acceleration
+
+def getQuaternionFromRow(row: list) -> list:
+    """
+    Extract the quaternion from a row. The 7, 8, 9, and 10 elements in the row.
+
+    Args:
+        row (str): Pulled from csv.reader.
+
+    Returns:
+        quaternion (list): List of the 4 quaternion values.
+    """
+    quaternion = [float(row[6]), float(row[7]), float(row[8]), float(row[9])]
+    return quaternion
+
+def getDimensionsFromRow(row: list) -> list:
+    """
+    Extract the dimensions from a row. The 11, and 12 elements in the row.
+
+    Args:
+        row (str): Pulled from csv.reader.
+
+    Returns:
+        dimensions (list): List of the width and height dimensions.
+    """
+    dimensions = [float(row[12]), float(row[13])]
+    return dimensions
