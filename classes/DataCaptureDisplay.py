@@ -14,6 +14,8 @@ import time
 from matplotlib.figure import Figure
 from concurrent.futures import ThreadPoolExecutor
 
+from classes.VideoDetails import VideoDetails
+
 """
 todo: Change implementation to have a global frame variable and constant window update rate.
 
@@ -71,6 +73,8 @@ class DataCaptureDisplay:
         self.recordStartTime = None
         # Editing state.
         self.enableEditing = False
+        # VideoDetails object.
+        self.videoDetails = None
 
         # IMU connect window
         self.windowImuConnect = None
@@ -186,7 +190,7 @@ class DataCaptureDisplay:
 
     def selectVideoForEdit(self, videoDirectory):
         print(f'Create editing data for: {videoDirectory}')
-        videoDetails = ut.getVideoDetails(self.videosPath, videoDirectory)
+        self.videoDetails = VideoDetails(self.videosPath, videoDirectory)
 
     def toggleEditing(self):
         """
