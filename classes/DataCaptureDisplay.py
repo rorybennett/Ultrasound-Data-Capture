@@ -42,7 +42,7 @@ class DataCaptureDisplay:
         # Save a single frame.
         self.saveSingleFrame = False
         # Counter for labelling frame number in a recording.
-        self.frameGrabCounter = 0
+        self.frameGrabCounter = 1
         # IMU object instantiated with default values.
         self.imu = IMU.IMU()
         # Display FrameGrabber results.
@@ -415,7 +415,7 @@ class DataCaptureDisplay:
         if self.enableRecording:
             self.currentRecordingPath, self.currentDataFilePath = ut.createRecordingDirectory(self.videosPath)
             self.currentDataFile = open(self.currentDataFilePath, 'w')
-            self.frameGrabCounter = 0
+            self.frameGrabCounter = 1
             self.recordStartTime = time.time()
             self.windowMain['-TEXT-RECORD-START-'].update(time.strftime('%H:%M:%S'))
         else:
