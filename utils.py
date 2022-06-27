@@ -296,7 +296,7 @@ def getQuaternionFromRow(row: list) -> list:
 
 def getDimensionsFromRow(row: list) -> list:
     """
-    Extract the dimensions from a row. The 11, and 12 elements in the row.
+    Extract the dimensions from a row. The 12, and 13 elements in the row.
 
     Args:
         row (str): Pulled from csv.reader.
@@ -304,5 +304,5 @@ def getDimensionsFromRow(row: list) -> list:
     Returns:
         dimensions (list): List of the width and height dimensions.
     """
-    dimensions = [float(row[12]), float(row[13])]
+    dimensions = [float(row[11]), float(row[12])]
     return dimensions
