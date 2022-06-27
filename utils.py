@@ -183,6 +183,26 @@ def frameToBytes(frame) -> bytes:
     return byteFrame
 
 
+def pngAsBytes(pngPath: str) -> bytes:
+    """
+    Converts the .png file at the specified path to bytes, used to be displayed as a frame.
+
+    Args:
+        pngPath (str): Local path to .png file.
+
+    Returns:
+        pngBytes (bytes): .png file converted to bytes.
+    """
+    # Convert local path to full path.
+    pngPath = Path(Path.cwd(), pngPath)
+    # Read image using openCV
+    img = cv2.imread(pngPath)
+    # Convert image to bytes
+    pngBytes = frameToBytes(img)
+
+    return pngBytes
+
+
 def saveSingleFrame(frame, framePath):
     """
     Save a single frame to the specified path. The path must include the intended name of the frame, not just the
