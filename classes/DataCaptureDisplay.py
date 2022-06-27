@@ -176,7 +176,7 @@ class DataCaptureDisplay:
             if event == '-BUTTON-EDIT-TOGGLE-':
                 self.toggleEditing()
             elif event == '-COMBO-RECORDINGS-':
-                print(f'Create editing data for: {values[event]}')
+                self.selectVideoForEdit(values[event])
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
@@ -184,10 +184,16 @@ class DataCaptureDisplay:
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
 
+    def selectVideoForEdit(self, videoDirectory):
+        print(f'Create editing data for: {videoDirectory}')
+        videoDetails = ut.getVideoDetails(videoDirectory)
+
+
     def toggleEditing(self):
         """
         Function to toggle the editing state of the program. When in editing state, the Signal Source and IMU menu items
-        are disabled. The FrameGrabber object and IMU are disconnected and the plot is cleared.
+        are disabled. The FrameGrabber object and IMU are disconnected and the plot is cleared. Some buttons are
+        disabled and some are reset to default values. The display and plot are enabled for consistency.
         """
         self.enableEditing = not self.enableEditing
         # Enable the frame display for consistency.
