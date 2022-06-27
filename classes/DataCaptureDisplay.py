@@ -183,8 +183,14 @@ class DataCaptureDisplay:
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
 
     def toggleEditing(self):
+        """
+        Function to toggle the editing state of the program. When in editing state, the Signal Source and IMU menu items
+        are disabled. The FrameGrabber object and IMU are disconnected and the plot is cleared.
+        """
         self.enableEditing = not self.enableEditing
-        print(f'Has editing been enabled: {self.enableEditing}')
+        # Enable the frame display for consistency.
+        self.enableDisplay = True
+        print(f'Entering editing mode: {self.enableEditing}')
         # Editing has been enabled.
         if self.enableEditing:
             if self.frameGrabber.isConnected:
@@ -202,8 +208,15 @@ class DataCaptureDisplay:
                                                      values=ut.getRecordingDirectories(self.videosPath))
         self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True)
+        self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
+                                                          text='Disable Display',
+                                                          disabled=True if self.enableEditing else False)
+        self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
+                                                       text='Disable Plotting',
+                                                       disabled=True if self.enableEditing else False)
         self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))
+        # todo clear plot when i have access to an imu to test it
 
     def getFramesThread(self):
         """
