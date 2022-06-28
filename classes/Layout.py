@@ -71,7 +71,8 @@ class Layout:
              sg.Column(detailsColumn),
              sg.Column([], expand_x=True, background_color='red')],
             [sg.Text('Path:', font=st.INFO_TEXT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT)]
+             sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT + ' underline', text_color='blue',
+                     click_submits=True)]
         ]
 
     def __createDisplayRow(self):
