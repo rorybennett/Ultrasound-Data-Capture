@@ -4,7 +4,10 @@ Class for details about a recording. All the details will be stored in this clas
 from pathlib import Path
 import time
 import csv
+import cv2
+
 import utils as ut
+import constants as c
 
 
 class RecordingDetails:
@@ -48,6 +51,25 @@ class RecordingDetails:
 
         # Estimated fps of recording.
         self.fps = int(1000 * self.frameCount / self.duration)
+
+        # Tracks position of current frame being displayed, starts at 1.
+        self.currentFramePosition = 1
+
+    def getCurrentFrameAsBytes(self):
+        """
+        Return the byte representation of the current frame, based of self.currentFramePosition.
+
+        Returns:
+            frameAsBytes (bytes): Bytes representation of frame for displaying.
+        """
+        # Acquire current frame from stored location.
+        frame = cv2.imread(self.path + self.frameNames[self.currentFramePosition - 1])
+        # Resize the frame for the display element.
+        resizeFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
+        # Convert resized frame to bytes.
+        frameAsBytes = ut.frameToBytes(resizeFrame)
+
+        return frameAsBytes
 
     def __getImuDataFromFile(self):
         """
