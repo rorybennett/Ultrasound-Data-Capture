@@ -40,12 +40,29 @@ def getRecordingDirectories(videosPath: Path) -> list:
     Return a list of all the stored recording directories in the Generated/Videos directory. This list is used
     in a COMBO element when editing so the user can select which folder they want to edit/browse the frames of.
 
+    Args:
+        videosPath (Path): Path to directory containing all video directories.
+
     Returns:
         recordedVideos (list): List of recorded videos directories as strings.
     """
     videoDirectories = [vd.stem for vd in videosPath.iterdir() if vd.is_dir()]
 
     return videoDirectories
+
+def getFrameCountInDirectory(videoPath: Path) -> int:
+    """
+    Return the total number of saved frames in a directory. Frames are saved as .png images within a video directory.
+
+    Args:
+        videoPath (Path): Path to video directory where frames are stored.
+
+    Returns:
+        frameCount (int): Number of frames in directory.
+    """
+    frameCount = len([vd for vd in videoPath.glob('*.png')])
+
+    return frameCount
 
 
 def rotatePoints(points: list, quaternion: list) -> np.array:
