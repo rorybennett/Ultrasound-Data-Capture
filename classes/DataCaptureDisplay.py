@@ -198,7 +198,8 @@ class DataCaptureDisplay:
         # Set element states
         self.windowMain['-TEXT-DETAILS-DATE-'].update(self.recordingDetails.date)
         self.windowMain['-TEXT-DETAILS-PATH-'].update(self.recordingDetails.path)
-        self.windowMain['-TEXT-DETAILS-DURATION-'].update(self.recordingDetails.duration)
+        self.windowMain['-TEXT-DETAILS-DURATION-'].update(
+            time.strftime('%H:%M:%S', time.localtime(self.recordingDetails.duration / 1000)))
         self.windowMain['-TEXT-DETAILS-FRAMES-'].update(self.recordingDetails.frameCount)
         self.windowMain['-TEXT-DETAILS-POINTS-'].update(self.recordingDetails.imuCount)
         self.windowMain['-TEXT-DETAILS-FPS-'].update(self.recordingDetails.fps)
