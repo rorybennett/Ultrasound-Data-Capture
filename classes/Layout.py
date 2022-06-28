@@ -66,9 +66,33 @@ class Layout:
              sg.Text(key='-TEXT-DETAILS-FPS-', font=st.DESC_FONT, expand_x=True, justification='right')]
         ]
 
+        navigationColumn = [
+            [sg.Text('Navigation', font=st.DESC_FONT, pad=((0, 0), (0, 10)), expand_x=True,
+                     justification='center')],
+            [sg.HSeparator()],
+            [sg.Button(key='-BUTTON-NAV-PPP', button_text='-10', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+                       disabled=True),
+             sg.Button(key='-BUTTON-NAV-PP', button_text='-5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+                       disabled=True),
+             sg.Button(key='-BUTTON-NAV-P', button_text='-1', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+                       disabled=True),
+             sg.Button(key='-BUTTON-NAV-N', button_text='+1', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+                       disabled=True),
+             sg.Button(key='-BUTTON-NAV-NN', button_text='+5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+                       disabled=True),
+             sg.Button(key='-BUTTON-NAV-NNN', button_text='+10', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+                       disabled=True),
+             ],
+            [sg.Text('Go to frame:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
+             sg.Input(key='-INPUT-NAV-GOTO-', font=st.DESC_FONT, justification='center', size=(9, 1))],
+            [sg.Text('Current frame:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True,  justification='left'),
+             sg.Text(key='-TEXT-NAV-CURRENT-', text='____/____', font=st.DESC_FONT, justification='right')],
+        ]
+
         return [
             [sg.Column(selectColumn, vertical_alignment='top'),
              sg.Column(detailsColumn),
+             sg.Column(navigationColumn, vertical_alignment='top'),
              sg.Column([], expand_x=True, background_color='red')],
             [sg.Text('Path:', font=st.INFO_TEXT, pad=((0, 0), (0, 0))),
              sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT + ' underline', text_color='blue',

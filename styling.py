@@ -14,5 +14,7 @@ DESC_FONT = 'Helvetica 12'
 INFO_TEXT = 'Helvetica 10'
 # Font used on buttons.
 BUTTON_FONT = 'Helvetica 14 bold'
+# Font used on smaller buttons.
+BUTTON_FONT_SMALL = 'Helvetica 10 bold'
 # Button colour when active
 BUTTON_ACTIVE = '#cc493f'
