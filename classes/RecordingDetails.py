@@ -1,5 +1,5 @@
 """
-Class for details about a video. All the details will be stored in this class, including editing information.
+Class for details about a recording. All the details will be stored in this class, including editing information.
 """
 from pathlib import Path
 import time
@@ -7,10 +7,10 @@ import csv
 import utils as ut
 
 
-class VideoDetails:
-    def __init__(self, videosPath: Path, videoDirectory: str):
+class RecordingDetails:
+    def __init__(self, videosPath: Path, recordingDirectory: str):
         """
-        Initially created variables for the VideoDetails class:
+        Initially created variables for the RecordingDetails class:
             details (dict)      -       Supplementary details about the recording:
                 path (str)          -       Full path to the video directory.
                 date (str)          -       Date and time recording was started (in a more easy to read format).
@@ -27,12 +27,12 @@ class VideoDetails:
 
             Args:
                 videosPath (Path): Path to the Generated/Videos directory (parent of the recording).
-                videoDirectory (str): Local path to the selected video directory.
+                recordingDirectory (str): Local path to the selected video directory.
         """
         # Supplementary details about the recording, path and date.
-        self.details = {'path': Path(videosPath, videoDirectory).as_posix(),
+        self.details = {'path': Path(videosPath, recordingDirectory).as_posix(),
                         'date': time.strftime('%H:%M:%S on %d %B %Y',
-                                              time.strptime(videoDirectory, '%d %m %Y %H-%M-%S,%f'))}
+                                              time.strptime(recordingDirectory, '%d %m %Y %H-%M-%S,%f'))}
 
         # Number of frames saved as .png images.
         self.frameCount = ut.getFrameCountInDirectory(Path(self.details['path']))
