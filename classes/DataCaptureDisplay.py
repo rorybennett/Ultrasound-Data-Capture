@@ -8,19 +8,12 @@ from classes import FrameGrabber
 import constants as c
 from classes import Menu
 from classes import Layout
+from classes.RecordingDetails import RecordingDetails
 
 import PySimpleGUI as sg
 import time
 from matplotlib.figure import Figure
 from concurrent.futures import ThreadPoolExecutor
-
-from classes.RecordingDetails import RecordingDetails
-
-"""
-todo: Change implementation to have a global frame variable and constant window update rate.
-
-todo: Make method to disconnect frameGrabber without needing to delete it. 
-"""
 
 
 class DataCaptureDisplay:
@@ -80,6 +73,8 @@ class DataCaptureDisplay:
         self.windowImuConnect = None
 
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getMainWindowLayout(), finalize=True)
+
+        self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
 
         self.createPlot(c.DEFAULT_AZIMUTH)
 
@@ -184,6 +179,10 @@ class DataCaptureDisplay:
             elif event == '-TEXT-DETAILS-PATH-':
                 if self.recordingDetails:
                     ut.openWindowsExplorer(self.recordingDetails.path)
+            elif event in Layout.NAVIGATION_KEYS:
+                print(f"Navigate frames: {event.split('-')[-2]}")
+            elif event == '-INPUT-NAV-GOTO-' + '_Enter':
+                print(f"Go to frame: {values['-INPUT-NAV-GOTO-']}")
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
@@ -203,6 +202,14 @@ class DataCaptureDisplay:
         self.windowMain['-TEXT-DETAILS-FRAMES-'].update(self.recordingDetails.frameCount)
         self.windowMain['-TEXT-DETAILS-POINTS-'].update(self.recordingDetails.imuCount)
         self.windowMain['-TEXT-DETAILS-FPS-'].update(self.recordingDetails.fps)
+        self.windowMain['-BUTTON-NAV-PPP-'].update(disabled=False)
+        self.windowMain['-BUTTON-NAV-PP-'].update(disabled=False)
+        self.windowMain['-BUTTON-NAV-P-'].update(disabled=False)
+        self.windowMain['-BUTTON-NAV-N-'].update(disabled=False)
+        self.windowMain['-BUTTON-NAV-NN-'].update(disabled=False)
+        self.windowMain['-BUTTON-NAV-NNN-'].update(disabled=False)
+        self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
+        self.windowMain['-TEXT-NAV-CURRENT-'].update(f'1/{self.recordingDetails.frameCount}')
 
     def toggleEditing(self):
         """
@@ -225,20 +232,28 @@ class DataCaptureDisplay:
 
         # Set element states.
         self.updateMenus()
-        self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(
-            text='End Editing' if self.enableEditing else 'Start Editing',
-            button_color=st.BUTTON_ACTIVE if self.enableEditing else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-COMBO-RECORDINGS-'].update(
-            values=ut.getRecordingDirectories(self.videosPath) if self.enableEditing else [],
-            disabled=False if self.enableEditing else True)
-        self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
+        # Recording elements.
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True)
+        self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
+        # Plotting and display elements.
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
                                                           text='Disable Display',
                                                           disabled=True if self.enableEditing else False)
         self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
                                                        text='Disable Plotting',
                                                        disabled=True if self.enableEditing else False)
+        # Editing elements
+        self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(
+            text='End Editing' if self.enableEditing else 'Start Editing',
+            button_color=st.BUTTON_ACTIVE if self.enableEditing else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-COMBO-RECORDINGS-'].update(
+            values=ut.getRecordingDirectories(self.videosPath) if self.enableEditing else [],
+            disabled=False if self.enableEditing else True)
+
+        [self.windowMain[i].update(disabled=True) for i in Layout.NAVIGATION_KEYS]
+        self.windowMain['-INPUT-NAV-GOTO-'].update(text='', disabled=True)
+        self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
+
         self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))
         # todo clear plot when i have access to an imu to test it
