@@ -43,16 +43,41 @@ class Layout:
         """
         Create the editing row of the main window. This is a work in progress: todo
         """
-        detailsColumn = [
+        selectColumn = [
             [sg.Button(key='-BUTTON-EDIT-TOGGLE-', button_text='Start Editing', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 0), (0, 5)))],
             [sg.Combo(key='-COMBO-RECORDINGS-', size=21, font=st.COMBO_FONT_SMALL, disabled=True, values=[],
-                      enable_events=True, readonly=True, pad=((0, 0), (0, 0)))],
-            []
+                      enable_events=True, readonly=True, pad=((0, 0), (0, 0)))]
+        ]
+
+        detailsBox1 = [
+            [sg.Text('Date:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-DATE-', font=st.DESC_FONT)],
+            [sg.Text('Path:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-PATH-', font=st.DESC_FONT)]
+        ]
+
+        detailsBox2 = [
+            [sg.Text('Duration:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-DURATION-', font=st.DESC_FONT)],
+            [sg.Text('Frames:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-FRAMES-', font=st.DESC_FONT)],
+            [sg.Text('Data Points:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-POINTS-', font=st.DESC_FONT)],
+            [sg.Text('Estimated FPS:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-FPS-', font=st.DESC_FONT)],
+        ]
+
+        detailsColumn = [
+            [sg.Text('Recording Details', font=st.DESC_FONT + ' underline', pad=((0, 0), (0, 10)), expand_x=True,
+                     justification='center')],
+            [sg.Column(detailsBox1, element_justification='center'),
+             sg.Column(detailsBox2, element_justification='center')]
         ]
 
         return [
-            detailsColumn
+            sg.Column(selectColumn),
+            sg.Column(detailsColumn)
         ]
 
     def __createDisplayRow(self):
