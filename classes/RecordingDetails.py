@@ -62,15 +62,15 @@ class RecordingDetails:
         The number of saved frames comes from the frameGrabberCounter in the DataCaptureDisplay class.
         """
         # Information acquired from the IMU data.txt file.
-        with open(self.details['path'] + '/data.txt', 'r') as dataFile:
+        with open(self.path + '/data.txt', 'r') as dataFile:
             reader = csv.reader(dataFile)
             for row in reader:
                 self.frameNames.append(row[0])
                 self.acceleration.append(ut.getAccelerationFromRow(row))
                 self.quaternion.append(ut.getQuaternionFromRow(row))
                 self.dimensions.append(ut.getDimensionsFromRow(row))
-            self.details['imuCount'] = len(self.frameNames)
-            self.details['duration'] = ut.getTimeFromName(self.frameNames[0]) - ut.getTimeFromName(self.frameNames[-1])
+            self.imuCount = len(self.frameNames)
+            self.duration = ut.getTimeFromName(self.frameNames[0]) - ut.getTimeFromName(self.frameNames[-1])
 
             """
             Run some variable validation tests to ensure the numbers match. If they do not, display a warning.
@@ -78,12 +78,12 @@ class RecordingDetails:
             """
             # Check if the last frame number in the data.txt file matches the total number of rows.
             lastFrameNumber = int(row[0].split('-')[0])
-            if lastFrameNumber != self.details['imuCount']:
+            if lastFrameNumber != self.imuCount:
                 print(f"!!! There is an inconsistency in the data.txt file."
-                      f" The number of lines {self.details['imuCount']} and the frame number {lastFrameNumber}"
+                      f" The number of lines {self.imuCount} and the frame number {lastFrameNumber}"
                       f" do not match. !!!")
             # Check if the number of saved .png frames matches the number of rows.
-            if self.frameCount != self.details['imuCount']:
+            if self.frameCount != self.imuCount:
                 print(f"!!! There is an inconsistency between the data.txt file and the number of saved frames in the "
                       f"video directory. The number of saved frames {self.frameCount} and the number of lines"
-                      f" {self.details['imuCount']} do not match. !!!")
+                      f" {self.imuCount} do not match. !!!")
