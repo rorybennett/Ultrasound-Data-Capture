@@ -70,7 +70,7 @@ class RecordingDetails:
                 self.quaternion.append(ut.getQuaternionFromRow(row))
                 self.dimensions.append(ut.getDimensionsFromRow(row))
             self.imuCount = len(self.frameNames)
-            self.duration = ut.getTimeFromName(self.frameNames[0]) - ut.getTimeFromName(self.frameNames[-1])
+            self.duration = ut.getTimeFromName(self.frameNames[-1]) - ut.getTimeFromName(self.frameNames[1])
 
             """
             Run some variable validation tests to ensure the numbers match. If they do not, display a warning.
