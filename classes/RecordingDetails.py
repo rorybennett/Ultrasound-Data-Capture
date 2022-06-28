@@ -11,12 +11,10 @@ class RecordingDetails:
     def __init__(self, videosPath: Path, recordingDirectory: str):
         """
         Initially created variables for the RecordingDetails class:
-            details (dict)      -       Supplementary details about the recording:
-                path (str)          -       Full path to the video directory.
-                date (str)          -       Date and time recording was started (in a more easy to read format).
-                imuCount (int)      -       Total lines in data.txt (number of imu values available).
-                duration (str)      -       How long the test was run for (in milliseconds).
-
+            path (str)          -       Full path to the video directory.
+            date (str)          -       Date and time recording was started (in a more easy to read format).
+            imuCount (int)      -       Total lines in data.txt (number of imu values available).
+            duration (str)      -       How long the test was run for (in milliseconds).
             frameCount (int)    -       Number of frames stored as .png images in the directory.
             frameNames (list)   -       All frame names as stored in the data.txt file (should match frame names
                                         in directory).
@@ -29,13 +27,14 @@ class RecordingDetails:
                 videosPath (Path): Path to the Generated/Videos directory (parent of the recording).
                 recordingDirectory (str): Local path to the selected video directory.
         """
-        # Supplementary details about the recording, path and date.
-        self.details = {'path': Path(videosPath, recordingDirectory).as_posix(),
-                        'date': time.strftime('%H:%M:%S on %d %B %Y',
-                                              time.strptime(recordingDirectory, '%d %m %Y %H-%M-%S,%f'))}
-
+        # Path to recording directory.
+        self.path = Path(videosPath, recordingDirectory).as_posix()
+        # Date recording took place.
+        self.date = time.strftime('%H:%M:%S on %d %B %Y', time.strptime(recordingDirectory, '%d %m %Y %H-%M-%S,%f'))
+        # Duration of recording.
+        self.duration = 0
         # Number of frames saved as .png images.
-        self.frameCount = ut.getFrameCountInDirectory(Path(self.details['path']))
+        self.frameCount = ut.getFrameCountInDirectory(Path(self.path))
         # Frame names as read from data.txt file.
         self.frameNames = []
         # Acceleration data.
@@ -48,7 +47,7 @@ class RecordingDetails:
         self.__getImuDataFromFile()
 
         # Estimated fps of recording.
-        self.details['fps'] = 1000 * self.frameCount/self.details['duration']
+        self.fps = 1000 * self.frameCount / self.duration
 
     def __getImuDataFromFile(self):
         """
