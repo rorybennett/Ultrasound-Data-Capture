@@ -50,32 +50,26 @@ class Layout:
                       enable_events=True, readonly=True, pad=((0, 0), (0, 0)))]
         ]
 
-        detailsBox1 = [
-            [sg.Text('Date:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-DATE-', font=st.DESC_FONT)],
-            [sg.Text('Duration:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-DURATION-', font=st.DESC_FONT)]
-        ]
-
-        detailsBox2 = [
-            [sg.Text('Frames:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-FRAMES-', font=st.DESC_FONT)],
-            [sg.Text('Data Points:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-POINTS-', font=st.DESC_FONT)],
-            [sg.Text('Estimated FPS:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-FPS-', font=st.DESC_FONT)],
-        ]
-
         detailsColumn = [
-            [sg.Text('Recording Details', font=st.DESC_FONT + ' underline', pad=((0, 0), (0, 10)), expand_x=True,
+            [sg.Text('Recording Details', font=st.DESC_FONT, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
-            [sg.Column(detailsBox1, element_justification='center'),
-             sg.Column(detailsBox2, element_justification='center')]
+            [sg.HSeparator()],
+            [sg.Text('Date:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left', size=(10, 1)),
+             sg.Text(key='-TEXT-DETAILS-DATE-', font=st.DESC_FONT, justification='right', size=(12, 2))],
+            [sg.Text('Duration:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left', size=(10, 1)),
+             sg.Text(key='-TEXT-DETAILS-DURATION-', font=st.DESC_FONT, expand_x=True, justification='right')],
+            [sg.Text('Frames:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left'),
+             sg.Text(key='-TEXT-DETAILS-FRAMES-', font=st.DESC_FONT, expand_x=True, justification='right')],
+            [sg.Text('Data Points:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left'),
+             sg.Text(key='-TEXT-DETAILS-POINTS-', font=st.DESC_FONT, expand_x=True, justification='right')],
+            [sg.Text('Estimated FPS:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left'),
+             sg.Text(key='-TEXT-DETAILS-FPS-', font=st.DESC_FONT, expand_x=True, justification='right')]
         ]
 
         return [
-            [sg.Column(selectColumn),
-            sg.Column(detailsColumn)],
+            [sg.Column(selectColumn, vertical_alignment='top'),
+             sg.Column(detailsColumn),
+             sg.Column([], expand_x=True, background_color='red')],
             [sg.Text('Path:', font=st.INFO_TEXT, pad=((0, 0), (0, 0))),
              sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT)]
         ]
