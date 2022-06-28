@@ -181,6 +181,9 @@ class DataCaptureDisplay:
                 self.toggleEditing()
             elif event == '-COMBO-RECORDINGS-':
                 self.selectVideoForEdit(values[event])
+            elif event == '-TEXT-DETAILS-PATH-':
+                if self.recordingDetails:
+                    ut.openWindowsExplorer(self.recordingDetails.path)
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
@@ -209,6 +212,7 @@ class DataCaptureDisplay:
         self.enableEditing = not self.enableEditing
         # Enable the frame display for consistency.
         self.enableDisplay = True
+        self.recordingDetails = None
         print(f'Entering editing mode: {self.enableEditing}')
         # Editing has been enabled.
         if self.enableEditing:
