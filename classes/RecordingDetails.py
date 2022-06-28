@@ -30,7 +30,7 @@ class RecordingDetails:
         # Path to recording directory.
         self.path = Path(videosPath, recordingDirectory).as_posix()
         # Date recording took place.
-        self.date = time.strftime('%H:%M:%S on %d %B %Y', time.strptime(recordingDirectory, '%d %m %Y %H-%M-%S,%f'))
+        self.date = time.strftime('%d %b %Y\n%H:%M:%S', time.strptime(recordingDirectory, '%d %m %Y %H-%M-%S,%f'))
         # Duration of recording.
         self.duration = 0
         # Number of frames saved as .png images.
