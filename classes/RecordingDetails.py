@@ -15,7 +15,7 @@ class RecordingDetails:
                 path (str)          -       Full path to the video directory.
                 date (str)          -       Date and time recording was started (in a more easy to read format).
                 imuCount (int)      -       Total lines in data.txt (number of imu values available).
-                duration (str)      -       How long the test was run for (in HH:MM:SS).
+                duration (str)      -       How long the test was run for (in milliseconds).
 
             frameCount (int)    -       Number of frames stored as .png images in the directory.
             frameNames (list)   -       All frame names as stored in the data.txt file (should match frame names
@@ -46,6 +46,9 @@ class RecordingDetails:
         self.dimensions = []
 
         self.__getImuDataFromFile()
+
+        # Estimated fps of recording.
+        self.details['fps'] = 1000 * self.frameCount/self.details['duration']
 
     def __getImuDataFromFile(self):
         """
