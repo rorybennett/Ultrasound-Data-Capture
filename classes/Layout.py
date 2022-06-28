@@ -6,6 +6,16 @@ import constants as c
 import styling as st
 import PySimpleGUI as sg
 
+# Keys used for the basic navigation of frames.
+NAVIGATION_KEYS = [
+    '-BUTTON-NAV-PPP-',
+    '-BUTTON-NAV-PP-',
+    '-BUTTON-NAV-P-',
+    '-BUTTON-NAV-N-',
+    '-BUTTON-NAV-NN-',
+    '-BUTTON-NAV-NNN-'
+]
+
 
 class Layout:
     def __init__(self, menu):
@@ -70,22 +80,22 @@ class Layout:
             [sg.Text('Navigation', font=st.DESC_FONT, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
             [sg.HSeparator()],
-            [sg.Button(key='-BUTTON-NAV-PPP', button_text='-10', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+            [sg.Button(key=NAVIGATION_KEYS[0], button_text='-10', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key='-BUTTON-NAV-PP', button_text='-5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+             sg.Button(key=NAVIGATION_KEYS[1], button_text='-5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key='-BUTTON-NAV-P', button_text='-1', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+             sg.Button(key=NAVIGATION_KEYS[2], button_text='-1', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key='-BUTTON-NAV-N', button_text='+1', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+             sg.Button(key=NAVIGATION_KEYS[3], button_text='+1', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key='-BUTTON-NAV-NN', button_text='+5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+             sg.Button(key=NAVIGATION_KEYS[4], button_text='+5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key='-BUTTON-NAV-NNN', button_text='+10', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
+             sg.Button(key=NAVIGATION_KEYS[5], button_text='+10', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
              ],
             [sg.Text('Go to frame:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-NAV-GOTO-', font=st.DESC_FONT, justification='center', size=(9, 1))],
-            [sg.Text('Current frame:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True,  justification='left'),
+             sg.Input(key='-INPUT-NAV-GOTO-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
+            [sg.Text('Current frame:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
              sg.Text(key='-TEXT-NAV-CURRENT-', text='____/____', font=st.DESC_FONT, justification='right')],
         ]
 
