@@ -322,7 +322,7 @@ class DataCaptureDisplay:
             if self.resizeFrame:
                 self.resizeFrame = False
                 resizeFps1 = time.time()
-                resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS)
+                resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
                 frameBytes = ut.frameToBytes(resizedFrame)
                 self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-', value=frameBytes)
                 # Resize frame rate estimate.

@@ -13,6 +13,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 import subprocess
 
+INTERPOLATION_NEAREST = cv2.INTER_NEAREST
+INTERPOLATION_AREA = cv2.INTER_AREA
+
 
 def createInitialDirectories() -> (Path, Path):
     """
@@ -170,7 +173,7 @@ def drawFigure(figure, canvas):
     return figure_canvas_agg
 
 
-def resizeFrame(frame, newDimensions) -> Image:
+def resizeFrame(frame, newDimensions, interpolation) -> Image:
     """
     Resize the given frame to the given dimensions. This is used to make the returned frame fit in the display box, and
     may result in some distortion if the video signal does not match the DEFAULT_DISPLAY_DIMENSIONS' aspect ratio.
@@ -185,7 +188,7 @@ def resizeFrame(frame, newDimensions) -> Image:
 
     """
 
-    resizedFrame = cv2.resize(frame, newDimensions, interpolation=cv2.INTER_NEAREST)
+    resizedFrame = cv2.resize(frame, newDimensions, interpolation=interpolation)
     return resizedFrame
 
 
