@@ -11,6 +11,7 @@ from pyquaternion import Quaternion
 import constants as c
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
+import subprocess
 
 
 def createInitialDirectories() -> (Path, Path):
@@ -49,6 +50,7 @@ def getRecordingDirectories(videosPath: Path) -> list:
     videoDirectories = [vd.stem for vd in videosPath.iterdir() if vd.is_dir()]
 
     return videoDirectories
+
 
 def getFrameCountInDirectory(videoPath: Path) -> int:
     """
@@ -272,6 +274,7 @@ def createBatteryTestDirectory() -> Path:
     # Return a path to the created directory.
     return batteryTestPath
 
+
 def getTimeFromName(frameName: str) -> int:
     """
     Extract time from the frame name. The frame name is composed as such: (frame number)-(time).(png).
@@ -284,6 +287,7 @@ def getTimeFromName(frameName: str) -> int:
     """
     timeAsInt = int(frameName.split('-')[1].split('.')[0])
     return timeAsInt
+
 
 def getAccelerationFromRow(row: list) -> list:
     """
@@ -298,6 +302,7 @@ def getAccelerationFromRow(row: list) -> list:
     acceleration = [float(row[2]), float(row[3]), float(row[4])]
     return acceleration
 
+
 def getQuaternionFromRow(row: list) -> list:
     """
     Extract the quaternion from a row. The 7, 8, 9, and 10 elements in the row.
@@ -311,6 +316,7 @@ def getQuaternionFromRow(row: list) -> list:
     quaternion = [float(row[6]), float(row[7]), float(row[8]), float(row[9])]
     return quaternion
 
+
 def getDimensionsFromRow(row: list) -> list:
     """
     Extract the dimensions from a row. The 12, and 13 elements in the row.
@@ -323,3 +329,19 @@ def getDimensionsFromRow(row: list) -> list:
     """
     dimensions = [float(row[11]), float(row[12])]
     return dimensions
+
+
+def openWindowsExplorer(explorerPath: str):
+    """
+    Opens Windows explorer at the given string path. The path must be enclosed in double quotes to handle the whitespaces
+    in the folder name.
+
+    Args:
+        explorerPath (str): String path to open.
+    """
+    path = explorerPath.replace('/', '\\')
+    print(f'Attempting to open Windows explorer: {path}.')
+    try:
+        subprocess.Popen(f'explorer "{path}"')
+    except Exception as e:
+        print(f'Error opening Windows explorer: {e}')
