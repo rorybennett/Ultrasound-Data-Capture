@@ -107,6 +107,11 @@ class DataCaptureDisplay:
                 self.close()
                 break
 
+            # Event for updating displayed frame.
+            if event == '-UPDATE-FRAME-':
+                # Resized frame available.
+                self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
+
             # Signal source menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
                 # Connect to signal source.
@@ -167,9 +172,6 @@ class DataCaptureDisplay:
             elif event == '-THREAD-FRAMES-SAVED-':
                 # Frames saved update.
                 self.windowMain['-TEXT-FRAMES-SAVED-'].update(f'{values[event]}')
-            elif event == '-THREAD-RESIZED-FRAME-':
-                # Resized frame available.
-                self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
             # Editing events.
             if event == '-BUTTON-EDIT-TOGGLE-':
@@ -209,7 +211,10 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-NAV-NN-'].update(disabled=False)
         self.windowMain['-BUTTON-NAV-NNN-'].update(disabled=False)
         self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
-        self.windowMain['-TEXT-NAV-CURRENT-'].update(f'1/{self.recordingDetails.frameCount}')
+        self.windowMain['-TEXT-NAV-CURRENT-'].update(
+            f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
+
+        self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def toggleEditing(self):
         """
@@ -251,7 +256,7 @@ class DataCaptureDisplay:
             disabled=False if self.enableEditing else True)
 
         [self.windowMain[i].update(disabled=True) for i in Layout.NAVIGATION_KEYS]
-        self.windowMain['-INPUT-NAV-GOTO-'].update(text='', disabled=True)
+        self.windowMain['-INPUT-NAV-GOTO-'].update(default_text='', disabled=True)
         self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
 
         self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-',
@@ -324,7 +329,7 @@ class DataCaptureDisplay:
                 resizeFps1 = time.time()
                 resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
                 frameBytes = ut.frameToBytes(resizedFrame)
-                self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-', value=frameBytes)
+                self.windowMain.write_event_value(key='-UPDATE-FRAME-', value=frameBytes)
                 # Resize frame rate estimate.
                 resizeFpsDt = time.time() - resizeFps1
                 resizeFps = int(1 / resizeFpsDt)
