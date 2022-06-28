@@ -47,7 +47,7 @@ class RecordingDetails:
         self.__getImuDataFromFile()
 
         # Estimated fps of recording.
-        self.fps = 1000 * self.frameCount / self.duration
+        self.fps = int(1000 * self.frameCount / self.duration)
 
     def __getImuDataFromFile(self):
         """

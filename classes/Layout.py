@@ -53,13 +53,11 @@ class Layout:
         detailsBox1 = [
             [sg.Text('Date:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
              sg.Text(key='-TEXT-DETAILS-DATE-', font=st.DESC_FONT)],
-            [sg.Text('Path:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-PATH-', font=st.DESC_FONT)]
+            [sg.Text('Duration:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-DURATION-', font=st.DESC_FONT)]
         ]
 
         detailsBox2 = [
-            [sg.Text('Duration:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TEXT-DETAILS-DURATION-', font=st.DESC_FONT)],
             [sg.Text('Frames:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
              sg.Text(key='-TEXT-DETAILS-FRAMES-', font=st.DESC_FONT)],
             [sg.Text('Data Points:', font=st.DESC_FONT, pad=((0, 0), (0, 0))),
@@ -76,8 +74,10 @@ class Layout:
         ]
 
         return [
-            sg.Column(selectColumn),
-            sg.Column(detailsColumn)
+            [sg.Column(selectColumn),
+            sg.Column(detailsColumn)],
+            [sg.Text('Path:', font=st.INFO_TEXT, pad=((0, 0), (0, 0))),
+             sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT)]
         ]
 
     def __createDisplayRow(self):
