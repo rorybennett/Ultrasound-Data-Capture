@@ -137,15 +137,18 @@ class RecordingDetails:
         self.editingPath = ut.checkEditDataFile(self.path)
 
         with open(self.editingPath, 'r') as editingFile:
-            for line in editingFile.readline():
+            for line in editingFile.readlines():
                 lineSplit = line.split(':')
                 parameter = lineSplit[0]
                 value = lineSplit[1]
 
                 if parameter == 'recordingDepth':
-                    self.recordingDepth = value
+                    self.recordingDepth = int(value)
                 elif parameter == 'recordingOffset':
-                    self.recordingOffset = value
+                    self.recordingOffset = int(value)
+
+        print(self.recordingOffset)
+        print(self.recordingDepth)
 
     def __getImuDataFromFile(self):
         """
