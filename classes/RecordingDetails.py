@@ -63,7 +63,7 @@ class RecordingDetails:
             frameAsBytes (bytes): Bytes representation of frame for displaying.
         """
         # Acquire current frame from stored location.
-        frame = cv2.imread(self.path + self.frameNames[self.currentFramePosition - 1])
+        frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFramePosition - 1] + '.png')
         # Resize the frame for the display element.
         resizeFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
         # Convert resized frame to bytes.

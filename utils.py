@@ -188,7 +188,6 @@ def resizeFrame(frame, newDimensions, interpolation) -> Image:
         resizedFrame (Image): A resized CV2 image.
 
     """
-
     resizedFrame = cv2.resize(frame, newDimensions, interpolation=interpolation)
     return resizedFrame
 
