@@ -485,8 +485,6 @@ class DataCaptureDisplay:
             self.recordStartTime = time.time()
             self.windowMain['-TEXT-RECORD-START-'].update(time.strftime('%H:%M:%S'))
         else:
-            # Allow for last frames to be saved.
-            time.sleep(0.2)
             print(f'Closing data file {self.currentDataFilePath}...')
             self.currentDataFile.close()
 
