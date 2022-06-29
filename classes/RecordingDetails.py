@@ -14,16 +14,20 @@ class RecordingDetails:
     def __init__(self, videosPath: Path, recordingDirectory: str):
         """
         Initially created variables for the RecordingDetails class:
-            path (str)          -       Full path to the video directory.
-            date (str)          -       Date and time recording was started (in a more easy to read format).
-            imuCount (int)      -       Total lines in data.txt (number of imu values available).
-            duration (str)      -       How long the test was run for (in milliseconds).
-            frameCount (int)    -       Number of frames stored as .png images in the directory.
-            frameNames (list)   -       All frame names as stored in the data.txt file (should match frame names
-                                        in directory).
-            acceleration (list) -       Acceleration values stored in data.txt file.
-            quaternion (list)   -       Quaternion values stored in data.txt file.
-            dimensions (list)   -       Frame dimensions stored in data.txt file.
+            path (str)                  -       Full path to the video directory.
+            date (str)                  -       Date and time recording was started (in a more easy to read format).
+            imuCount (int)              -       Total lines in data.txt (number of imu values available).
+            duration (str)              -       How long the test was run for (in milliseconds).
+            frameCount (int)            -       Number of frames stored as .png images in the directory.
+            frameNames (list)           -       All frame names as stored in the data.txt file (should match frame names
+                                                in directory).
+            acceleration (list)         -       Acceleration values stored in data.txt file.
+            quaternion (list)           -       Quaternion values stored in data.txt file.
+            dimensions (list)           -       Frame dimensions stored in data.txt file.
+            currentFramePosition (int)  -       Position of current frame of interest.
+            editingPath (str)           -       Path to EditingData.txt file.
+            scanDepth (int)             -       Depth of scan in millimetres.
+            frameOffset (int)           -       Top offset between frame and ultrasound start.
 
 
             Args:
@@ -46,14 +50,22 @@ class RecordingDetails:
         self.quaternion = []
         # Dimensions of signal, per frame basis.
         self.dimensions = []
+        # Tracks position of current frame being displayed, starts at 1.
+        self.currentFramePosition = 1
 
         self.__getImuDataFromFile()
 
         # Estimated fps of recording.
         self.fps = int(1000 * self.frameCount / self.duration)
 
-        # Tracks position of current frame being displayed, starts at 1.
-        self.currentFramePosition = 1
+        # Path to EditingData.txt file.
+        self.editingPath = ''
+        # Depth of scan in millimetres.
+        self.recordingDepth = 0
+        # Offset between top of frame and start of ultrasound image in pixels.
+        self.recordingOffset = 0
+
+        self.__getEditDetailsFromFile()
 
     def navigateFrames(self, navCommand):
         """
@@ -113,6 +125,16 @@ class RecordingDetails:
         frameAsBytes = ut.frameToBytes(resizeFrame)
 
         return frameAsBytes
+
+    def __getEditDetailsFromFile(self):
+        """
+        Helper function to get any editing details that are already stored. If there is no file it is created. Values
+        stored in the file:
+            recordingDepth          -       The depth of the ultrasound. This is entered manually for now.
+            recordingOffset         -       The offset between the top of the frame and the start of the ultrasound
+                                            image.
+        """
+        self.editingPath = ut.checkEditDataFile(self.path)
 
     def __getImuDataFromFile(self):
         """

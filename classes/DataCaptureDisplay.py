@@ -210,7 +210,6 @@ class DataCaptureDisplay:
         """
         self.recordingDetails.navigateFrames(navCommand)
 
-
         # Set element states.
         self.windowMain['-TEXT-NAV-CURRENT-'].update(
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
