@@ -101,11 +101,17 @@ class Layout:
              sg.Text(key='-TEXT-NAV-CURRENT-', text='____/____', font=st.DESC_FONT, justification='right')],
         ]
 
+        editingDetailsColumn = [
+            [sg.Text('Editing Details', font=st.DESC_FONT, pad=((0, 0), (0, 10)), expand_x=True,
+                     justification='center')],
+            [sg.HSeparator()]
+        ]
+
         return [
             [sg.Column(selectColumn, vertical_alignment='top'),
              sg.Column(detailsColumn),
              sg.Column(navigationColumn, vertical_alignment='top'),
-             sg.Column([], expand_x=True, background_color='red')],
+             sg.Column(editingDetailsColumn, expand_x=True, vertical_alignment='top')],
             [sg.Text('Path:', font=st.INFO_TEXT, pad=((0, 0), (0, 0))),
              sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT + ' underline', text_color='blue',
                      click_submits=True)]

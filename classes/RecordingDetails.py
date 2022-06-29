@@ -147,9 +147,6 @@ class RecordingDetails:
                 elif parameter == 'recordingOffset':
                     self.recordingOffset = int(value)
 
-        print(self.recordingOffset)
-        print(self.recordingDepth)
-
     def __getImuDataFromFile(self):
         """
         Helper function for acquiring information from the data.txt file. This includes:
