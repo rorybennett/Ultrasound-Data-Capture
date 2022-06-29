@@ -182,15 +182,39 @@ class DataCaptureDisplay:
                 if self.recordingDetails:
                     ut.openWindowsExplorer(self.recordingDetails.path)
             elif event in Layout.NAVIGATION_KEYS:
-                print(f"Navigate frames: {event.split('-')[-2]}")
+                self.navigateFrames(event.split('-')[-2])
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
-                print(f"Go to frame: {values['-INPUT-NAV-GOTO-']}")
+                self.navigateFrames(values['-INPUT-NAV-GOTO-'])
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
+
+    def navigateFrames(self, navCommand):
+        """
+        Call the navigateFrames function of the RecordingDetails object to change the current frame as required,
+        then update the window with the new details after the frame. The navCommand is a string that can either be
+        converted to an integer for a specific frame number or a navigation command:
+            str -   String representation of frame number.
+            PPP -   Move back 10 frames.
+            PP  -   Move back 5 frames.
+            P   -   Move back 1 frame.
+            N   -   Move forward 1 frame.
+            NN  -   Move forward 5 frames.
+            NNN -   Move forward 10 frames.
+
+        Args:
+            navCommand (str): String representation of the navigation command.
+        """
+        self.recordingDetails.navigateFrames(navCommand)
+
+
+        # Set element states.
+        self.windowMain['-TEXT-NAV-CURRENT-'].update(
+            f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
+        self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def selectRecordingForEdit(self, videoDirectory: str):
         """

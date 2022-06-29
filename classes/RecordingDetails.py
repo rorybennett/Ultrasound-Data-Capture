@@ -55,6 +55,49 @@ class RecordingDetails:
         # Tracks position of current frame being displayed, starts at 1.
         self.currentFramePosition = 1
 
+    def navigateFrames(self, navCommand):
+        """
+        Navigate through the frames according to the navCommand parameter. The navCommand is a string that can either be
+        converted to an integer for a specific frame number or a navigation command:
+            str -   String representation of frame number.
+            PPP -   Move back 10 frames.
+            PP  -   Move back 5 frames.
+            P   -   Move back 1 frame.
+            N   -   Move forward 1 frame.
+            NN  -   Move forward 5 frames.
+            NNN -   Move forward 10 frames.
+
+        Args:
+            navCommand (str): String representation of the navigation command.
+        """
+        try:
+            goToFrame = int(navCommand)
+            if self.frameCount >= goToFrame > 0:
+                self.currentFramePosition = goToFrame
+            elif goToFrame > self.frameCount:
+                self.currentFramePosition = self.frameCount
+            elif goToFrame < 1:
+                self.currentFramePosition = 1
+        except ValueError:
+            if navCommand == 'PPP':
+                self.currentFramePosition -= 10
+            elif navCommand == 'PP':
+                self.currentFramePosition -= 5
+            elif navCommand == 'P':
+                self.currentFramePosition -= 1
+            elif navCommand == 'N':
+                self.currentFramePosition += 1
+            elif navCommand == 'NN':
+                self.currentFramePosition += 5
+            elif navCommand == 'NNN':
+                self.currentFramePosition += 10
+
+            # If the frame position goes beyond max or min, cycle around.
+            if self.currentFramePosition <= 0:
+                self.currentFramePosition = self.frameCount + self.currentFramePosition
+            elif self.currentFramePosition > self.frameCount:
+                self.currentFramePosition = self.currentFramePosition - self.frameCount
+
     def getCurrentFrameAsBytes(self):
         """
         Return the byte representation of the current frame, based of self.currentFramePosition.
