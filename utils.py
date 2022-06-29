@@ -3,6 +3,8 @@ Helper script containing functions used throughout ultrasound_data_capture modul
 """
 import time
 from pathlib import Path
+from typing import Tuple
+
 import cv2
 import numpy as np
 from datetime import datetime as dt
@@ -53,6 +55,25 @@ def getRecordingDirectories(videosPath: Path) -> list:
     videoDirectories = [vd.stem for vd in videosPath.iterdir() if vd.is_dir()]
 
     return videoDirectories
+
+
+def checkEditDataFile(recordingPath: str) -> Path:
+    """
+    Check if the given directory contains an EditingData.txt file, if True return a Path object to it, else create
+    the file and return a Path object to it.
+
+    Args:
+        recordingPath (Path): Path to a recording directory.
+
+    Returns:
+        editFileDir (Path): Path object to existing or newly created EditingData.txt file.
+    """
+    editFileDir = Path(recordingPath, 'EditingData.txt')
+    if not editFileDir.is_file():
+        print(f'Creating {editFileDir.as_posix()}')
+        open(editFileDir, 'a').close()
+
+    return editFileDir
 
 
 def getFrameCountInDirectory(videoPath: Path) -> int:
