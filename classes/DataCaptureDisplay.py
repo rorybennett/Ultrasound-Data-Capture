@@ -177,7 +177,7 @@ class DataCaptureDisplay:
             if event == '-BUTTON-EDIT-TOGGLE-':
                 self.toggleEditing()
             elif event == '-COMBO-RECORDINGS-':
-                self.selectVideoForEdit(values[event])
+                self.selectRecordingForEdit(values[event])
             elif event == '-TEXT-DETAILS-PATH-':
                 if self.recordingDetails:
                     ut.openWindowsExplorer(self.recordingDetails.path)
@@ -192,7 +192,15 @@ class DataCaptureDisplay:
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
 
-    def selectVideoForEdit(self, videoDirectory):
+    def selectRecordingForEdit(self, videoDirectory: str):
+        """
+        Update main window to allow editing of the selected recording. This creates the recordingDetails object and
+        sets the elements to the correct states. The first frame from the recording is shown in the display and
+        the details of the recording are displayed.
+
+        Args:
+            videoDirectory (str): Directory name where the recording is stored.
+        """
         print(f'Create editing data for: {videoDirectory}')
         self.recordingDetails = RecordingDetails(self.videosPath, videoDirectory)
 
