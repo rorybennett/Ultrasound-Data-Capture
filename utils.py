@@ -182,6 +182,7 @@ def resizeFrame(frame, newDimensions, interpolation) -> Image:
     Args:
         frame (Image): A CV2 image.
         newDimensions (int, int): A tuple representing the required width and height.
+        interpolation (const): Type of interpolation to use.
 
     Returns:
         resizedFrame (Image): A resized CV2 image.
