@@ -121,6 +121,9 @@ class RecordingDetails:
         frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFramePosition - 1] + '.png')
         # Resize the frame for the display element.
         resizeFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
+        # Add offset line.
+        cv2.line(resizeFrame, (0, self.recordingOffset), (c.DEFAULT_DISPLAY_DIMENSIONS[0], self.recordingOffset),
+                 color=(0, 0, 255), thickness=1)
         # Convert resized frame to bytes.
         frameAsBytes = ut.frameToBytes(resizeFrame)
 
