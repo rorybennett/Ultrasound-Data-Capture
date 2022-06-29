@@ -405,7 +405,8 @@ class DataCaptureDisplay:
     def record(self, frameName, frame, acceleration, quaternion):
         """
         Save a frame as part of a series of frames to be stitched together at a later stage. The frame is saved as a
-        .png in the currentRecordingPath and the currentDataFile is updated with the relevant IMU data.
+        .png in the currentRecordingPath and the currentDataFile is updated with the relevant IMU data. The dimensions
+        come from the frameGrabber signal and the depth is 150 as default.
 
         Args:
             frameName (str): Name of the frame, without extension. Based on time.
@@ -417,7 +418,8 @@ class DataCaptureDisplay:
             self.currentDataFile.write(f'{frameName},:'
                                        f'acc[,{acceleration[0]},{acceleration[1]},{acceleration[2]},]'
                                        f'q[,{quaternion[0]},{quaternion[1]},{quaternion[2]},{quaternion[3]},]'
-                                       f'dimensions[,{self.frameGrabber.width},{self.frameGrabber.height},]\n')
+                                       f'dimensions[,{self.frameGrabber.width},{self.frameGrabber.height},]'
+                                       f'depth[,{c.DEFAULT_SCAN_DEPTH}]\n')
             ut.saveSingleFrame(frame, f'{self.currentRecordingPath}\\{frameName}.png')
         except Exception as e:
             print(f'Error recording a frame or recording to data.txt: {e}.')

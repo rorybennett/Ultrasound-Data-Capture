@@ -61,3 +61,6 @@ COMMON_SIGNAL_DIMENSIONS = [
     ['800x600'],
     ['1280x720'],
     ['1920x1080']]
+
+# Default scan depth saved to data.txt file.
+DEFAULT_SCAN_DEPTH = 150
