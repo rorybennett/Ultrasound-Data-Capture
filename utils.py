@@ -357,6 +357,20 @@ def getDimensionsFromRow(row: list) -> list:
     return dimensions
 
 
+def getDepthFromRow(row: list) -> float:
+    """
+    Extract the recording/scan depth from a row. The 15 element in the row. The default value is 150 (mm), and if the
+    value needs to be changed it can only done on a per-frame basis for now.
+
+    Args:
+        row (str): Pulled from csv.reader.
+
+    Returns:
+        depth (float): Depth of the scan.
+    """
+    depth = float(row[14])
+    return depth
+
 def openWindowsExplorer(explorerPath: str):
     """
     Opens Windows explorer at the given string path. The path must be enclosed in double quotes to handle the whitespaces
