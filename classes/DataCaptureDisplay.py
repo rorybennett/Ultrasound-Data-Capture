@@ -256,10 +256,10 @@ class DataCaptureDisplay:
             disabled=False if self.enableEditing else True)
 
         [self.windowMain[i].update(disabled=True) for i in Layout.NAVIGATION_KEYS]
-        self.windowMain['-INPUT-NAV-GOTO-'].update(default_text='', disabled=True)
+        self.windowMain['-INPUT-NAV-GOTO-'].update('', disabled=True)
         self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
 
-        self.windowMain.write_event_value(key='-THREAD-RESIZED-FRAME-',
+        self.windowMain.write_event_value(key='-UPDATE-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))
         # todo clear plot when i have access to an imu to test it
 
