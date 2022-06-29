@@ -360,7 +360,7 @@ def getDimensionsFromRow(row: list) -> list:
 def getDepthFromRow(row: list) -> float:
     """
     Extract the recording/scan depth from a row. The 15 element in the row. The default value is 150 (mm), and if the
-    value needs to be changed it can only done on a per-frame basis for now.
+    value needs to be changed it can only be done on a per-frame basis for now.
 
     Args:
         row (str): Pulled from csv.reader.

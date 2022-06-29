@@ -50,6 +50,8 @@ class RecordingDetails:
         self.quaternion = []
         # Dimensions of signal, per frame basis.
         self.dimensions = []
+        # Depth of the scan, per frame basis.
+        self.depths = []
         # Tracks position of current frame being displayed, starts at 1.
         self.currentFramePosition = 1
 
@@ -60,8 +62,6 @@ class RecordingDetails:
 
         # Path to EditingData.txt file.
         self.editingPath = ''
-        # Depth of scan in millimetres.
-        self.recordingDepth = 0
         # Offset between top of frame and start of ultrasound image in pixels.
         self.recordingOffset = 0
 
@@ -145,9 +145,7 @@ class RecordingDetails:
                 parameter = lineSplit[0]
                 value = lineSplit[1]
 
-                if parameter == 'recordingDepth':
-                    self.recordingDepth = int(value)
-                elif parameter == 'recordingOffset':
+                if parameter == 'recordingOffset':
                     self.recordingOffset = int(value)
 
     def __getImuDataFromFile(self):
@@ -170,6 +168,7 @@ class RecordingDetails:
                 self.acceleration.append(ut.getAccelerationFromRow(row))
                 self.quaternion.append(ut.getQuaternionFromRow(row))
                 self.dimensions.append(ut.getDimensionsFromRow(row))
+                self.depths.append(ut.getDepthFromRow(row))
             self.imuCount = len(self.frameNames)
             self.duration = ut.getTimeFromName(self.frameNames[-1]) - ut.getTimeFromName(self.frameNames[1])
 
