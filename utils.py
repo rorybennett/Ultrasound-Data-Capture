@@ -72,7 +72,6 @@ def checkEditDataFile(recordingPath: str) -> Path:
     if not editFileDir.is_file():
         print(f'Creating {editFileDir.as_posix()}')
         with open(editFileDir, 'a') as editingFile:
-            editingFile.write('recordingDepth:0\n')
             editingFile.write('recordingOffset:0\n')
 
     return editFileDir
