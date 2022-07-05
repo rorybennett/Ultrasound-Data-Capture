@@ -213,6 +213,9 @@ class DataCaptureDisplay:
         # Set element states.
         self.windowMain['-TEXT-NAV-CURRENT-'].update(
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
+        self.windowMain['-INPUT-EDIT-DEPTH-'].update(
+            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition]}')
+
         self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def selectRecordingForEdit(self, videoDirectory: str):
@@ -244,6 +247,9 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
         self.windowMain['-TEXT-NAV-CURRENT-'].update(
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
+        self.windowMain['-INPUT-EDIT-OFFSET-'].update(f'{self.recordingDetails.recordingOffset}', disabled=False)
+        self.windowMain['-INPUT-EDIT-DEPTH-'].update(
+            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition]}', disabled=False)
 
         self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
@@ -289,6 +295,8 @@ class DataCaptureDisplay:
         [self.windowMain[i].update(disabled=True) for i in Layout.NAVIGATION_KEYS]
         self.windowMain['-INPUT-NAV-GOTO-'].update('', disabled=True)
         self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
+        self.windowMain['-INPUT-EDIT-OFFSET-'].update('', disabled=True)
+        self.windowMain['-INPUT-EDIT-DEPTH-'].update('', disabled=True)
 
         self.windowMain.write_event_value(key='-UPDATE-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))
