@@ -191,7 +191,7 @@ class DataCaptureDisplay:
             elif event == '-INPUT-EDIT-OFFSET-' + '_Enter':
                 self.changeOffset(values['-INPUT-EDIT-OFFSET-'])
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
-                print(f"Change depth to: {values['-INPUT-EDIT-DEPTH-']}")
+                self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
