@@ -101,14 +101,23 @@ class Layout:
              sg.Text(key='-TEXT-NAV-CURRENT-', text='____/____', font=st.DESC_FONT, justification='right')],
         ]
 
+        editingDetails1 = [
+            [sg.Text('Frame Offset:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
+             sg.Input(key='-INPUT-EDIT-OFFSET-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
+            [sg.Text('Scan Depth:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
+             sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
+        ]
+
         editingDetailsColumn = [
             [sg.Text('Editing Details', font=st.DESC_FONT, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
-            [sg.HSeparator()]
+            [sg.HSeparator()],
+            [sg.Column(editingDetails1, vertical_alignment='top')]
+
         ]
 
         return [
-            [sg.Column(selectColumn, vertical_alignment='top'),
+            [sg.Column(selectColumn, vertical_alignment='top', pad=(0, 0)),
              sg.Column(detailsColumn),
              sg.Column(navigationColumn, vertical_alignment='top'),
              sg.Column(editingDetailsColumn, expand_x=True, vertical_alignment='top')],
