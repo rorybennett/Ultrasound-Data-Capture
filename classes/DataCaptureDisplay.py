@@ -114,7 +114,7 @@ class DataCaptureDisplay:
 
             # Events for clicking on image.
             if event == '-IMAGE-FRAME-' and self.enableDataPoints:
-                print(values[event])
+                self.recordingDetails.addRemovePointData(values[event])
 
             # Event for updating displayed frame.
             if event == '-UPDATE-FRAME-':

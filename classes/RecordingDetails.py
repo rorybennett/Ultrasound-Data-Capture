@@ -92,6 +92,23 @@ class RecordingDetails:
         except Exception as e:
             print(f'Error saving details to file: {e}')
 
+    def addRemovePointData(self, point: [float, float]):
+        """
+        Add or remove a point to/from self.pointData. Point data is saved as a percentage of the display dimensions. A
+        point is removed if it is within a certain proximity to a previous point.
+        Since the Graph element starts from the bottom left (Image from top left), some conversions need to take place.
+        All work on frames/images/graphs will work under the assumption that (0, 0) is the top left of the element.
+
+        Args:
+            point [float, float]: x/width-, and y/height-coordinates returned by the Graph elements' event
+        """
+        widthPercent = point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0] * 100
+        heightPercent = (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1] * 100
+
+        print(self.frameNames[self.currentFramePosition])
+        print(widthPercent)
+        print(heightPercent)
+
     def changeScanDepth(self, newScanDepth: float):
         """
         Change the scan depth of the current frame that is being edited. The scan depth can be a float and is
