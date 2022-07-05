@@ -105,9 +105,36 @@ class RecordingDetails:
         widthPercent = point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0] * 100
         heightPercent = (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1] * 100
 
-        print(self.frameNames[self.currentFramePosition])
-        print(widthPercent)
-        print(heightPercent)
+        newPoint = [widthPercent, heightPercent]
+
+        # Check if within radius, if NOT, add point, else remove a point.
+        if not self.__checkIfWithinRadiusOfOtherPoints(newPoint):
+            self.pointData.append([self.frameNames[self.currentFramePosition-1], newPoint[0], newPoint[1]])
+            print('Point added')
+        else:
+            print('Point removed')
+
+    def __checkIfWithinRadiusOfOtherPoints(self, point: [float, float]) -> bool:
+        """
+        Check if the given point is with the constant radius of any other points that are already present. If it is
+        within an already saved points radius, remove the saved point and leave the function. This means only one point
+        can be removed at a time and points will be removed until there are no already saved points within range of the
+        point that is to be newly added.
+
+        Args:
+            point [float, float]: New point to be tested against already saved points.
+
+        Returns:
+            withinRadius (bool): True if any point was within the radius, else False.
+        """
+        withinRadius = False
+
+        for centrePoint in self.pointData:
+            if ut.pointWithinRadius([centrePoint[1], centrePoint[2]], point):
+                self.pointData.remove(centrePoint)
+                withinRadius = True
+                break
+        return withinRadius
 
     def changeScanDepth(self, newScanDepth: float):
         """
@@ -216,7 +243,7 @@ class RecordingDetails:
         with open(self.pointPath, 'r') as pointFile:
             for line in pointFile.readlines():
                 lineSplit = line.split(',')
-                self.pointData.append([lineSplit])
+                self.pointData.append([lineSplit[0], float(lineSplit[1]), float(lineSplit[2])])
 
     def __getEditDetailsFromFile(self):
         """
