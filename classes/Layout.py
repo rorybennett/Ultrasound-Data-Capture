@@ -109,11 +109,17 @@ class Layout:
              sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
         ]
 
+        editingDetails2 = [
+            [sg.Checkbox(key='-RADIO-POINTS-', text='Add Points', auto_size_text=True, font=st.DESC_FONT,
+                         enable_events=True, disabled=True)]
+        ]
+
         editingDetailsColumn = [
             [sg.Text('Editing Details', font=st.DESC_FONT, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
             [sg.HSeparator()],
-            [sg.Column(editingDetails1, vertical_alignment='top')]
+            [sg.Column(editingDetails1, vertical_alignment='top'),
+             sg.Column(editingDetails2, vertical_alignment='top')]
 
         ]
 
