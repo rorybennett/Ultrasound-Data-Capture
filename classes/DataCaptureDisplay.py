@@ -232,7 +232,7 @@ class DataCaptureDisplay:
         self.windowMain['-TEXT-NAV-CURRENT-'].update(
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
-            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition]}')
+            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}')
 
         self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
@@ -267,7 +267,7 @@ class DataCaptureDisplay:
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
         self.windowMain['-INPUT-EDIT-OFFSET-'].update(f'{self.recordingDetails.recordingOffset}', disabled=False)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
-            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition]}', disabled=False)
+            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}', disabled=False)
 
         self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 

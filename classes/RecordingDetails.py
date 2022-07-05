@@ -67,6 +67,26 @@ class RecordingDetails:
 
         self.__getEditDetailsFromFile()
 
+    def saveDetailsToFile(self):
+        print(f'Attempting to save details...')
+        try:
+            with open(self.editingPath, 'w') as editingFile:
+                editingFile.write(f'recordingOffset:{self.recordingOffset}\n')
+
+            if self.imuCount == self.frameCount:
+                with open(self.path + '/data.txt', 'w') as dataFile:
+                    for i in range(self.imuCount):
+                        dataFile.write(f'{self.frameNames[i]},:'
+                                       f'acc[,{self.acceleration[i][0]},{self.acceleration[i][1]},{self.acceleration[i][2]},]'
+                                       f'q[,{self.quaternion[i][0]},{self.quaternion[i][1]},{self.quaternion[i][2]},'
+                                       f'{self.quaternion[i][3]},]'
+                                       f'dimensions[,{self.dimensions[i][0]},{self.dimensions[i][1]},]'
+                                       f'depth[,{self.depths[i]},]\n')
+            else:
+                print('Due to the inconsistencies between frame number and imu data count, data cannot be saved.')
+        except Exception as e:
+            print(f'Error saving details to file: {e}')
+
     def changeScanDepth(self, newScanDepth: float):
         """
         Change the scan depth of the current frame that is being edited. The scan depth can be a float and is
@@ -78,7 +98,8 @@ class RecordingDetails:
         """
         try:
             newScanDepth = float(newScanDepth)
-            self.depths[self.currentFramePosition] = newScanDepth
+            self.depths[self.currentFramePosition - 1] = newScanDepth
+            self.saveDetailsToFile()
         except Exception as e:
             print(f'Error updating scan depth, ensure a float was entered: {e}')
 
@@ -94,6 +115,7 @@ class RecordingDetails:
         try:
             newOffset = int(newOffset)
             self.recordingOffset = newOffset
+            self.saveDetailsToFile()
         except Exception as e:
             print(f'Error updating offset, ensure that an integer was entered: {e}')
 
