@@ -110,10 +110,15 @@ class DataCaptureDisplay:
                 self.close()
                 break
 
+            # Events for clicking on image.
+            if event == '-IMAGE-FRAME-':
+                print(values[event])
+
             # Event for updating displayed frame.
             if event == '-UPDATE-FRAME-':
                 # Resized frame available.
-                self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
+                self.windowMain['-IMAGE-FRAME-'].draw_image(data=values[event],
+                                                            location=(0, c.DEFAULT_DISPLAY_DIMENSIONS[1]))
 
             # Signal source menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):

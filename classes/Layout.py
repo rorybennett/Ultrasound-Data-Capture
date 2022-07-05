@@ -103,7 +103,8 @@ class Layout:
 
         editingDetails1 = [
             [sg.Text('Frame Offset:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-EDIT-OFFSET-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
+             sg.Input(key='-INPUT-EDIT-OFFSET-', font=st.DESC_FONT, justification='center', size=(9, 1),
+                      disabled=True)],
             [sg.Text('Scan Depth:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
              sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
         ]
@@ -132,7 +133,9 @@ class Layout:
         shows the orientation of the IMU, along with some buttons and text information.
         """
         displayColumn = [
-            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000', pad=(0, 0))],
+            [sg.Graph(key='-IMAGE-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
+                      pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DEFAULT_DISPLAY_DIMENSIONS,
+                      enable_events=True)],
             [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
                      justification='left', pad=(0, 0)),
              sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
