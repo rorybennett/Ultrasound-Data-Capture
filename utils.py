@@ -405,3 +405,22 @@ def openWindowsExplorer(explorerPath: str):
         subprocess.Popen(f'explorer "{path}"')
     except Exception as e:
         print(f'Error opening Windows explorer: {e}')
+
+
+def pointWithinRadius(centrePoint: (float, float), testPoint: (float, float)) -> bool:
+    """
+    Checks whether the testPoint is within the constant radius of the centrePoint, if it is return True, else False.
+
+    Args:
+        centrePoint (float, float): Location of centre point, as a percentage.
+        testPoint (float, float): Location of test point, as a percentage.
+
+    Returns:
+        withinRadius (bool): True if within radius, else False.
+    """
+    withinRadius = False
+
+    if (testPoint[0] - centrePoint[0]) ** 2 + (testPoint[1] - centrePoint[1]) ** 2 < c.DEFAULT_POINT_RADIUS ** 2:
+        withinRadius = True
+
+    return withinRadius
