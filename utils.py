@@ -77,6 +77,26 @@ def checkEditDataFile(recordingPath: str) -> Path:
     return editFileDir
 
 
+def checkPointDataFile(recordingPath: str) -> Path:
+    """
+        Check if the given directory contains an PointData.txt file, if True return a Path object to it, else create
+        the file and return a Path object to it.
+
+        Args:
+            recordingPath (Path): Path to a recording directory.
+
+        Returns:
+            pointFileDir (Path): Path object to existing or newly created PointData.txt file.
+        """
+    pointFileDir = Path(recordingPath, 'PointData.txt')
+    if not pointFileDir.is_file():
+        print(f'Creating {pointFileDir.as_posix()}')
+        with open(pointFileDir, 'a') as pointFile:
+            pass
+
+    return pointFileDir
+
+
 def getFrameCountInDirectory(videoPath: Path) -> int:
     """
     Return the total number of saved frames in a directory. Frames are saved as .png images within a video directory.
@@ -369,6 +389,7 @@ def getDepthFromRow(row: list) -> float:
     """
     depth = float(row[14])
     return depth
+
 
 def openWindowsExplorer(explorerPath: str):
     """
