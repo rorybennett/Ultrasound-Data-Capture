@@ -67,7 +67,7 @@ class RecordingDetails:
 
         self.__getEditDetailsFromFile()
 
-    def saveDetailsToFile(self):
+    def __saveDetailsToFile(self):
         print(f'Attempting to save details...')
         try:
             with open(self.editingPath, 'w') as editingFile:
@@ -99,7 +99,7 @@ class RecordingDetails:
         try:
             newScanDepth = float(newScanDepth)
             self.depths[self.currentFramePosition - 1] = newScanDepth
-            self.saveDetailsToFile()
+            self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating scan depth, ensure a float was entered: {e}')
 
@@ -115,7 +115,7 @@ class RecordingDetails:
         try:
             newOffset = int(newOffset)
             self.recordingOffset = newOffset
-            self.saveDetailsToFile()
+            self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating offset, ensure that an integer was entered: {e}')
 
