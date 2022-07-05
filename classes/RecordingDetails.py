@@ -67,6 +67,16 @@ class RecordingDetails:
 
         self.__getEditDetailsFromFile()
 
+    def changeScanDepth(self, newScanDepth: float):
+        """
+        Change the scan depth of the current frame that is being edited. The scan depth can be a float and is
+        read from the screen of the ultrasound image. This is manual for now, but perhaps that can be automated
+        at some point.
+
+        Args:
+            newScanDepth (float): Depth of the ultrasound scan as read from the signal display.
+        """
+
     def changeOffset(self, newOffset: int):
         """
         Change the frame offset of the recording. It is assumed that there is one offset per recording as the offset
