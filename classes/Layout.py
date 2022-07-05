@@ -70,7 +70,7 @@ class Layout:
              sg.Text(key='-TEXT-DETAILS-DURATION-', font=st.DESC_FONT, expand_x=True, justification='right')],
             [sg.Text('Frames:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left'),
              sg.Text(key='-TEXT-DETAILS-FRAMES-', font=st.DESC_FONT, expand_x=True, justification='right')],
-            [sg.Text('Data Points:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left'),
+            [sg.Text('IMU Data Points:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left'),
              sg.Text(key='-TEXT-DETAILS-POINTS-', font=st.DESC_FONT, expand_x=True, justification='right')],
             [sg.Text('Estimated FPS:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), justification='left'),
              sg.Text(key='-TEXT-DETAILS-FPS-', font=st.DESC_FONT, expand_x=True, justification='right')]
