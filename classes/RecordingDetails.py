@@ -73,10 +73,13 @@ class RecordingDetails:
         self.__getPointDataFromFile()
 
     def __saveDetailsToFile(self):
-        print(f'Attempting to save details...')
         try:
             with open(self.editingPath, 'w') as editingFile:
                 editingFile.write(f'recordingOffset:{self.recordingOffset}\n')
+
+            with open(self.pointPath, 'w') as pointFile:
+                for point in self.pointData:
+                    pointFile.write(f'{point[0]},{point[1]},{point[2]}\n')
 
             if self.imuCount == self.frameCount:
                 with open(self.path + '/data.txt', 'w') as dataFile:
@@ -110,9 +113,8 @@ class RecordingDetails:
         # Check if within radius, if NOT, add point, else remove a point.
         if not self.__checkIfWithinRadiusOfOtherPoints(newPoint):
             self.pointData.append([self.frameNames[self.currentFramePosition - 1], newPoint[0], newPoint[1]])
-            print('Point added')
-        else:
-            print('Point removed')
+
+        self.__saveDetailsToFile()
 
     def __checkIfWithinRadiusOfOtherPoints(self, point: [float, float]) -> bool:
         """
