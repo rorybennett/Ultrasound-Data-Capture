@@ -64,3 +64,6 @@ COMMON_SIGNAL_DIMENSIONS = [
 
 # Default scan depth saved to data.txt file.
 DEFAULT_SCAN_DEPTH = 150
+
+# If a point is added within this radius, the nearest point is removed instead (as a percentage).
+DEFAULT_POINT_RADIUS = 10.0
