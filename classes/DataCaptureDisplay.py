@@ -74,7 +74,10 @@ class DataCaptureDisplay:
 
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getMainWindowLayout(), finalize=True)
 
+        # Enter key bindings for input elements.
         self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
+        self.windowMain['-INPUT-EDIT-OFFSET-'].bind('<Return>', '_Enter')
+        self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
 
         self.createPlot(c.DEFAULT_AZIMUTH)
 
@@ -185,12 +188,27 @@ class DataCaptureDisplay:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
                 self.navigateFrames(values['-INPUT-NAV-GOTO-'])
+            elif event == '-INPUT-EDIT-OFFSET-' + '_Enter':
+                self.changeOffset(values['-INPUT-EDIT-OFFSET-'])
+            elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
+                print(f"Change depth to: {values['-INPUT-EDIT-DEPTH-']}")
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
+
+    def changeOffset(self, newOffset):
+        """
+        Call the changeOffset function of the RecordingDetails class. Once the offset is changed the frame is redrawn
+        to show the new offset line.
+
+        Args:
+            newOffset (int): Offset between the top of the frame and the start of the recording in pixels.
+        """
+        self.recordingDetails.changeOffset(newOffset)
+        self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def navigateFrames(self, navCommand):
         """

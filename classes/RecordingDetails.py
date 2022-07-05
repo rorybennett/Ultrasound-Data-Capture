@@ -67,6 +67,21 @@ class RecordingDetails:
 
         self.__getEditDetailsFromFile()
 
+    def changeOffset(self, newOffset: int):
+        """
+        Change the frame offset of the recording. It is assumed that there is one offset per recording as the offset
+        should not be able to change. If it is found that the offset can change, this will have to be changed to
+        per frame basis.
+
+        Args:
+            newOffset (int): Offset between the top of the frame and the start of the recording in pixels.
+        """
+        try:
+            newOffset = int(newOffset)
+            self.recordingOffset = newOffset
+        except ValueError:
+            print(f'Error updating offset, ensure that an integer was entered.')
+
     def navigateFrames(self, navCommand):
         """
         Navigate through the frames according to the navCommand parameter. The navCommand is a string that can either be
