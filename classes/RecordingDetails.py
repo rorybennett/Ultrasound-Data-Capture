@@ -76,6 +76,11 @@ class RecordingDetails:
         Args:
             newScanDepth (float): Depth of the ultrasound scan as read from the signal display.
         """
+        try:
+            newScanDepth = float(newScanDepth)
+            self.depths[self.currentFramePosition] = newScanDepth
+        except Exception as e:
+            print(f'Error updating scan depth, ensure a float was entered: {e}')
 
     def changeOffset(self, newOffset: int):
         """
@@ -89,8 +94,8 @@ class RecordingDetails:
         try:
             newOffset = int(newOffset)
             self.recordingOffset = newOffset
-        except ValueError:
-            print(f'Error updating offset, ensure that an integer was entered.')
+        except Exception as e:
+            print(f'Error updating offset, ensure that an integer was entered: {e}')
 
     def navigateFrames(self, navCommand):
         """
