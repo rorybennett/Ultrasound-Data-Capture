@@ -68,6 +68,8 @@ class DataCaptureDisplay:
         self.enableEditing = False
         # VideoDetails object.
         self.recordingDetails = None
+        # Do Graph clicks add data points.
+        self.enableDataPoints = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -111,7 +113,7 @@ class DataCaptureDisplay:
                 break
 
             # Events for clicking on image.
-            if event == '-IMAGE-FRAME-':
+            if event == '-IMAGE-FRAME-' and self.enableDataPoints:
                 print(values[event])
 
             # Event for updating displayed frame.
@@ -197,6 +199,8 @@ class DataCaptureDisplay:
                 self.changeOffset(values['-INPUT-EDIT-OFFSET-'])
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
                 self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
+            elif event == '-CHECKBOX-POINTS-':
+                self.enableDataPoints = values[event]
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
@@ -273,6 +277,8 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-EDIT-OFFSET-'].update(f'{self.recordingDetails.recordingOffset}', disabled=False)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
             f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}', disabled=False)
+        self.windowMain['-CHECKBOX-POINTS-'].update(disabled=False, value=False)
+        self.enableDataPoints = False
 
         self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
@@ -320,6 +326,7 @@ class DataCaptureDisplay:
         self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
         self.windowMain['-INPUT-EDIT-OFFSET-'].update('', disabled=True)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update('', disabled=True)
+        self.windowMain['-CHECKBOX-POINTS-'].update(disabled=True)
 
         self.windowMain.write_event_value(key='-UPDATE-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))

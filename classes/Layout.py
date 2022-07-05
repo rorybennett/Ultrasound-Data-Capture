@@ -110,7 +110,7 @@ class Layout:
         ]
 
         editingDetails2 = [
-            [sg.Checkbox(key='-RADIO-POINTS-', text='Add Points', auto_size_text=True, font=st.DESC_FONT,
+            [sg.Checkbox(key='-CHECKBOX-POINTS-', text='Add Points', auto_size_text=True, font=st.DESC_FONT,
                          enable_events=True, disabled=True)]
         ]
 
