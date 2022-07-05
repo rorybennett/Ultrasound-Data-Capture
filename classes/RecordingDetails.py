@@ -64,8 +64,13 @@ class RecordingDetails:
         self.editingPath = ''
         # Offset between top of frame and start of ultrasound image in pixels.
         self.recordingOffset = 0
+        # Path to PointData.txt.
+        self.pointPath = ''
+        # Point data of the frames.
+        self.pointData = []
 
         self.__getEditDetailsFromFile()
+        self.__getPointDataFromFile()
 
     def __saveDetailsToFile(self):
         print(f'Attempting to save details...')
@@ -181,11 +186,25 @@ class RecordingDetails:
 
         return frameAsBytes
 
+    def __getPointDataFromFile(self):
+        """
+        Helper function to get point data that has already been saved. If there is no file it is created. The
+        frame name and coordinates of a point are stored on each line. The coordinates are stored as x-, and y-values
+        that represent the location of the point as a percentage of the width and height of the signal dimensions.
+        This makes it easier if the display dimensions are ever changed, but requires some conversion to go from
+        percent of signal to pixel in display dimensions.
+        """
+        self.pointPath = ut.checkPointDataFile(self.path)
+
+        with open(self.pointPath, 'r') as pointFile:
+            for line in pointFile.readlines():
+                lineSplit = line.split(',')
+                self.pointData.append([lineSplit])
+
     def __getEditDetailsFromFile(self):
         """
         Helper function to get any editing details that are already stored. If there is no file it is created. Values
         stored in the file:
-            recordingDepth          -       The depth of the ultrasound. This is entered manually for now.
             recordingOffset         -       The offset between the top of the frame and the start of the ultrasound
                                             image.
         """
