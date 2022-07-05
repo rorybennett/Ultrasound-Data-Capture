@@ -94,7 +94,7 @@ class RecordingDetails:
 
     def addRemovePointData(self, point: [float, float]):
         """
-        Add or remove a point to/from self.pointData. Point data is saved as a percentage of the display dimensions. A
+        Add or remove a point to/from self.pointData. Point data is saved as a fraction of the display dimensions. A
         point is removed if it is within a certain proximity to a previous point.
         Since the Graph element starts from the bottom left (Image from top left), some conversions need to take place.
         All work on frames/images/graphs will work under the assumption that (0, 0) is the top left of the element.
@@ -102,14 +102,14 @@ class RecordingDetails:
         Args:
             point [float, float]: x/width-, and y/height-coordinates returned by the Graph elements' event
         """
-        widthPercent = point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0] * 100
-        heightPercent = (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1] * 100
+        widthRatio = point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0]
+        heightRatio = (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1]
 
-        newPoint = [widthPercent, heightPercent]
+        newPoint = [widthRatio, heightRatio]
 
         # Check if within radius, if NOT, add point, else remove a point.
         if not self.__checkIfWithinRadiusOfOtherPoints(newPoint):
-            self.pointData.append([self.frameNames[self.currentFramePosition-1], newPoint[0], newPoint[1]])
+            self.pointData.append([self.frameNames[self.currentFramePosition - 1], newPoint[0], newPoint[1]])
             print('Point added')
         else:
             print('Point removed')
@@ -225,6 +225,12 @@ class RecordingDetails:
         # Add offset line.
         cv2.line(resizeFrame, (0, self.recordingOffset), (c.DEFAULT_DISPLAY_DIMENSIONS[0], self.recordingOffset),
                  color=(0, 0, 255), thickness=1)
+        # Add point data.
+        for point in self.pointData:
+            if point[0] == self.frameNames[self.currentFramePosition - 1]:
+                cv2.circle(resizeFrame,
+                           (int(point[1] * c.DEFAULT_DISPLAY_DIMENSIONS[0]),
+                            int(point[2] * c.DEFAULT_DISPLAY_DIMENSIONS[1])), 5, color=(0, 255, 0), thickness=-1)
         # Convert resized frame to bytes.
         frameAsBytes = ut.frameToBytes(resizeFrame)
 
