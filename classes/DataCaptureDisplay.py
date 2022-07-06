@@ -103,7 +103,7 @@ class DataCaptureDisplay:
             # Update recording times.
             if self.enableRecording:
                 self.updateTimes()
-            # todo: This must be looked at, possibly change timeout to None when editing.
+
             event, values = self.windowMain.read(timeout=self.windowTimeOut)
 
             if event in [sg.WIN_CLOSED, 'None']:
@@ -122,63 +122,44 @@ class DataCaptureDisplay:
 
             # Signal source menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
-                # Connect to signal source.
                 self.setSignalSourceAndConnect(int(event.split('::')[0]))
             elif event.endswith('::-MENU-SIGNAL-DISCONNECT-'):
-                # Disconnect from current source.
                 self.frameGrabber.disconnect()
                 self.updateMenus()
             elif event.endswith('::-MENU-SIGNAL-DIMENSIONS-'):
-                # Change signal dimensions.
-                dimensions = event.split('::')[0].split('x')
-                self.frameGrabber.setGrabberProperties(width=int(dimensions[0]), height=int(dimensions[1]),
-                                                       fps=c.DEFAULT_FRAME_RATE)
-                self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
-                    f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
+                self.changeSignalDimensions(event.split('::')[0].split('x'))
 
             # IMU menu events.
             if event.endswith('::-MENU-IMU-CONNECT-'):
-                # Show connect to IMU window.
                 self.showImuConnectWindow()
             elif event.endswith('::-MENU-IMU-DISCONNECT-'):
-                # Disconnect from IMU and update menus.
                 self.imu.disconnect()
                 self.updateMenus()
             elif event.endswith('::-MENU-IMU-RATE-'):
-                # Set the IMU return rate.
                 self.imu.setReturnRate(float(event.split('Hz')[0]))
             elif event.endswith('::-MENU-IMU-CALIBRATE-'):
-                # Calibrate the IMU acceleration values.
                 self.imu.calibrateAcceleration()
 
             # Signal Display Events.
             if event == '-BUTTON-DISPLAY-TOGGLE-':
-                # Toggle display.
                 self.toggleDisplay()
             elif event == '-BUTTON-SNAPSHOT-':
-                # Capture single frame.
                 ut.saveSingleFrame(self.frameRaw, f'{self.singleFramesPath}\\{int(time.time() * 1000)}.png')
             elif event == '-BUTTON-RECORD-TOGGLE-':
-                # Toggle recording.
                 self.toggleRecording()
 
             # IMU Display Events.
             if event == '-SLIDER-AZIMUTH-':
-                # Change azimuth.
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
             elif event == '-BUTTON-PLOT-TOGGLE-':
-                # Toggle plotting.
                 self.togglePlotting()
 
             # Thread events.
             if event == '-THREAD-SIGNAL-RATE-':
-                # Signal rate update.
                 self.windowMain['-TEXT-SIGNAL-RATE-'].update(f'{values[event]}')
             elif event == '-THREAD-RESIZE-RATE-':
-                # Resize rate update.
                 self.windowMain['-TEXT-RESIZE-RATE-'].update(f'{values[event]}')
             elif event == '-THREAD-FRAMES-SAVED-':
-                # Frames saved update.
                 self.windowMain['-TEXT-FRAMES-SAVED-'].update(f'{values[event]}')
 
             # Editing events.
@@ -186,9 +167,8 @@ class DataCaptureDisplay:
                 self.toggleEditing()
             elif event == '-COMBO-RECORDINGS-':
                 self.selectRecordingForEdit(values[event])
-            elif event == '-TEXT-DETAILS-PATH-':
-                if self.recordingDetails:
-                    ut.openWindowsExplorer(self.recordingDetails.path)
+            elif event == '-TEXT-DETAILS-PATH-' and self.recordingDetails:
+                ut.openWindowsExplorer(self.recordingDetails.path)
             elif event in Layout.NAVIGATION_KEYS:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
@@ -200,20 +180,32 @@ class DataCaptureDisplay:
             elif event == '-BUTTON-POINTS-':
                 self.toggleAddingDataPoints()
             elif event == '-GRAPH-FRAME-':
-                if self.enableDataPoints:
-                    self.recordingDetails.addRemovePointData(values[event])
-                    self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                                      self.recordingDetails.getCurrentFrameAsBytes())
-                elif self.enableOffsetChange:
-                    self.recordingDetails.changeOffset(c.DEFAULT_DISPLAY_DIMENSIONS[1] - values[event][1])
-                    self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                                      value=self.recordingDetails.getCurrentFrameAsBytes())
+                self.onGraphFrameClicked(values[event])
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
+
+    def onGraphFrameClicked(self, point):
+        """
+        Click handler function for when the Graph frame element is clicked. If enableDataPoints then a new data point
+        is added or removed (if within proximity of existing point) to the frame, if enableOffsetChange then the
+        vertical portion of the point is used as the new offset value.
+
+        Args:
+            point: Coordinates of where the Graph element was clicked.
+        """
+
+        if self.enableDataPoints:
+            self.recordingDetails.addRemovePointData(point)
+            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                              self.recordingDetails.getCurrentFrameAsBytes())
+        elif self.enableOffsetChange:
+            self.recordingDetails.changeOffset(c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1])
+            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                              value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def navigateFrames(self, navCommand):
         """
@@ -629,6 +621,19 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(
             text='Disable Plotting' if self.enablePlotting else 'Enable Plotting',
             button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else st.BUTTON_ACTIVE)
+
+    def changeSignalDimensions(self, dimensions):
+        """
+        Attempt to change the signal dimensions from the menu click. After attempting to change the dimensions update
+        the GUI with the actual dimensions. If the selected dimensions cannot be used, some default value will be used.
+
+        Args:
+            dimensions: Selected from the menu.
+        """
+        self.frameGrabber.setGrabberProperties(width=int(dimensions[0]), height=int(dimensions[1]),
+                                               fps=c.DEFAULT_FRAME_RATE)
+        self.windowMain['-TEXT-SIGNAL-DIMENSIONS-'].update(
+            f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
     def refreshComPorts(self):
         """
