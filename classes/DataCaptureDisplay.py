@@ -77,6 +77,8 @@ class DataCaptureDisplay:
         self.windowImuConnect = None
 
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getMainWindowLayout(), finalize=True)
+        # Time out is None during editing, otherwise it is 1ms.
+        self.windowTimeOut = 1
 
         # Enter key bindings for input elements.
         self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
@@ -101,7 +103,7 @@ class DataCaptureDisplay:
             if self.enableRecording:
                 self.updateTimes()
             # todo: This must be looked at, possibly change timeout to None when editing.
-            event, values = self.windowMain.read(timeout=1)
+            event, values = self.windowMain.read(timeout=self.windowTimeOut)
 
             if event in [sg.WIN_CLOSED, 'None']:
                 # On window close clicked.
@@ -207,7 +209,7 @@ class DataCaptureDisplay:
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
-            self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
+            self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
 
     def navigateFrames(self, navCommand):
         """
@@ -277,6 +279,7 @@ class DataCaptureDisplay:
         # Hide the view that is not being used and show the view that is.
         self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
         self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
+        self.windowTimeOut = None if self.enableEditing else 1
 
         # Enable the frame display for consistency.
         self.enableDisplay = True
