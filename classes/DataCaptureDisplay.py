@@ -112,17 +112,19 @@ class DataCaptureDisplay:
                 self.close()
                 break
 
-            # Events for clicking on image.
-            if event == '-IMAGE-FRAME-' and self.enableDataPoints:
+            # Events for clicking on image when editing.
+            if event == '-GRAPH-FRAME-' and self.enableDataPoints:
                 self.recordingDetails.addRemovePointData(values[event])
-                self.windowMain.write_event_value('-UPDATE-FRAME-',
-                                                  value=self.recordingDetails.getCurrentFrameAsBytes())
+                self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                                  self.recordingDetails.getCurrentFrameAsBytes())
+            elif event == '-UPDATE-GRAPH-FRAME-':
+                self.windowMain['-GRAPH-FRAME-'].draw_image(data=values[event],
+                                                            location=(0, c.DEFAULT_DISPLAY_DIMENSIONS[1]))
 
             # Event for updating displayed frame.
-            if event == '-UPDATE-FRAME-':
+            if event == '-UPDATE-IMAGE-FRAME-':
                 # Resized frame available.
-                self.windowMain['-IMAGE-FRAME-'].draw_image(data=values[event],
-                                                            location=(0, c.DEFAULT_DISPLAY_DIMENSIONS[1]))
+                self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
             # Signal source menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
@@ -219,7 +221,7 @@ class DataCaptureDisplay:
             newOffset (int): Offset between the top of the frame and the start of the recording in pixels.
         """
         self.recordingDetails.changeOffset(newOffset)
-        self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDATE-IMAGE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def navigateFrames(self, navCommand):
         """
@@ -245,7 +247,7 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
             f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}')
 
-        self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def selectRecordingForEdit(self, videoDirectory: str):
         """
@@ -282,7 +284,7 @@ class DataCaptureDisplay:
         self.windowMain['-CHECKBOX-POINTS-'].update(disabled=False, value=False)
         self.enableDataPoints = False
 
-        self.windowMain.write_event_value('-UPDATE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def toggleEditing(self):
         """
@@ -291,6 +293,10 @@ class DataCaptureDisplay:
         disabled and some are reset to default values. The display and plot are enabled for consistency.
         """
         self.enableEditing = not self.enableEditing
+
+        self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
+        self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
+
         # Enable the frame display for consistency.
         self.enableDisplay = True
         self.recordingDetails = None
@@ -330,7 +336,9 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-EDIT-DEPTH-'].update('', disabled=True)
         self.windowMain['-CHECKBOX-POINTS-'].update(disabled=True)
 
-        self.windowMain.write_event_value(key='-UPDATE-FRAME-',
+        self.windowMain.write_event_value(key='-UPDATE-IMAGE-FRAME-',
+                                          value=ut.pngAsBytes('icons/blank_background.png'))
+        self.windowMain.write_event_value(key='-UPDATE-GRAPH-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))
         # todo clear plot when i have access to an imu to test it
 
@@ -400,7 +408,7 @@ class DataCaptureDisplay:
                 resizeFps1 = time.time()
                 resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
                 frameBytes = ut.frameToBytes(resizedFrame)
-                self.windowMain.write_event_value(key='-UPDATE-FRAME-', value=frameBytes)
+                self.windowMain.write_event_value(key='-UPDATE-IMAGE-FRAME-', value=frameBytes)
                 # Resize frame rate estimate.
                 resizeFpsDt = time.time() - resizeFps1
                 resizeFps = int(1 / resizeFpsDt)

@@ -29,7 +29,6 @@ class Layout:
                             saving/recording frames.
         IMU:                Contains a display that shows the orientation of the IMU.
         """
-
         displayRow = self.__createDisplayRow()
 
         recordRow = self.__createRecordRow()
@@ -138,10 +137,20 @@ class Layout:
         Create the display row of the main window. This contains the image that displays frames and the plot that
         shows the orientation of the IMU, along with some buttons and text information.
         """
-        displayColumn = [
-            [sg.Graph(key='-IMAGE-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
+        displayColumnEdit = [
+            [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
                       pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DEFAULT_DISPLAY_DIMENSIONS,
                       enable_events=True)],
+            [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
+                     justification='left', pad=(0, 0)),
+             sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
+             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
+                     pad=(0, 0))]
+        ]
+
+        displayColumnRecording = [
+            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
+                      pad=(0, 0))],
             [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
                      justification='left', pad=(0, 0)),
              sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
@@ -167,7 +176,8 @@ class Layout:
         ]
 
         return [
-            [sg.Column(displayColumn, vertical_alignment='top'),
+            [sg.pin(sg.Column(key='-COL-EDIT-FALSE-', layout=displayColumnRecording, vertical_alignment='top')),
+             sg.pin(sg.Column(key='-COL-EDIT-TRUE-', layout=displayColumnEdit, vertical_alignment='top', visible=False)),
              sg.Column(imuColumn, vertical_alignment='top', element_justification='center')]
         ]
 
