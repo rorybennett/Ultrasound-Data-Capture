@@ -1,5 +1,7 @@
 """
 Main class for capturing frames from the output of an ultrasound scanner and adding IMU orientation data to the frames.
+Once a recording has been made, it can be edited. Editing involves setting the scan depth, marking the offset between
+the top of the frame and the start of the scan, and adding data points that will be used in volume estimation.
 """
 import styling as st
 import utils as ut
@@ -54,7 +56,7 @@ class DataCaptureDisplay:
         self.bg = None
         # Threading executor.
         self.threadExecutor = ThreadPoolExecutor()
-        # Recording variables for storing.
+        # Recording variables for storing (signal and IMU).
         self.frameRaw = None
         self.acceleration = None
         self.quaternion = None
@@ -66,9 +68,9 @@ class DataCaptureDisplay:
         self.recordStartTime = None
         # Editing state.
         self.enableEditing = False
-        # VideoDetails object.
+        # RecordingDetails object.
         self.recordingDetails = None
-        # Do Graph clicks add data points.
+        # Do Graph clicks add data points?
         self.enableDataPoints = False
 
         # IMU connect window
@@ -81,6 +83,7 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-EDIT-OFFSET-'].bind('<Return>', '_Enter')
         self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
 
+        # Create the initial plot.
         self.createPlot(c.DEFAULT_AZIMUTH)
 
         self.run()
@@ -88,23 +91,16 @@ class DataCaptureDisplay:
     def run(self):
         """
         Main loop/thread for displaying the GUI and reacting to events, in standard PySimpleGUI fashion.
-
-        todo if timeout not set the program waits for an event. This may be how to do the threading. If display is
-        enabled, attempt to fetch a frame and resize it, then call an event to display the resized frame all with
-        a timeout not set.
         """
         while True:
             guiFps1 = time.time()
-            # Update the image display. Check if frameGrabber is connected before fetching frame.
-            # if self.frameGrabber.isConnected:
-            #     self.updateFrame()
-            # Update the plot.
+            # Update the plot, not event based, matches GUI refresh rate.
             if self.enablePlotting:
                 self.updatePlot()
-            # Update times.
+            # Update recording times.
             if self.enableRecording:
                 self.updateTimes()
-
+            # todo: This must be looked at, possibly change timeout to None when editing.
             event, values = self.windowMain.read(timeout=1)
 
             if event in [sg.WIN_CLOSED, 'None']:
@@ -112,19 +108,14 @@ class DataCaptureDisplay:
                 self.close()
                 break
 
-            # Events for clicking on image when editing.
-            if event == '-GRAPH-FRAME-' and self.enableDataPoints:
-                self.recordingDetails.addRemovePointData(values[event])
-                self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                                  self.recordingDetails.getCurrentFrameAsBytes())
-            elif event == '-UPDATE-GRAPH-FRAME-':
+            # Event for updating Image frame (recording).
+            if event == '-UPDATE-IMAGE-FRAME-':
+                self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
+
+            # Event for updating Graph frame (editing).
+            if event == '-UPDATE-GRAPH-FRAME-':
                 self.windowMain['-GRAPH-FRAME-'].draw_image(data=values[event],
                                                             location=(0, c.DEFAULT_DISPLAY_DIMENSIONS[1]))
-
-            # Event for updating displayed frame.
-            if event == '-UPDATE-IMAGE-FRAME-':
-                # Resized frame available.
-                self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
             # Signal source menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
@@ -200,28 +191,23 @@ class DataCaptureDisplay:
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
                 self.navigateFrames(values['-INPUT-NAV-GOTO-'])
             elif event == '-INPUT-EDIT-OFFSET-' + '_Enter':
-                self.changeOffset(values['-INPUT-EDIT-OFFSET-'])
+                self.recordingDetails.changeOffset(values['-INPUT-EDIT-OFFSET-'])
+                self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                                  value=self.recordingDetails.getCurrentFrameAsBytes())
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
                 self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
             elif event == '-CHECKBOX-POINTS-':
                 self.enableDataPoints = values[event]
+            elif event == '-GRAPH-FRAME-' and self.enableDataPoints:
+                self.recordingDetails.addRemovePointData(values[event])
+                self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                                  self.recordingDetails.getCurrentFrameAsBytes())
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}')
-
-    def changeOffset(self, newOffset):
-        """
-        Call the changeOffset function of the RecordingDetails class. Once the offset is changed the frame is redrawn
-        to show the new offset line.
-
-        Args:
-            newOffset (int): Offset between the top of the frame and the start of the recording in pixels.
-        """
-        self.recordingDetails.changeOffset(newOffset)
-        self.windowMain.write_event_value('-UPDATE-IMAGE-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def navigateFrames(self, navCommand):
         """
@@ -269,12 +255,7 @@ class DataCaptureDisplay:
         self.windowMain['-TEXT-DETAILS-FRAMES-'].update(self.recordingDetails.frameCount)
         self.windowMain['-TEXT-DETAILS-POINTS-'].update(self.recordingDetails.imuCount)
         self.windowMain['-TEXT-DETAILS-FPS-'].update(self.recordingDetails.fps)
-        self.windowMain['-BUTTON-NAV-PPP-'].update(disabled=False)
-        self.windowMain['-BUTTON-NAV-PP-'].update(disabled=False)
-        self.windowMain['-BUTTON-NAV-P-'].update(disabled=False)
-        self.windowMain['-BUTTON-NAV-N-'].update(disabled=False)
-        self.windowMain['-BUTTON-NAV-NN-'].update(disabled=False)
-        self.windowMain['-BUTTON-NAV-NNN-'].update(disabled=False)
+        [self.windowMain[i].update(disabled=False) for i in Layout.NAVIGATION_KEYS]
         self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
         self.windowMain['-TEXT-NAV-CURRENT-'].update(
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
@@ -293,7 +274,7 @@ class DataCaptureDisplay:
         disabled and some are reset to default values. The display and plot are enabled for consistency.
         """
         self.enableEditing = not self.enableEditing
-
+        # Hide the view that is not being used and show the view that is.
         self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
         self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
 
@@ -340,7 +321,7 @@ class DataCaptureDisplay:
                                           value=ut.pngAsBytes('icons/blank_background.png'))
         self.windowMain.write_event_value(key='-UPDATE-GRAPH-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))
-        # todo clear plot when i have access to an imu to test it
+        # todo: clear plot when i have access to an imu to test it
 
     def getFramesThread(self):
         """
