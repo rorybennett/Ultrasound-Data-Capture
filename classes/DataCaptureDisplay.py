@@ -72,6 +72,8 @@ class DataCaptureDisplay:
         self.recordingDetails = None
         # Do Graph clicks add data points?
         self.enableDataPoints = False
+        # Should a Graph click change the offset?
+        self.enableOffsetChange = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -82,7 +84,6 @@ class DataCaptureDisplay:
 
         # Enter key bindings for input elements.
         self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
-        self.windowMain['-INPUT-EDIT-OFFSET-'].bind('<Return>', '_Enter')
         self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
 
         # Create the initial plot.
@@ -192,18 +193,21 @@ class DataCaptureDisplay:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
                 self.navigateFrames(values['-INPUT-NAV-GOTO-'])
-            elif event == '-INPUT-EDIT-OFFSET-' + '_Enter':
-                self.recordingDetails.changeOffset(values['-INPUT-EDIT-OFFSET-'])
-                self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                                  value=self.recordingDetails.getCurrentFrameAsBytes())
+            elif event == '-BUTTON-EDIT-OFFSET-':
+                self.toggleChangingOffset()
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
                 self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
-            elif event == '-CHECKBOX-POINTS-':
-                self.enableDataPoints = values[event]
-            elif event == '-GRAPH-FRAME-' and self.enableDataPoints:
-                self.recordingDetails.addRemovePointData(values[event])
-                self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                                  self.recordingDetails.getCurrentFrameAsBytes())
+            elif event == '-BUTTON-POINTS-':
+                self.toggleAddingDataPoints()
+            elif event == '-GRAPH-FRAME-':
+                if self.enableDataPoints:
+                    self.recordingDetails.addRemovePointData(values[event])
+                    self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                                      self.recordingDetails.getCurrentFrameAsBytes())
+                elif self.enableOffsetChange:
+                    self.recordingDetails.changeOffset(c.DEFAULT_DISPLAY_DIMENSIONS[1] - values[event][1])
+                    self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                                      value=self.recordingDetails.getCurrentFrameAsBytes())
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
@@ -248,6 +252,8 @@ class DataCaptureDisplay:
         """
         print(f'Create editing data for: {videoDirectory}')
         self.recordingDetails = RecordingDetails(self.videosPath, videoDirectory)
+        self.enableOffsetChange = False
+        self.enableDataPoints = False
 
         # Set element states
         self.windowMain['-TEXT-DETAILS-DATE-'].update(self.recordingDetails.date)
@@ -261,13 +267,34 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
         self.windowMain['-TEXT-NAV-CURRENT-'].update(
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
-        self.windowMain['-INPUT-EDIT-OFFSET-'].update(f'{self.recordingDetails.recordingOffset}', disabled=False)
+        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
             f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}', disabled=False)
-        self.windowMain['-CHECKBOX-POINTS-'].update(disabled=False, value=False)
-        self.enableDataPoints = False
+        self.windowMain['-BUTTON-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
 
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
+
+    def toggleChangingOffset(self):
+        """
+        Toggle the state of self.enableOffsetChange to enable or disable changing of the frame offset value.
+        """
+        self.enableOffsetChange = not self.enableOffsetChange
+        self.enableDataPoints = False
+        # Set element states.
+        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChange else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
+    def toggleAddingDataPoints(self):
+        """
+        Toggle the state of self.enableDataPoints to enable or disable adding data points to a frame.
+        """
+        self.enableDataPoints = not self.enableDataPoints
+        self.enableOffsetChange = False
+        # Set element states.
+        self.windowMain['-BUTTON-POINTS-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableDataPoints else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleEditing(self):
         """
@@ -312,13 +339,18 @@ class DataCaptureDisplay:
         self.windowMain['-COMBO-RECORDINGS-'].update(
             values=ut.getRecordingDirectories(self.videosPath) if self.enableEditing else [],
             disabled=False if self.enableEditing else True)
-
         [self.windowMain[i].update(disabled=True) for i in Layout.NAVIGATION_KEYS]
         self.windowMain['-INPUT-NAV-GOTO-'].update('', disabled=True)
         self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
-        self.windowMain['-INPUT-EDIT-OFFSET-'].update('', disabled=True)
+        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update('', disabled=True)
-        self.windowMain['-CHECKBOX-POINTS-'].update(disabled=True)
+        self.windowMain['-BUTTON-POINTS-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-TEXT-DETAILS-DATE-'].update('')
+        self.windowMain['-TEXT-DETAILS-PATH-'].update('')
+        self.windowMain['-TEXT-DETAILS-DURATION-'].update('')
+        self.windowMain['-TEXT-DETAILS-FRAMES-'].update('')
+        self.windowMain['-TEXT-DETAILS-POINTS-'].update('')
+        self.windowMain['-TEXT-DETAILS-FPS-'].update('')
 
         self.windowMain.write_event_value(key='-UPDATE-IMAGE-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))

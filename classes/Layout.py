@@ -101,16 +101,15 @@ class Layout:
         ]
 
         editingDetails1 = [
-            [sg.Text('Frame Offset:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-EDIT-OFFSET-', font=st.DESC_FONT, justification='center', size=(9, 1),
-                      disabled=True)],
+            [sg.Button(key='-BUTTON-EDIT-OFFSET-', button_text='Set Offset', font=st.BUTTON_FONT_SMALL, expand_x=True,
+                       disabled=True, border_width=3)],
             [sg.Text('Scan Depth:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
              sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
         ]
 
         editingDetails2 = [
-            [sg.Checkbox(key='-CHECKBOX-POINTS-', text='Add Points', auto_size_text=True, font=st.DESC_FONT,
-                         enable_events=True, disabled=True)]
+            [sg.Button(key='-BUTTON-POINTS-', button_text='Add Points', font=st.BUTTON_FONT_SMALL, disabled=True,
+                       expand_x=True, border_width=3)]
         ]
 
         editingDetailsColumn = [
@@ -126,7 +125,7 @@ class Layout:
             [sg.Column(selectColumn, vertical_alignment='top', pad=(0, 0)),
              sg.Column(detailsColumn),
              sg.Column(navigationColumn, vertical_alignment='top'),
-             sg.Column(editingDetailsColumn, expand_x=True, vertical_alignment='top')],
+             sg.Column(editingDetailsColumn, expand_x=True, vertical_alignment='top', pad=(0, 0))],
             [sg.Text('Path:', font=st.INFO_TEXT, pad=((0, 0), (0, 0))),
              sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT + ' underline', text_color='blue',
                      click_submits=True)]
