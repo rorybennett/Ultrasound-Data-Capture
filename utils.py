@@ -70,7 +70,6 @@ def checkEditDataFile(recordingPath: str) -> Path:
     """
     editFileDir = Path(recordingPath, 'EditingData.txt')
     if not editFileDir.is_file():
-        print(f'Creating {editFileDir.as_posix()}')
         with open(editFileDir, 'a') as editingFile:
             editingFile.write('recordingOffset:0\n')
 
@@ -90,7 +89,6 @@ def checkPointDataFile(recordingPath: str) -> Path:
         """
     pointFileDir = Path(recordingPath, 'PointData.txt')
     if not pointFileDir.is_file():
-        print(f'Creating {pointFileDir.as_posix()}')
         with open(pointFileDir, 'a') as pointFile:
             pass
 
