@@ -135,7 +135,9 @@ class Layout:
     def __createDisplayRow(self):
         """
         Create the display row of the main window. This contains the image that displays frames and the plot that
-        shows the orientation of the IMU, along with some buttons and text information.
+        shows the orientation of the IMU, along with some buttons and text information. The frame is displayed
+        using an Image element when recording form a signal, and a Graph element during editing. The visibility of
+        the columns is set based on the editing status of the program.
         """
         displayColumnEdit = [
             [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
@@ -177,7 +179,8 @@ class Layout:
 
         return [
             [sg.pin(sg.Column(key='-COL-EDIT-FALSE-', layout=displayColumnRecording, vertical_alignment='top')),
-             sg.pin(sg.Column(key='-COL-EDIT-TRUE-', layout=displayColumnEdit, vertical_alignment='top', visible=False)),
+             sg.pin(
+                 sg.Column(key='-COL-EDIT-TRUE-', layout=displayColumnEdit, vertical_alignment='top', visible=False)),
              sg.Column(imuColumn, vertical_alignment='top', element_justification='center')]
         ]
 
