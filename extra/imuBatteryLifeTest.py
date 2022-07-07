@@ -290,7 +290,7 @@ class ImuBatterLifeTest:
         if self.isConnected and self.quaternion:
             self.fig_agg.restore_region(self.bg)
 
-            self.ax = ut.plotPointsOnAxis(self.ax, self.quaternion, self.pointData, self.lineData)
+            self.ax = ut.plotOrientationOnAxis(self.ax, self.quaternion, self.pointData, self.lineData)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()

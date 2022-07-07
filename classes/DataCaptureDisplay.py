@@ -327,6 +327,7 @@ class DataCaptureDisplay:
         self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
         self.windowTimeOut = None if self.enableEditing else 1
 
+        self.enablePlotting = False if self.enableEditing else True
         # Enable the frame display for consistency.
         self.enableDisplay = True
         self.recordingDetails = None
@@ -603,6 +604,9 @@ class DataCaptureDisplay:
         self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
         self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
 
+    def plotPoints(self):
+
+
     def updatePlot(self):
         """
         Update the plot to show orientation of the IMU unit. Update acceleration values if they are available, this
@@ -612,7 +616,7 @@ class DataCaptureDisplay:
         if self.imu.isConnected and self.imu.quaternion:
             self.fig_agg.restore_region(self.bg)
 
-            self.ax = ut.plotPointsOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
+            self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
 
             self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()

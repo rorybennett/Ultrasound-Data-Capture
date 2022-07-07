@@ -132,7 +132,7 @@ def rotatePoints(points: list, quaternion: list) -> np.array:
     return np.array(rotated_points)
 
 
-def plotPointsOnAxis(axis, quaternion, pointData, lineData):
+def plotOrientationOnAxis(axis, quaternion, pointData, lineData):
     """
     Plot the orientation points on the given axis once they have been rotated by the given Quaternion. The returned
     axis is then blit on to the figure for increased plotting speed. The pointData and lineData parameters
