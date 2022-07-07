@@ -72,7 +72,7 @@ def checkEditDataFile(recordingPath: str) -> Path:
     if not editFileDir.is_file():
         with open(editFileDir, 'a') as editingFile:
             editingFile.write('recordingOffsetTop:0\n')
-            editingFile.write(f'recordingOffsetBottom:{c.DEFAULT_DISPLAY_DIMENSIONS[1]}\n')
+            editingFile.write(f'recordingOffsetBottom:{c.DEFAULT_DISPLAY_DIMENSIONS[1] - 1}\n')
 
     return editFileDir
 
@@ -90,7 +90,7 @@ def checkPointDataFile(recordingPath: str) -> Path:
         """
     pointFileDir = Path(recordingPath, 'PointData.txt')
     if not pointFileDir.is_file():
-        with open(pointFileDir, 'a') as pointFile:
+        with open(pointFileDir, 'a'):
             pass
 
     return pointFileDir
@@ -130,6 +130,7 @@ def rotatePoints(points: list, quaternion: list) -> np.array:
         rotated_points.append(myQuaternion.rotate(point))
 
     return np.array(rotated_points)
+
 
 def plotPointsOnAxis(axis, quaternions, points):
     """
