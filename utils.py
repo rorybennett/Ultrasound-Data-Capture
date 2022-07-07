@@ -71,7 +71,8 @@ def checkEditDataFile(recordingPath: str) -> Path:
     editFileDir = Path(recordingPath, 'EditingData.txt')
     if not editFileDir.is_file():
         with open(editFileDir, 'a') as editingFile:
-            editingFile.write('recordingOffset:0\n')
+            editingFile.write('recordingOffsetTop:0\n')
+            editingFile.write(f'recordingOffsetBottom:{c.DEFAULT_DISPLAY_DIMENSIONS[1]}\n')
 
     return editFileDir
 
