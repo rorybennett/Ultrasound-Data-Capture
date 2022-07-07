@@ -60,7 +60,7 @@ def getRecordingDirectories(videosPath: Path) -> list:
 def checkEditDataFile(recordingPath: str) -> Path:
     """
     Check if the given directory contains an EditingData.txt file, if True return a Path object to it, else create
-    the file and return a Path object to it.
+    the file and return a Path object to it. When creating the file add some default values to it.
 
     Args:
         recordingPath (Path): Path to a recording directory.
