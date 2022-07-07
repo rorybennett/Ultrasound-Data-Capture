@@ -74,7 +74,7 @@ class RecordingDetails:
         self.__getEditDetailsFromFile()
         self.__getPointDataFromFile()
 
-    def plotDataPointsOnAxis(self, axis):
+    def plotDataPointsOnAxis(self, axis, pointPlot):
         """
         Plot all self.pointData on the given axis. Each point has a frame with an associated Quaternion, which is used
         to rotate the point before plotting it. There will be some scaling involved, but the final plot will show
@@ -84,13 +84,15 @@ class RecordingDetails:
             axis (axis): Axis on to which the points are plot.
 
         Returns:
-
+            axis (axis): Axis containing newly plotted points
+            pointPlot (axis.plot): Used by the artis to draw points..
         """
-        for point in self.pointData:
-            position = self.frameNames.index(point[0])
+        for row in self.pointData:
+            position = self.frameNames.index(row[0])
             quaternion = self.quaternion[position]
+            point = [[row[1] * 10 - 5, row[2] * 10 - 5, 0]]
 
-            # todo Rotate points and do the math with the scan depth and offsets to plot the points correctly.
+            axis = ut.plotPointOnAxis(axis, quaternion, point, pointPlot)
 
         return axis
 

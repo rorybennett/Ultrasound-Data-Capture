@@ -50,8 +50,8 @@ class DataCaptureDisplay:
         self.availableComPorts = IMU.availableComPorts()
         # Plotting variables: axis, points, lines, fig_agg, and bg set to None until initialised.
         self.ax = None
-        self.pointData = None
-        self.lineData = None
+        self.pointPlot = None
+        self.linePlot = None
         self.fig_agg = None
         self.bg = None
         # Threading executor.
@@ -209,6 +209,9 @@ class DataCaptureDisplay:
             self.recordingDetails.addRemovePointData(point)
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               self.recordingDetails.getCurrentFrameAsBytes())
+            self.fig_agg.restore_region(self.bg)
+            self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
+            self.windowMain.write_event_value('-THREAD-PLOT-', None)
         elif self.enableOffsetChangeTop:
             self.recordingDetails.changeOffsetTop(c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
@@ -260,7 +263,9 @@ class DataCaptureDisplay:
         self.enableDataPoints = False
 
         # Plot recorded points in 3D.
-        self.recordingDetails.plotDataPointsOnAxis(self.ax)
+        self.fig_agg.restore_region(self.bg)
+        self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
+        self.windowMain.write_event_value('-THREAD-PLOT-', None)
 
         # Set element states
         self.windowMain['-TEXT-DETAILS-DATE-'].update(self.recordingDetails.date)
@@ -511,7 +516,7 @@ class DataCaptureDisplay:
             # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
             if self.enablePlotting and self.imu.quaternion:
                 self.fig_agg.restore_region(self.bg)
-                self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
+                self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointPlot, self.linePlot)
                 self.windowMain.write_event_value('-THREAD-PLOT-', None)
 
             time.sleep(0.1)
@@ -632,8 +637,8 @@ class DataCaptureDisplay:
 
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
-        self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
-        self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
+        self.pointPlot = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
+        self.linePlot = self.ax.plot([], [], [], color="red", animated=True)[0]
 
     def setAzimuth(self, azimuth):
         """
@@ -652,6 +657,12 @@ class DataCaptureDisplay:
         self.fig_agg.draw()
         # Re-save background for blit.
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
+
+        if self.enableEditing and self.recordingDetails:
+            self.fig_agg.restore_region(self.bg)
+            self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
+            self.windowMain.write_event_value('-THREAD-PLOT-', None)
+
 
     def togglePlotting(self):
         """

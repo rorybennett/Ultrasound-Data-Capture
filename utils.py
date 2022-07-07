@@ -132,21 +132,29 @@ def rotatePoints(points: list, quaternion: list) -> np.array:
     return np.array(rotated_points)
 
 
-def plotPointsOnAxis(axis, quaternions, points):
+def plotPointOnAxis(axis, quaternion, point, pointPlot):
     """
-    Plot the given points on the given axis. The points are rotated according to their related quaternions.
+    Plot the given point on the given axis. The point is rotated according to its related quaternions.
 
     Args:
-        axis (axis): Axis on to which the points must be plotted.:
-        quaternions (list(q0, q1, q2, q3)): List of 4D vectors representing quaternions.
-        points (list):  List of points to be rotated then plot.
+        axis (axis): Axis on to which the point must be plotted.
+        quaternion (list): List of quaternion values.
+        point (list):  List of point coordinates to be rotated then plot.
+        pointPlot (axis.plot): Used by the artis to draw points.
 
     Returns:
-        axis (axis): Axis containing newly plotted points.
+        axis (axis): Axis containing newly plotted point.
     """
+    rpp = rotatePoints(point, quaternion)[0]
+
+    pointPlot.set_data([rpp[0]], [rpp[1]])
+    pointPlot.set_3d_properties([rpp[2]])
+    axis.draw_artist(pointPlot)
+
+    return axis
 
 
-def plotOrientationOnAxis(axis, quaternion, pointData, lineData):
+def plotOrientationOnAxis(axis, quaternion, pointPlot, lineData):
     """
     Plot the orientation points on the given axis once they have been rotated by the given Quaternion. The returned
     axis is then blit on to the figure for increased plotting speed. The pointData and lineData parameters
@@ -156,7 +164,7 @@ def plotOrientationOnAxis(axis, quaternion, pointData, lineData):
         axis (axis): Axis on to which the points and lines must be plotted.
         quaternion (list(q0, q1, q2, q3)): 4D vector representing a quaternion.
         lineData (axis.plot): Plot used for the lines.
-        pointData (axis.plot): Plot used for the points.
+        pointPlot (axis.plot): Plot used for the points.
 
     Returns:
         axis (axis): Axis containing newly plotted points and lines.
@@ -164,9 +172,9 @@ def plotOrientationOnAxis(axis, quaternion, pointData, lineData):
     rpp = rotatePoints(c.PROBE_POINTS, quaternion)
     # Draw points
     for point in rpp:
-        pointData.set_data([point[0]], [point[1]])
-        pointData.set_3d_properties([point[2]])
-        axis.draw_artist(pointData)
+        pointPlot.set_data([point[0]], [point[1]])
+        pointPlot.set_3d_properties([point[2]])
+        axis.draw_artist(pointPlot)
 
     # Draw lines between points
     for i, point in enumerate(rpp):
