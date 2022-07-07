@@ -101,8 +101,10 @@ class Layout:
         ]
 
         editingDetails1 = [
-            [sg.Button(key='-BUTTON-EDIT-OFFSET-', button_text='Set Offset', font=st.BUTTON_FONT_SMALL, expand_x=True,
-                       disabled=True, border_width=3)],
+            [sg.Button(key='-BUTTON-OFFSET-TOP-', button_text='Set Top Offset', font=st.BUTTON_FONT_SMALL,
+                       expand_x=True, disabled=True, border_width=3)],
+            [sg.Button(key='-BUTTON-OFFSET-BOTTOM-', button_text='Set Bottom Offset', font=st.BUTTON_FONT_SMALL,
+                       expand_x=True, disabled=True, border_width=3)],
             [sg.Text('Scan Depth:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
              sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
         ]
