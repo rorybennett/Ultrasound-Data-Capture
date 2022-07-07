@@ -80,8 +80,6 @@ class DataCaptureDisplay:
         self.windowImuConnect = None
 
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getMainWindowLayout(), finalize=True)
-        # Time out is None during editing, otherwise it is 1ms.
-        self.windowTimeOut = 1
 
         # Enter key bindings for input elements.
         self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
@@ -101,8 +99,13 @@ class DataCaptureDisplay:
             # Update recording times.
             if self.enableRecording:
                 self.updateTimes()
+            # Update IMU values if present.
+            if self.imu.isConnected and self.imu.acceleration:
+                self.windowMain['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
+                self.windowMain['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
+                self.windowMain['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
 
-            event, values = self.windowMain.read(timeout=self.windowTimeOut)
+            event, values = self.windowMain.read(timeout=100)
 
             if event in [sg.WIN_CLOSED, 'None']:
                 # On window close clicked.
@@ -151,12 +154,6 @@ class DataCaptureDisplay:
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
             elif event == '-BUTTON-PLOT-TOGGLE-':
                 self.togglePlotting()
-            elif event == '-UPDATE-IMU-VALUES-':
-                self.windowMain['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
-                self.windowMain['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
-                self.windowMain['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
-                self.fig_agg.blit(self.ax.bbox)
-                self.fig_agg.flush_events()
 
             # Thread events.
             if event == '-THREAD-SIGNAL-RATE-':
@@ -165,6 +162,9 @@ class DataCaptureDisplay:
                 self.windowMain['-TEXT-RESIZE-RATE-'].update(f'{values[event]}')
             elif event == '-THREAD-FRAMES-SAVED-':
                 self.windowMain['-TEXT-FRAMES-SAVED-'].update(f'{values[event]}')
+            elif event == '-THREAD-PLOT-':
+                self.fig_agg.blit(self.ax.bbox)
+                self.fig_agg.flush_events()
 
             # Editing events.
             if event == '-BUTTON-EDIT-TOGGLE-':
@@ -330,9 +330,12 @@ class DataCaptureDisplay:
         # Hide the view that is not being used and show the view that is.
         self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
         self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
-        self.windowTimeOut = None if self.enableEditing else 1
 
+        # Enable/Disable plotting for consistency.
         self.enablePlotting = False if self.enableEditing else True
+        self.fig_agg.restore_region(self.bg)
+        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+
         # Enable the frame display for consistency.
         self.enableDisplay = True
         self.recordingDetails = None
@@ -497,18 +500,22 @@ class DataCaptureDisplay:
         Thread for plotting the orientation of the IMU. Moved to a thread as having it in the main run loop of the
         main window was causing major delays. This thread will be limited to a fairly low frame rate and will call
         an event in the main window when the plot is ready.
+
+        NB: When the main menu is open the system freezes. This delays the video signal for some reason. If the
+        menu is open for 5 seconds, then the video signal will be delayed for 5 seconds. Once a delay is introduced
+        you need to disable plotting.
         """
         print('Thread starting up: plottingThread.\n')
         while self.imu.isConnected:
             # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
-            if self.enableEditing and self.imu.isConnected and self.imu.quaternion:
+            if self.enablePlotting and self.imu.quaternion:
                 self.fig_agg.restore_region(self.bg)
-
                 self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
+                self.windowMain.write_event_value('-THREAD-PLOT-', None)
 
-            if self.imu.isConnected and self.imu.acceleration:
-                self.windowMain.write_event_value('-UPDATE-IMU-VALUES-')
-            time.sleep(1)
+            time.sleep(0.1)
+        print('-------------------------------------------\nThread closing down: '
+              'plottingThread.\n-------------------------------------------')
 
     def record(self, frameName, frame, acceleration, quaternion):
         """
@@ -626,7 +633,6 @@ class DataCaptureDisplay:
 
         self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
         self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
-
 
     def setAzimuth(self, azimuth):
         """
