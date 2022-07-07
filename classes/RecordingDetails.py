@@ -62,8 +62,9 @@ class RecordingDetails:
 
         # Path to EditingData.txt file.
         self.editingPath = ''
-        # Offset between top of frame and start of ultrasound image in pixels.
-        self.recordingOffset = 0
+        # Offsets between top and bottom of frame and scan in pixels.
+        self.recordingOffsetTop = 0
+        self.recordingOffsetBottom = c.DEFAULT_DISPLAY_DIMENSIONS[1]
         # Path to PointData.txt.
         self.pointPath = ''
         # Point data of the frames.
@@ -75,7 +76,8 @@ class RecordingDetails:
     def __saveDetailsToFile(self):
         try:
             with open(self.editingPath, 'w') as editingFile:
-                editingFile.write(f'recordingOffset:{self.recordingOffset}\n')
+                editingFile.write(f'recordingOffsetTop:{self.recordingOffsetTop}\n')
+                editingFile.write(f'recordingOffsetBottom:{self.recordingOffsetBottom}\n')
 
             with open(self.pointPath, 'w') as pointFile:
                 for point in self.pointData:
@@ -154,21 +156,35 @@ class RecordingDetails:
         except Exception as e:
             print(f'Error updating scan depth, ensure a float was entered: {e}')
 
-    def changeOffset(self, newOffset: int):
+    def changeOffsetTop(self, newOffset: int):
         """
-        Change the frame offset of the recording. It is assumed that there is one offset per recording as the offset
-        should not be able to change. If it is found that the offset can change, this will have to be changed to
-        per frame basis.
+        Change the top frame offset of the recording. If it is found that the offset can change,
+        this will have to be changed to per frame basis.
 
         Args:
-            newOffset (int): Offset between the top of the frame and the start of the recording in pixels.
+            newOffset (int): Offset between the top of the frame and the start of the scan in pixels.
         """
         try:
             newOffset = int(newOffset)
-            self.recordingOffset = newOffset
+            self.recordingOffsetTop = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
-            print(f'Error updating offset, ensure that an integer was entered: {e}')
+            print(f'Error updating top offset, ensure that an integer was entered: {e}')
+
+    def changeOffsetBottom(self, newOffset: int):
+        """
+        Change the bottom frame offset of the recording. If it is found that the offset can change,
+        this will have to be changed to per frame basis.
+
+        Args:
+            newOffset (int): Offset between the bottom of the frame and the end of the scan in pixels.
+        """
+        try:
+            newOffset = int(newOffset)
+            self.recordingOffsetBottom = newOffset
+            self.__saveDetailsToFile()
+        except Exception as e:
+            print(f'Error updating top offset, ensure that an integer was entered: {e}')
 
     def navigateFrames(self, navCommand):
         """
@@ -224,9 +240,12 @@ class RecordingDetails:
         frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFramePosition - 1] + '.png')
         # Resize the frame for the display element.
         resizeFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
-        # Add offset line.
-        cv2.line(resizeFrame, (0, self.recordingOffset), (c.DEFAULT_DISPLAY_DIMENSIONS[0], self.recordingOffset),
+        # Add top offset line.
+        cv2.line(resizeFrame, (0, self.recordingOffsetTop), (c.DEFAULT_DISPLAY_DIMENSIONS[0], self.recordingOffsetTop),
                  color=(0, 0, 255), thickness=1)
+        # Add bottom offset line.
+        cv2.line(resizeFrame, (0, self.recordingOffsetBottom),
+                 (c.DEFAULT_DISPLAY_DIMENSIONS[0], self.recordingOffsetBottom), color=(0, 0, 255), thickness=1)
         # Add point data.
         for point in self.pointData:
             if point[0] == self.frameNames[self.currentFramePosition - 1]:
@@ -257,7 +276,9 @@ class RecordingDetails:
         """
         Helper function to get any editing details that are already stored. If there is no file it is created. Values
         stored in the file:
-            recordingOffset         -       The offset between the top of the frame and the start of the ultrasound
+            recordingOffsetTop      -       The offset between the top of the frame and the start of the ultrasound
+                                            image.
+            recordingOffsetBottom   -       The offset between the bottom of the frame and the start of the ultrasound
                                             image.
         """
         self.editingPath = ut.checkEditDataFile(self.path)
@@ -268,8 +289,10 @@ class RecordingDetails:
                 parameter = lineSplit[0]
                 value = lineSplit[1]
 
-                if parameter == 'recordingOffset':
-                    self.recordingOffset = int(value)
+                if parameter == 'recordingOffsetTop':
+                    self.recordingOffsetTop = int(value)
+                elif parameter == 'recordingOffsetBottom':
+                    self.recordingOffsetBottom = int(value)
 
     def __getImuDataFromFile(self):
         """
