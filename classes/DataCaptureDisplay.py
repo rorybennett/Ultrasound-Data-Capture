@@ -259,7 +259,8 @@ class DataCaptureDisplay:
         self.enableOffsetChangeBottom = False
         self.enableDataPoints = False
 
-        # self.recordingDetails.plotDataPointsOnAxis(self.ax)
+        # Plot recorded points in 3D.
+        self.recordingDetails.plotDataPointsOnAxis(self.ax)
 
         # Set element states
         self.windowMain['-TEXT-DETAILS-DATE-'].update(self.recordingDetails.date)

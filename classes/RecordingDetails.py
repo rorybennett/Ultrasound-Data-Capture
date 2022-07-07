@@ -86,8 +86,11 @@ class RecordingDetails:
         Returns:
 
         """
-        points = np.array(self.pointData)
-        print(points[:, 1:])
+        for point in self.pointData:
+            position = self.frameNames.index(point[0])
+            quaternion = self.quaternion[position]
+
+            # todo Rotate points and do the math with the scan depth and offsets to plot the points correctly.
 
         return axis
 
