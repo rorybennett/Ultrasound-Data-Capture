@@ -98,9 +98,6 @@ class DataCaptureDisplay:
         """
         while True:
             guiFps1 = time.time()
-            # Update the plot, not event based, matches GUI refresh rate.
-            if self.enablePlotting:
-                self.updatePlot()
             # Update recording times.
             if self.enableRecording:
                 self.updateTimes()
@@ -154,6 +151,12 @@ class DataCaptureDisplay:
                 self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
             elif event == '-BUTTON-PLOT-TOGGLE-':
                 self.togglePlotting()
+            elif event == '-UPDATE-IMU-VALUES-':
+                self.windowMain['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
+                self.windowMain['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
+                self.windowMain['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
+                self.fig_agg.blit(self.ax.bbox)
+                self.fig_agg.flush_events()
 
             # Thread events.
             if event == '-THREAD-SIGNAL-RATE-':
@@ -256,7 +259,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeBottom = False
         self.enableDataPoints = False
 
-        self.recordingDetails.plotDataPointsOnAxis(self.ax)
+        # self.recordingDetails.plotDataPointsOnAxis(self.ax)
 
         # Set element states
         self.windowMain['-TEXT-DETAILS-DATE-'].update(self.recordingDetails.date)
@@ -489,6 +492,24 @@ class DataCaptureDisplay:
         print('-------------------------------------------\nThread closing down: '
               'saveFramesThread.\n-------------------------------------------')
 
+    def plottingThread(self):
+        """
+        Thread for plotting the orientation of the IMU. Moved to a thread as having it in the main run loop of the
+        main window was causing major delays. This thread will be limited to a fairly low frame rate and will call
+        an event in the main window when the plot is ready.
+        """
+        print('Thread starting up: plottingThread.\n')
+        while self.imu.isConnected:
+            # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
+            if self.enableEditing and self.imu.isConnected and self.imu.quaternion:
+                self.fig_agg.restore_region(self.bg)
+
+                self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
+
+            if self.imu.isConnected and self.imu.acceleration:
+                self.windowMain.write_event_value('-UPDATE-IMU-VALUES-')
+            time.sleep(1)
+
     def record(self, frameName, frame, acceleration, quaternion):
         """
         Save a frame as part of a series of frames to be stitched together at a later stage. The frame is saved as a
@@ -606,24 +627,6 @@ class DataCaptureDisplay:
         self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
         self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
 
-    def updatePlot(self):
-        """
-        Update the plot to show orientation of the IMU unit. Update acceleration values if they are available, this
-        update will happen regardless of enablePlotting state.
-        """
-        # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
-        if self.imu.isConnected and self.imu.quaternion:
-            self.fig_agg.restore_region(self.bg)
-
-            self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointData, self.lineData)
-
-            self.fig_agg.blit(self.ax.bbox)
-            self.fig_agg.flush_events()
-
-        if self.imu.isConnected and self.imu.acceleration:
-            self.windowMain['-TEXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
-            self.windowMain['-TEXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
-            self.windowMain['-TEXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
 
     def setAzimuth(self, azimuth):
         """
@@ -713,6 +716,7 @@ class DataCaptureDisplay:
                 # On connect button clicked.
                 self.imu.connect()
                 if self.imu.isConnected:
+                    self.threadExecutor.submit(self.plottingThread)
                     break
 
         self.updateMenus()
