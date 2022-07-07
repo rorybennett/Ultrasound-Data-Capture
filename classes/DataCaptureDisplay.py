@@ -331,7 +331,7 @@ class DataCaptureDisplay:
         self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
         self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
 
-        # Enable/Disable plotting for consistency.
+        # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
         self.fig_agg.restore_region(self.bg)
         self.windowMain.write_event_value('-THREAD-PLOT-', None)
