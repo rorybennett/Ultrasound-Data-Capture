@@ -131,6 +131,19 @@ def rotatePoints(points: list, quaternion: list) -> np.array:
 
     return np.array(rotated_points)
 
+def plotPointsOnAxis(axis, quaternions, points):
+    """
+    Plot the given points on the given axis. The points are rotated according to their related quaternions.
+
+    Args:
+        axis (axis): Axis on to which the points must be plotted.:
+        quaternions (list(q0, q1, q2, q3)): List of 4D vectors representing quaternions.
+        points (list):  List of points to be rotated then plot.
+
+    Returns:
+        axis (axis): Axis containing newly plotted points.
+    """
+
 
 def plotOrientationOnAxis(axis, quaternion, pointData, lineData):
     """
