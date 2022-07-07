@@ -5,6 +5,7 @@ from pathlib import Path
 import time
 import csv
 import cv2
+import numpy as np
 
 import utils as ut
 import constants as c
@@ -73,7 +74,22 @@ class RecordingDetails:
         self.__getEditDetailsFromFile()
         self.__getPointDataFromFile()
 
+    def plotDataPointsOnAxis(self, axis):
+        """
+        Plot all self.pointData on the given axis. Each point has a frame with an associated Quaternion, which is used
+        to rotate the point before plotting it. There will be some scaling involved, but the final plot will show
+        all the point data in 3D space.
 
+        Args:
+            axis (axis): Axis on to which the points are plot.
+
+        Returns:
+
+        """
+        points = np.array(self.pointData)
+        print(points[:, 1:])
+
+        return axis
 
     def __saveDetailsToFile(self):
         """

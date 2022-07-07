@@ -256,6 +256,8 @@ class DataCaptureDisplay:
         self.enableOffsetChangeBottom = False
         self.enableDataPoints = False
 
+        self.recordingDetails.plotDataPointsOnAxis(self.ax)
+
         # Set element states
         self.windowMain['-TEXT-DETAILS-DATE-'].update(self.recordingDetails.date)
         self.windowMain['-TEXT-DETAILS-PATH-'].update(self.recordingDetails.path)
@@ -603,9 +605,6 @@ class DataCaptureDisplay:
 
         self.pointData = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
         self.lineData = self.ax.plot([], [], [], color="red", animated=True)[0]
-
-    def plotPoints(self):
-
 
     def updatePlot(self):
         """
