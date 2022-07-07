@@ -73,7 +73,13 @@ class RecordingDetails:
         self.__getEditDetailsFromFile()
         self.__getPointDataFromFile()
 
+
+
     def __saveDetailsToFile(self):
+        """
+        Save all in memory data to relevant .txt files. This should be called whenever a value is changed. All previous
+        values are overwritten and the current values stored.
+        """
         try:
             with open(self.editingPath, 'w') as editingFile:
                 editingFile.write(f'recordingOffsetTop:{self.recordingOffsetTop}\n')
