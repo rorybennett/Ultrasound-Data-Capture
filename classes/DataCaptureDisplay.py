@@ -73,7 +73,8 @@ class DataCaptureDisplay:
         # Do Graph clicks add data points?
         self.enableDataPoints = False
         # Should a Graph click change the offset?
-        self.enableOffsetChange = False
+        self.enableOffsetChangeTop = False
+        self.enableOffsetChangeBottom = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -173,8 +174,10 @@ class DataCaptureDisplay:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
                 self.navigateFrames(values['-INPUT-NAV-GOTO-'])
-            elif event == '-BUTTON-EDIT-OFFSET-':
-                self.toggleChangingOffset()
+            elif event == '-BUTTON-OFFSET-TOP-':
+                self.toggleChangingOffsetTop()
+            elif event == '-BUTTON-OFFSET-BOTTOM-':
+                self.toggleChangingOffsetBottom()
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
                 self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
             elif event == '-BUTTON-POINTS-':
@@ -191,8 +194,9 @@ class DataCaptureDisplay:
     def onGraphFrameClicked(self, point):
         """
         Click handler function for when the Graph frame element is clicked. If enableDataPoints then a new data point
-        is added or removed (if within proximity of existing point) to the frame, if enableOffsetChange then the
-        vertical portion of the point is used as the new offset value.
+        is added or removed (if within proximity of existing point) to the frame, if enableOffsetChangeTop then the
+        vertical portion of the point is used as the new top offset value, if enableOffsetChangeBottom then the vertical
+        portion of the point is used as the new bottom offset value.
 
         Args:
             point: Coordinates of where the Graph element was clicked.
@@ -202,8 +206,12 @@ class DataCaptureDisplay:
             self.recordingDetails.addRemovePointData(point)
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               self.recordingDetails.getCurrentFrameAsBytes())
-        elif self.enableOffsetChange:
-            self.recordingDetails.changeOffset(c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1])
+        elif self.enableOffsetChangeTop:
+            self.recordingDetails.changeOffsetTop(c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1])
+            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                              value=self.recordingDetails.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeBottom:
+            self.recordingDetails.changeOffsetBottom(c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               value=self.recordingDetails.getCurrentFrameAsBytes())
 
@@ -244,7 +252,8 @@ class DataCaptureDisplay:
         """
         print(f'Create editing data for: {videoDirectory}')
         self.recordingDetails = RecordingDetails(self.videosPath, videoDirectory)
-        self.enableOffsetChange = False
+        self.enableOffsetChangeTop = False
+        self.enableOffsetChangeBottom = False
         self.enableDataPoints = False
 
         # Set element states
@@ -259,22 +268,38 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
         self.windowMain['-TEXT-NAV-CURRENT-'].update(
             f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
-        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
             f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}', disabled=False)
         self.windowMain['-BUTTON-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
 
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
 
-    def toggleChangingOffset(self):
+    def toggleChangingOffsetTop(self):
         """
-        Toggle the state of self.enableOffsetChange to enable or disable changing of the frame offset value.
+        Toggle the state of self.enableOffsetChangeTop to enable or disable changing of the top frame offset value.
         """
-        self.enableOffsetChange = not self.enableOffsetChange
+        self.enableOffsetChangeTop = not self.enableOffsetChangeTop
+        self.enableOffsetChangeBottom = False
         self.enableDataPoints = False
         # Set element states.
-        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChange else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeTop else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
+    def toggleChangingOffsetBottom(self):
+        """
+        Toggle the state of self.enableOffsetChangeTop to enable or disable changing of the top frame offset value.
+        """
+        self.enableOffsetChangeBottom = not self.enableOffsetChangeBottom
+        self.enableOffsetChangeTop = False
+        self.enableDataPoints = False
+        # Set element states.
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeBottom else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleAddingDataPoints(self):
@@ -282,11 +307,13 @@ class DataCaptureDisplay:
         Toggle the state of self.enableDataPoints to enable or disable adding data points to a frame.
         """
         self.enableDataPoints = not self.enableDataPoints
-        self.enableOffsetChange = False
+        self.enableOffsetChangeTop = False
+        self.enableOffsetChangeBottom = False
         # Set element states.
         self.windowMain['-BUTTON-POINTS-'].update(
             button_color=st.BUTTON_ACTIVE if self.enableDataPoints else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleEditing(self):
         """
@@ -334,7 +361,8 @@ class DataCaptureDisplay:
         [self.windowMain[i].update(disabled=True) for i in Layout.NAVIGATION_KEYS]
         self.windowMain['-INPUT-NAV-GOTO-'].update('', disabled=True)
         self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
-        self.windowMain['-BUTTON-EDIT-OFFSET-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update('', disabled=True)
         self.windowMain['-BUTTON-POINTS-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-TEXT-DETAILS-DATE-'].update('')
