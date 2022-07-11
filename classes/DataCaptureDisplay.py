@@ -142,7 +142,7 @@ class DataCaptureDisplay:
                 self.imu.calibrateAcceleration()
 
             # Editing menu events.
-            if event.endswith('::-MENU-EDIT-START-') or event.endswith('::-MENU-EDIT-STOP-'):
+            if event.endswith('::-MENU-EDIT-START-') or event.endswith('::-MENU-EDIT-TOGGLE-'):
                 self.toggleEditing()
 
             # Signal Display Events.

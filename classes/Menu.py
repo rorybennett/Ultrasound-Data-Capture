@@ -105,9 +105,9 @@ class Menu:
         True (in edit state):       The option to end editing is displayed.
         """
         if self.editingEnabled:
-            self.editMenu = ['Edit', ['Stop Editing::-MENU-EDIT-STOP-']]
+            self.editMenu = ['Edit', ['Stop Editing::-MENU-EDIT-TOGGLE-']]
         else:
-            self.editMenu = ['Edit', ['Start Editing::-MENU-EDIT-START-']]
+            self.editMenu = ['Edit', ['Start Editing::-MENU-EDIT-TOGGLE-']]
 
     def __generateMenus(self):
         """
