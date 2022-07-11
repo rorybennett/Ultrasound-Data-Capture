@@ -101,7 +101,7 @@ class Layout:
                      expand_x=True)],
             [sg.HSeparator()],
             [sg.Combo(key='-COMBO-RECORDINGS-', size=21, font=st.COMBO_FONT_SMALL, values=[], enable_events=True,
-                      readonly=True, pad=((0, 0), (0, 0)))]
+                      readonly=True)]
         ]
 
         detailsColumn = [
@@ -165,7 +165,7 @@ class Layout:
         ]
 
         layout = [
-            [sg.Column(selectColumn, vertical_alignment='top', pad=(0, 0)),
+            [sg.Column(selectColumn, vertical_alignment='top'),
              sg.Column(detailsColumn),
              sg.Column(navigationColumn, vertical_alignment='top'),
              sg.Column(editingDetailsColumn, expand_x=True, vertical_alignment='top', pad=(0, 0))],
