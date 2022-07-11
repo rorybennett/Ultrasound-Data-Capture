@@ -81,10 +81,6 @@ class DataCaptureDisplay:
 
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(), finalize=True)
 
-        # Enter key bindings for input elements.
-        # self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
-        # self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
-
         # Create the initial plot.
         self.createPlot(c.DEFAULT_AZIMUTH)
 
@@ -215,11 +211,13 @@ class DataCaptureDisplay:
             self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THREAD-PLOT-', None)
         elif self.enableOffsetChangeTop:
-            self.recordingDetails.changeOffsetTop(c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1])
+            self.recordingDetails.changeOffsetTop(
+                (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               value=self.recordingDetails.getCurrentFrameAsBytes())
         elif self.enableOffsetChangeBottom:
-            self.recordingDetails.changeOffsetBottom(c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1])
+            self.recordingDetails.changeOffsetBottom(
+                (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               value=self.recordingDetails.getCurrentFrameAsBytes())
 
@@ -335,16 +333,15 @@ class DataCaptureDisplay:
         disabled and some are reset to default values. The display and plot are enabled for consistency.
         """
         self.enableEditing = not self.enableEditing
-        # Hide the view that is not being used and show the view that is.
-        # self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
-        # self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
         self.windowMain.close()
-        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getEditingLayout(), finalize=True)
+        self.windowMain = sg.Window('Ultrasound Data Capture',
+                                    self.layout.getEditingLayout() if self.enableEditing else
+                                    self.layout.getInitialLayout(),
+                                    finalize=True)
 
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
-        self.fig_agg.restore_region(self.bg)
-        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+        self.createPlot(c.DEFAULT_AZIMUTH)
 
         # Enable the frame display for consistency.
         self.enableDisplay = True
@@ -356,41 +353,22 @@ class DataCaptureDisplay:
                 self.frameGrabber.disconnect()
             if self.imu.isConnected:
                 self.imu.disconnect()
+
+            self.windowMain['-COMBO-RECORDINGS-'].update(
+                values=ut.getRecordingDirectories(self.videosPath))
+            # Enter key bindings for input elements.
+            self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
+            self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
             time.sleep(0.5)
 
         # Set element states.
         self.updateMenus()
-        # Plotting and display elements.
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
                                                           text='Disable Display',
                                                           disabled=True if self.enableEditing else False)
         self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
                                                        text='Disable Plotting',
                                                        disabled=True if self.enableEditing else False)
-        # Editing elements
-        self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(
-            text='End Editing' if self.enableEditing else 'Start Editing',
-            button_color=st.BUTTON_ACTIVE if self.enableEditing else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-COMBO-RECORDINGS-'].update(
-            values=ut.getRecordingDirectories(self.videosPath) if self.enableEditing else [],
-            disabled=False if self.enableEditing else True)
-        [self.windowMain[i].update(disabled=True) for i in Layout.NAVIGATION_KEYS]
-        self.windowMain['-INPUT-NAV-GOTO-'].update('', disabled=True)
-        self.windowMain['-TEXT-NAV-CURRENT-'].update('____/____')
-        self.windowMain['-BUTTON-OFFSET-TOP-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-INPUT-EDIT-DEPTH-'].update('', disabled=True)
-        self.windowMain['-BUTTON-POINTS-'].update(disabled=True, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-TEXT-DETAILS-DATE-'].update('')
-        self.windowMain['-TEXT-DETAILS-PATH-'].update('')
-        self.windowMain['-TEXT-DETAILS-DURATION-'].update('')
-        self.windowMain['-TEXT-DETAILS-FRAMES-'].update('')
-        self.windowMain['-TEXT-DETAILS-POINTS-'].update('')
-        self.windowMain['-TEXT-DETAILS-FPS-'].update('')
-
-        self.windowMain.write_event_value(key='-UPDATE-GRAPH-FRAME-',
-                                          value=ut.pngAsBytes('icons/blank_background.png'))
-        # todo: clear plot when i have access to an imu to test it
 
     def getFramesThread(self):
         """
@@ -661,7 +639,6 @@ class DataCaptureDisplay:
             self.fig_agg.restore_region(self.bg)
             self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THREAD-PLOT-', None)
-
 
     def togglePlotting(self):
         """

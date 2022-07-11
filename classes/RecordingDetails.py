@@ -82,15 +82,24 @@ class RecordingDetails:
 
         Args:
             axis (axis): Axis on to which the points are plot.
+            pointPlot (axis.plot): Used by the artis to draw points.
 
         Returns:
-            axis (axis): Axis containing newly plotted points
-            pointPlot (axis.plot): Used by the artis to draw points..
+            axis (axis): Axis containing newly plotted points.
         """
+        pointPlot.set_markersize(2)
         for row in self.pointData:
+            # Position of frame name belonging to point.
             position = self.frameNames.index(row[0])
+            # Quaternion of frame in question.
             quaternion = self.quaternion[position]
-            point = [[row[1] * 10 - 5, row[2] * 10 - 5, 0]]
+            # Depth ratio used to go from pixel ratio to mm
+            depthRatio = self.depths[position] / (
+                (self.recordingOffsetBottom - self.recordingOffsetTop))
+            # Extract point from line.
+            point = [[row[1] * depthRatio, (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
+
+            print(point)
 
             axis = ut.plotPointOnAxis(axis, quaternion, point, pointPlot)
 
@@ -192,7 +201,7 @@ class RecordingDetails:
             newOffset (int): Offset between the top of the frame and the start of the scan in pixels.
         """
         try:
-            newOffset = int(newOffset)
+            newOffset = float(newOffset)
             self.recordingOffsetTop = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
@@ -207,7 +216,7 @@ class RecordingDetails:
             newOffset (int): Offset between the bottom of the frame and the end of the scan in pixels.
         """
         try:
-            newOffset = int(newOffset)
+            newOffset = float(newOffset)
             self.recordingOffsetBottom = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
@@ -268,11 +277,13 @@ class RecordingDetails:
         # Resize the frame for the display element.
         resizeFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
         # Add top offset line.
-        cv2.line(resizeFrame, (0, self.recordingOffsetTop), (c.DEFAULT_DISPLAY_DIMENSIONS[0], self.recordingOffsetTop),
+        cv2.line(resizeFrame, (0, int(self.recordingOffsetTop * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
+                 (c.DEFAULT_DISPLAY_DIMENSIONS[0], int(self.recordingOffsetTop * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
                  color=(0, 0, 255), thickness=1)
         # Add bottom offset line.
-        cv2.line(resizeFrame, (0, self.recordingOffsetBottom),
-                 (c.DEFAULT_DISPLAY_DIMENSIONS[0], self.recordingOffsetBottom), color=(0, 0, 255), thickness=1)
+        cv2.line(resizeFrame, (0, int(self.recordingOffsetBottom * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
+                 (c.DEFAULT_DISPLAY_DIMENSIONS[0], int(self.recordingOffsetBottom * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
+                 color=(0, 0, 255), thickness=1)
         # Add point data.
         for point in self.pointData:
             if point[0] == self.frameNames[self.currentFramePosition - 1]:
@@ -317,9 +328,9 @@ class RecordingDetails:
                 value = lineSplit[1]
 
                 if parameter == 'recordingOffsetTop':
-                    self.recordingOffsetTop = int(value)
+                    self.recordingOffsetTop = float(value)
                 elif parameter == 'recordingOffsetBottom':
-                    self.recordingOffsetBottom = int(value)
+                    self.recordingOffsetBottom = float(value)
 
     def __getImuDataFromFile(self):
         """

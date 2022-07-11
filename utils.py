@@ -140,7 +140,7 @@ def plotPointOnAxis(axis, quaternion, point, pointPlot):
         axis (axis): Axis on to which the point must be plotted.
         quaternion (list): List of quaternion values.
         point (list):  List of point coordinates to be rotated then plot.
-        pointPlot (axis.plot): Used by the artis to draw points.
+        pointPlot (axis.plot): Used by the artist to draw points.
 
     Returns:
         axis (axis): Axis containing newly plotted point.
