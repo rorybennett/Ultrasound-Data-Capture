@@ -141,6 +141,10 @@ class DataCaptureDisplay:
             elif event.endswith('::-MENU-IMU-CALIBRATE-'):
                 self.imu.calibrateAcceleration()
 
+            # Editing menu events.
+            if event.endswith('::-MENU-EDIT-START-') or event.endswith('::-MENU-EDIT-STOP-'):
+                self.toggleEditing()
+
             # Signal Display Events.
             if event == '-BUTTON-DISPLAY-TOGGLE-':
                 self.toggleDisplay()
@@ -167,9 +171,7 @@ class DataCaptureDisplay:
                 self.fig_agg.flush_events()
 
             # Editing events.
-            if event == '-BUTTON-EDIT-TOGGLE-':
-                self.toggleEditing()
-            elif event == '-COMBO-RECORDINGS-':
+            if event == '-COMBO-RECORDINGS-':
                 self.selectRecordingForEdit(values[event])
             elif event == '-TEXT-DETAILS-PATH-' and self.recordingDetails:
                 ut.openWindowsExplorer(self.recordingDetails.path)
