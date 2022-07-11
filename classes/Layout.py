@@ -58,7 +58,7 @@ class Layout:
         Returns:
             layout (list): Layout in the form of a list.
         """
-        displayRow = self.__createDisplayRow()
+        displayRow = self.__createDisplayRow(enableEditing=True)
 
         editRow = self.__createEditingRow()
 
