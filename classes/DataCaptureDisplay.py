@@ -336,8 +336,10 @@ class DataCaptureDisplay:
         """
         self.enableEditing = not self.enableEditing
         # Hide the view that is not being used and show the view that is.
-        self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
-        self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
+        # self.windowMain['-COL-EDIT-TRUE-'].update(visible=self.enableEditing)
+        # self.windowMain['-COL-EDIT-FALSE-'].update(visible=not self.enableEditing)
+        self.windowMain.close()
+        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getEditingLayout(), finalize=True)
 
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
@@ -358,9 +360,6 @@ class DataCaptureDisplay:
 
         # Set element states.
         self.updateMenus()
-        # Recording elements.
-        self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True)
-        self.windowMain['-BUTTON-RECORD-TOGGLE-'].update(disabled=True)
         # Plotting and display elements.
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
                                                           text='Disable Display',
@@ -389,8 +388,6 @@ class DataCaptureDisplay:
         self.windowMain['-TEXT-DETAILS-POINTS-'].update('')
         self.windowMain['-TEXT-DETAILS-FPS-'].update('')
 
-        self.windowMain.write_event_value(key='-UPDATE-IMAGE-FRAME-',
-                                          value=ut.pngAsBytes('icons/blank_background.png'))
         self.windowMain.write_event_value(key='-UPDATE-GRAPH-FRAME-',
                                           value=ut.pngAsBytes('icons/blank_background.png'))
         # todo: clear plot when i have access to an imu to test it
