@@ -21,59 +21,32 @@ class Layout:
     def __init__(self, menu):
         self.menu = menu
 
-    def getInitialLayout(self) -> list:
+    def getMainWindowLayout(self):
         """
-        Create the initial layout. Editing is disabled in this layout. There are three primary sections to this layout:
+        Create the main window layout. This layout is split into a Video/Signal section and an IMU section.
 
-        1. Display Row:         Contains the Image element where the frame is displayed and the Canvas where the
-                                orientation plot is displayed.
-        2. Record Row:          Contains buttons and text views that enable recording functions and recording details to
-                                be displayed.
-        3. Miscellaneous Row:   A final row to show some extra information about what is happening in the window.
-
-        Returns:
-            layout (list): Layout in the form of a list.
+        Video/Signal:       Contains a display that shows the signal when connected, and has controls for
+                            saving/recording frames.
+        IMU:                Contains a display that shows the orientation of the IMU.
         """
         displayRow = self.__createDisplayRow()
 
         recordRow = self.__createRecordRow()
 
+        editingRow = self.__createEditingRow()
+
         miscellaneousRow = self.__createMiscellaneousRow()
 
-        layout = [
+        return [
             [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu())],
             [displayRow],
             [sg.HSep(pad=((0, 0), (0, 10)))],
             [recordRow],
             [sg.HSep(pad=((0, 0), (0, 10)))],
-            [miscellaneousRow]
-        ]
-
-        return layout
-
-    def getEditingLayout(self) -> list:
-        """
-        Create the editing layout. The record row of the initial layout is swapped for an editing row.
-
-        Returns:
-            layout (list): Layout in the form of a list.
-        """
-        displayRow = self.__createDisplayRow()
-
-        editRow = self.__createEditingRow()
-
-        miscellaneousRow = self.__createMiscellaneousRow()
-
-        layout = [
-            [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu())],
-            [displayRow],
-            [sg.HSep(pad=((0, 0), (0, 10)))],
-            [editRow],
+            [editingRow],
             [sg.HSep(pad=((0, 0), (0, 10)))],
             [miscellaneousRow]
         ]
-
-        return layout
 
     def __createEditingRow(self):
         """
@@ -160,37 +133,33 @@ class Layout:
                      click_submits=True)]
         ]
 
-    def __createDisplayRow(self, enableEditing: bool = False) -> list:
+    def __createDisplayRow(self):
         """
         Create the display row of the main window. This contains the image that displays frames and the plot that
         shows the orientation of the IMU, along with some buttons and text information. The frame is displayed
-        using an Image element when recording form a signal, and a Graph element during editing, based on
-        enableEditing.
-
-        Args:
-            enableEditing (bool): If editing is enabled changes to the display column are made.
+        using an Image element when recording form a signal, and a Graph element during editing. The visibility of
+        the columns is set based on the editing status of the program.
         """
-        if enableEditing:
-            displayColumn = [
-                [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
-                          pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DEFAULT_DISPLAY_DIMENSIONS,
-                          enable_events=True)],
-                [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
-                         justification='left', pad=(0, 0)),
-                 sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
-                 sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
-                         pad=(0, 0))]
-            ]
-        else:
-            displayColumn = [
-                [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
-                          pad=(0, 0))],
-                [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
-                         justification='left', pad=(0, 0)),
-                 sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
-                 sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
-                         pad=(0, 0))]
-            ]
+        displayColumnEdit = [
+            [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
+                      pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DEFAULT_DISPLAY_DIMENSIONS,
+                      enable_events=True)],
+            [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
+                     justification='left', pad=(0, 0)),
+             sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
+             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
+                     pad=(0, 0))]
+        ]
+
+        displayColumnRecording = [
+            [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
+                      pad=(0, 0))],
+            [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
+                     justification='left', pad=(0, 0)),
+             sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
+             sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
+                     pad=(0, 0))]
+        ]
 
         imuColumn = [
             [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 0))),
@@ -209,12 +178,12 @@ class Layout:
                        border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)]
         ]
 
-        layout = [
-            [sg.pin(sg.Column(key='-COL-EDIT-FALSE-', layout=displayColumn, vertical_alignment='top')),
+        return [
+            [sg.pin(sg.Column(key='-COL-EDIT-FALSE-', layout=displayColumnRecording, vertical_alignment='top')),
+             sg.pin(
+                 sg.Column(key='-COL-EDIT-TRUE-', layout=displayColumnEdit, vertical_alignment='top', visible=False)),
              sg.Column(imuColumn, vertical_alignment='top', element_justification='center')]
         ]
-
-        return layout
 
     def __createRecordRow(self):
         """

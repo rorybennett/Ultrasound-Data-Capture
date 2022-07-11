@@ -79,11 +79,11 @@ class DataCaptureDisplay:
         # IMU connect window
         self.windowImuConnect = None
 
-        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getMainWindowLayout(), finalize=True)
+        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(), finalize=True)
 
         # Enter key bindings for input elements.
-        self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
-        self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
+        # self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
+        # self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
 
         # Create the initial plot.
         self.createPlot(c.DEFAULT_AZIMUTH)
