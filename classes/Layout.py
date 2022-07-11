@@ -1,6 +1,14 @@
 """
 Class for handling all layouts used in DataCaptureDisplay. This class is intended to clean up the DataCaptureDisplay
 class to make the code more readable. Future layout updates should be easier with the separation.
+
+There are two primary layouts. Since PySimpleGUI is not dynamic it is not really possible to swap out layouts. As such,
+when going into and out of editing mode the window is closed and a new window with the required layout is opened.
+
+Currently, two functions are available:
+    1. getInitialLayout     -       Returns the initial layout. This layout does not have editing details on display.
+    2. getEditingLayout     -       Returns the layout with editing elements available. The recording elements are
+                                    now removed.
 """
 import constants as c
 import styling as st
@@ -53,7 +61,13 @@ class Layout:
 
     def getEditingLayout(self) -> list:
         """
-        Create the editing layout. The record row of the initial layout is swapped for an editing row.
+        Create the editing layout. Recording is disabled in this layout. There are three primary sections to this layout:
+
+        1. Display Row:         Contains the Image element where the frame is displayed and the Canvas where the
+                                orientation plot is displayed.
+        2. Editing Row:         Contains buttons and text views that enable editing functions and editing details to
+                                be displayed.
+        3. Miscellaneous Row:   A final row to show some extra information about what is happening in the window.
 
         Returns:
             layout (list): Layout in the form of a list.
@@ -75,13 +89,19 @@ class Layout:
 
         return layout
 
-    def __createEditingRow(self):
+    def __createEditingRow(self) -> list:
         """
-        Create the editing row of the main window. This is a work in progress: todo
+        Create the editing row of the main window. This is a work in progress.
+
+        Returns:
+            layout (list): Layout in the form of a list.
         """
         selectColumn = [
-            [sg.Combo(key='-COMBO-RECORDINGS-', size=21, font=st.COMBO_FONT_SMALL, disabled=True, values=[],
-                      enable_events=True, readonly=True, pad=((0, 0), (0, 0)))]
+            [sg.Text('Select Recording', font=st.DESC_FONT, pad=((0, 0), (0, 10)), justification='center',
+                     expand_x=True)],
+            [sg.HSeparator()],
+            [sg.Combo(key='-COMBO-RECORDINGS-', size=21, font=st.COMBO_FONT_SMALL, values=[], enable_events=True,
+                      readonly=True, pad=((0, 0), (0, 0)))]
         ]
 
         detailsColumn = [
@@ -105,8 +125,7 @@ class Layout:
                      justification='center')],
             [sg.HSeparator()],
             [sg.Button(key=NAVIGATION_KEYS[0], button_text='-10', size=(3, 1), font=st.BUTTON_FONT_SMALL,
-                       border_width=3,
-                       disabled=True),
+                       border_width=3, disabled=True),
              sg.Button(key=NAVIGATION_KEYS[1], button_text='-5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
              sg.Button(key=NAVIGATION_KEYS[2], button_text='-1', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
@@ -116,13 +135,10 @@ class Layout:
              sg.Button(key=NAVIGATION_KEYS[4], button_text='+5', size=(3, 1), font=st.BUTTON_FONT_SMALL, border_width=3,
                        disabled=True),
              sg.Button(key=NAVIGATION_KEYS[5], button_text='+10', size=(3, 1), font=st.BUTTON_FONT_SMALL,
-                       border_width=3,
-                       disabled=True),
+                       border_width=3, disabled=True),
              ],
             [sg.Text('Go to frame:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-NAV-GOTO-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
-            [sg.Text('Current frame:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
-             sg.Text(key='-TEXT-NAV-CURRENT-', text='____/____', font=st.DESC_FONT, justification='right')],
+             sg.Input(key='-INPUT-NAV-GOTO-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)]
         ]
 
         editingDetails1 = [
@@ -148,7 +164,7 @@ class Layout:
 
         ]
 
-        return [
+        layout = [
             [sg.Column(selectColumn, vertical_alignment='top', pad=(0, 0)),
              sg.Column(detailsColumn),
              sg.Column(navigationColumn, vertical_alignment='top'),
@@ -157,6 +173,8 @@ class Layout:
              sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT + ' underline', text_color='blue',
                      click_submits=True)]
         ]
+
+        return layout
 
     def __createDisplayRow(self, enableEditing: bool = False) -> list:
         """
@@ -167,17 +185,17 @@ class Layout:
 
         Args:
             enableEditing (bool): If editing is enabled changes to the display column are made.
+
+        Returns:
+            layout (list): Layout in the form of a list.
         """
         if enableEditing:
             displayColumn = [
                 [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
                           pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DEFAULT_DISPLAY_DIMENSIONS,
                           enable_events=True)],
-                [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
-                         justification='left', pad=(0, 0)),
-                 sg.Text(text=' Signal FPS: ', justification='right', font=st.INFO_TEXT, pad=(0, 0)),
-                 sg.Text(key='-TEXT-SIGNAL-RATE-', text='0', justification='center', font=st.INFO_TEXT, size=(3, 1),
-                         pad=(0, 0))]
+                [sg.Text(key='-TEXT-NAV-CURRENT-', text='____/____', font=st.INFO_TEXT, justification='right',
+                         expand_x=True)]
             ]
         else:
             displayColumn = [
@@ -214,10 +232,13 @@ class Layout:
 
         return layout
 
-    def __createRecordRow(self):
+    def __createRecordRow(self) -> list:
         """
         Create the record row of the main window. This contains the recording buttons and details about the current
         recording session.
+
+        Returns:
+            layout (list): Layout in the form of a list.
         """
         recordStartColumn = [
             [sg.Text(text='Record Start', font=st.DESC_FONT)],
@@ -241,7 +262,7 @@ class Layout:
             [sg.Text(key='-TEXT-FRAMES-SAVED-', text='0', font=st.DESC_FONT, size=(12, 1), justification='center')]
         ]
 
-        return [
+        layout = [
             [sg.Button(key='-BUTTON-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.BUTTON_FONT,
                        border_width=3, pad=((0, 20), (0, 0)), disabled=True),
              sg.Button(key='-BUTTON-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.BUTTON_FONT,
@@ -251,6 +272,8 @@ class Layout:
              sg.Column(recordElapsedColumn, element_justification='center', pad=(0, 0)),
              sg.Column(recordFramesColumn, element_justification='center', pad=(0, 0))]
         ]
+
+        return layout
 
     def getImuWindowLayout(self, availableComPorts, comPort, baudRate) -> list:
         """
@@ -262,9 +285,9 @@ class Layout:
             baudRate (int): Default baud rate to show in COMBO box.
 
         Returns:
-            list used for layout.
+            layout (list): Layout in the form of a list.
         """
-        return [
+        layout = [
             [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
                        image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
              sg.Combo(key='-COMBO-COM-PORT-', values=availableComPorts, size=7, font=st.COMBO_FONT,
@@ -276,10 +299,15 @@ class Layout:
             [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.BUTTON_FONT)]
         ]
 
-    def __createMiscellaneousRow(self):
+        return layout
+
+    def __createMiscellaneousRow(self) -> list:
         """
-        Create the bottom row of the main window. This shows exrta information about what is happening during the running
-        of the program
+        Create the bottom row of the main window. This shows extra information about what is happening during the
+        running of the program.
+
+        Returns:
+            layout (list): Layout in the form of a list.
         """
         frameRateDetails = [
             [sg.Text(text='GUI: ', justification='right', font=st.INFO_TEXT, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
@@ -292,6 +320,8 @@ class Layout:
                      size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
         ]
 
-        return [
+        layout = [
             [frameRateDetails]
         ]
+
+        return layout
