@@ -73,6 +73,8 @@ def checkEditDataFile(recordingPath: str) -> Path:
         with open(editFileDir, 'a') as editingFile:
             editingFile.write('recordingOffsetTop:0\n')
             editingFile.write(f'recordingOffsetBottom:{c.DEFAULT_DISPLAY_DIMENSIONS[1] - 1}\n')
+            editingFile.write(f'recordingOffsetLeft:0\n')
+            editingFile.write(f'recordingOffsetRight:{c.DEFAULT_DISPLAY_DIMENSIONS[0] - 1}\n')
 
     return editFileDir
 
