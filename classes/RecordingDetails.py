@@ -63,9 +63,11 @@ class RecordingDetails:
 
         # Path to EditingData.txt file.
         self.editingPath = ''
-        # Offsets between top and bottom of frame and scan in pixels.
+        # Offsets between top, bottom, left, and right of frame and scan in fractions of display dimensions.
         self.recordingOffsetTop = 0
-        self.recordingOffsetBottom = c.DEFAULT_DISPLAY_DIMENSIONS[1]
+        self.recordingOffsetBottom = 1
+        self.recordingOffsetLeft = 0
+        self.recordingOffsetRight = 1
         # Path to PointData.txt.
         self.pointPath = ''
         # Point data of the frames.
@@ -114,6 +116,8 @@ class RecordingDetails:
             with open(self.editingPath, 'w') as editingFile:
                 editingFile.write(f'recordingOffsetTop:{self.recordingOffsetTop}\n')
                 editingFile.write(f'recordingOffsetBottom:{self.recordingOffsetBottom}\n')
+                editingFile.write(f'recordingOffsetLeft:{self.recordingOffsetLeft}\n')
+                editingFile.write(f'recordingOffsetRight:{self.recordingOffsetRight}\n')
 
             with open(self.pointPath, 'w') as pointFile:
                 for point in self.pointData:
@@ -198,7 +202,7 @@ class RecordingDetails:
         this will have to be changed to per frame basis.
 
         Args:
-            newOffset (int): Offset between the top of the frame and the start of the scan in pixels.
+            newOffset (int): Offset between the top of the frame and the start of the scan as a ratio.
         """
         try:
             newOffset = float(newOffset)
@@ -213,11 +217,44 @@ class RecordingDetails:
         this will have to be changed to per frame basis.
 
         Args:
-            newOffset (int): Offset between the bottom of the frame and the end of the scan in pixels.
+            newOffset (int): Offset between the bottom of the frame and the end of the scan as a ratio.
         """
         try:
             newOffset = float(newOffset)
             self.recordingOffsetBottom = newOffset
+            self.__saveDetailsToFile()
+        except Exception as e:
+            print(f'Error updating top offset, ensure that an integer was entered: {e}')
+
+    def changeOffsetLeft(self, newOffset: int):
+        """
+        Change the left frame offset of the recording. If it is found that the offset can change,
+        this will have to be changed to per frame basis.
+
+        Args:
+            newOffset (int): Offset between the left of the frame and the left of the scan as a ratio.
+        """
+        try:
+            newOffset = float(newOffset)
+            self.recordingOffsetLeft = newOffset
+            self.recordingOffsetRight = 1 - self.recordingOffsetLeft
+            self.__saveDetailsToFile()
+        except Exception as e:
+            print(f'Error updating top offset, ensure that an integer was entered: {e}')
+
+    def changeOffsetRight(self, newOffset: int):
+        """
+        Not using for now.
+
+        Change the right frame offset of the recording. If it is found that the offset can change,
+        this will have to be changed to per frame basis.
+
+        Args:
+            newOffset (int): Offset between the right of the frame and the end of the scan as a ratio.
+        """
+        try:
+            newOffset = float(newOffset)
+            self.recordingOffsetRight = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating top offset, ensure that an integer was entered: {e}')
@@ -283,6 +320,14 @@ class RecordingDetails:
         # Add bottom offset line.
         cv2.line(resizeFrame, (0, int(self.recordingOffsetBottom * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
                  (c.DEFAULT_DISPLAY_DIMENSIONS[0], int(self.recordingOffsetBottom * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
+                 color=(0, 0, 255), thickness=1)
+        # Add left offset line.
+        cv2.line(resizeFrame, (int(self.recordingOffsetLeft * c.DEFAULT_DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.recordingOffsetLeft * c.DEFAULT_DISPLAY_DIMENSIONS[0]), c.DEFAULT_DISPLAY_DIMENSIONS[0]),
+                 color=(0, 0, 255), thickness=1)
+        # Add right offset line.
+        cv2.line(resizeFrame, (int(self.recordingOffsetRight * c.DEFAULT_DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.recordingOffsetRight * c.DEFAULT_DISPLAY_DIMENSIONS[0]), c.DEFAULT_DISPLAY_DIMENSIONS[0]),
                  color=(0, 0, 255), thickness=1)
         # Add point data.
         for point in self.pointData:
