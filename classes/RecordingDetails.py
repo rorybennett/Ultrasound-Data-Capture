@@ -65,9 +65,9 @@ class RecordingDetails:
         self.editingPath = ''
         # Offsets between top, bottom, left, and right of frame and scan in fractions of display dimensions.
         self.recordingOffsetTop = 0
-        self.recordingOffsetBottom = 1
+        self.recordingOffsetBottom = 0.999
         self.recordingOffsetLeft = 0
-        self.recordingOffsetRight = 1
+        self.recordingOffsetRight = 0.999
         # Path to PointData.txt.
         self.pointPath = ''
         # Point data of the frames.
@@ -95,11 +95,14 @@ class RecordingDetails:
             position = self.frameNames.index(row[0])
             # Quaternion of frame in question.
             quaternion = self.quaternion[position]
-            # Depth ratio used to go from pixel ratio to mm
+            # Depth ratio used to go from pixel ratio to mm for height.
             depthRatio = self.depths[position] / (
                 (self.recordingOffsetBottom - self.recordingOffsetTop))
+            # Width ratio used to go from pixel ratio to mm for width.
+            widthRatio = self.depths[position] / (
+                (self.recordingOffsetRight - self.recordingOffsetLeft))
             # Extract point from line.
-            point = [[row[1] * depthRatio, (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
+            point = [[(row[1] - self.recordingOffsetLeft) * widthRatio, (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
 
             print(point)
 
@@ -237,7 +240,6 @@ class RecordingDetails:
         try:
             newOffset = float(newOffset)
             self.recordingOffsetLeft = newOffset
-            self.recordingOffsetRight = 1 - self.recordingOffsetLeft
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating top offset, ensure that an integer was entered: {e}')
@@ -376,6 +378,10 @@ class RecordingDetails:
                     self.recordingOffsetTop = float(value)
                 elif parameter == 'recordingOffsetBottom':
                     self.recordingOffsetBottom = float(value)
+                elif parameter == 'recordingOffsetLeft':
+                    self.recordingOffsetLeft = float(value)
+                elif parameter == 'recordingOffsetRight':
+                    self.recordingOffsetRight = float(value)
 
     def __getImuDataFromFile(self):
         """

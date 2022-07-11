@@ -76,6 +76,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeTop = False
         self.enableOffsetChangeBottom = False
         self.enableOffsetChangeLeft = False
+        self.enableOffsetChangeRight = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -83,7 +84,7 @@ class DataCaptureDisplay:
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(), finalize=True)
 
         # Create the initial plot.
-        self.createPlot(c.DEFAULT_AZIMUTH)
+        self.createPlot(c.DEFAULT_AZIMUTH, (-5, 5))
 
         self.run()
 
@@ -182,6 +183,8 @@ class DataCaptureDisplay:
                 self.toggleChangingOffsetBottom()
             elif event == '-BUTTON-OFFSET-LEFT-':
                 self.toggleChangingOffsetLeft()
+            elif event == '-BUTTON-OFFSET-RIGHT-':
+                self.toggleChangingOffsetRight()
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
                 self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
             elif event == '-BUTTON-POINTS-':
@@ -197,11 +200,13 @@ class DataCaptureDisplay:
 
     def onGraphFrameClicked(self, point):
         """
-        Click handler function for when the Graph frame element is clicked. If enableDataPoints then a new data point
-        is added or removed (if within proximity of existing point) to the frame, if enableOffsetChangeTop then the
-        vertical portion of the point is used as the new top offset value, if enableOffsetChangeBottom then the vertical
-        portion of the point is used as the new bottom offset value, if enableOffsetChangeLeft then the horizontal
-        portion of the point is used as the new left offset value.
+        Click handler function for when the Graph frame element is clicked. If:
+            1. enableDataPoints         -   A new data point is added or removed (if within proximity of existing point)
+                                            to the frame.
+            2. enableOffsetChangeTop    -   The vertical portion of the point is used as the new top offset value.
+            3. enableOffsetChangeBottom -   The vertical portion of the point is used as the new bottom offset value.
+            4. enableOffsetChangeLeft   -   The horizontal portion of the point is used as the new left offset value.
+            5. enableOffsetChangeRight  -   The horizontal portion of the point is used as the new right offset value.
 
         Args:
             point: Coordinates of where the Graph element was clicked.
@@ -226,7 +231,12 @@ class DataCaptureDisplay:
                                               value=self.recordingDetails.getCurrentFrameAsBytes())
         elif self.enableOffsetChangeLeft:
             self.recordingDetails.changeOffsetLeft(
-                (c.DEFAULT_DISPLAY_DIMENSIONS[0] - point[0]) / c.DEFAULT_DISPLAY_DIMENSIONS[0])
+                point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0])
+            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                              value=self.recordingDetails.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeRight:
+            self.recordingDetails.changeOffsetRight(
+                point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               value=self.recordingDetails.getCurrentFrameAsBytes())
 
@@ -270,6 +280,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeTop = False
         self.enableOffsetChangeBottom = False
         self.enableOffsetChangeLeft = False
+        self.enableOffsetChangeRight = False
         self.enableDataPoints = False
 
         # Plot recorded points in 3D.
@@ -292,6 +303,7 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-OFFSET-TOP-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-LEFT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
             f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}', disabled=False)
         self.windowMain['-BUTTON-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -305,12 +317,14 @@ class DataCaptureDisplay:
         self.enableOffsetChangeTop = not self.enableOffsetChangeTop
         self.enableOffsetChangeBottom = False
         self.enableOffsetChangeLeft = False
+        self.enableOffsetChangeRight = False
         self.enableDataPoints = False
         # Set element states.
         self.windowMain['-BUTTON-OFFSET-TOP-'].update(
             button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeTop else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleChangingOffsetBottom(self):
@@ -320,12 +334,14 @@ class DataCaptureDisplay:
         self.enableOffsetChangeBottom = not self.enableOffsetChangeBottom
         self.enableOffsetChangeTop = False
         self.enableOffsetChangeLeft = False
+        self.enableOffsetChangeRight = False
         self.enableDataPoints = False
         # Set element states.
         self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(
             button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeBottom else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleChangingOffsetLeft(self):
@@ -335,14 +351,32 @@ class DataCaptureDisplay:
         self.enableOffsetChangeLeft = not self.enableOffsetChangeLeft
         self.enableOffsetChangeTop = False
         self.enableOffsetChangeBottom = False
+        self.enableOffsetChangeRight = False
         self.enableDataPoints = False
         # Set element states.
         self.windowMain['-BUTTON-OFFSET-LEFT-'].update(
             button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeLeft else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
+    def toggleChangingOffsetRight(self):
+        """
+        Toggle the state of self.enableOffsetChangeRight to enable or disable changing of the right frame offset value.
+        """
+        self.enableOffsetChangeRight = not self.enableOffsetChangeRight
+        self.enableOffsetChangeTop = False
+        self.enableOffsetChangeBottom = False
+        self.enableOffsetChangeLeft = False
+        self.enableDataPoints = False
+        # Set element states.
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeRight else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleAddingDataPoints(self):
         """
@@ -352,12 +386,14 @@ class DataCaptureDisplay:
         self.enableOffsetChangeTop = False
         self.enableOffsetChangeBottom = False
         self.enableOffsetChangeLeft = False
+        self.enableOffsetChangeRight = False
         # Set element states.
         self.windowMain['-BUTTON-POINTS-'].update(
             button_color=st.BUTTON_ACTIVE if self.enableDataPoints else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleEditing(self):
         """
@@ -374,7 +410,7 @@ class DataCaptureDisplay:
 
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
-        self.createPlot(c.DEFAULT_AZIMUTH)
+        self.createPlot(c.DEFAULT_AZIMUTH, (0, 150))
 
         # Enable the frame display for consistency.
         self.enableDisplay = True
@@ -626,7 +662,7 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
         self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(disabled=True if self.enableRecording else False)
 
-    def createPlot(self, azimuth):
+    def createPlot(self, azimuth, limits):
         """
         Instantiate the initial plotting variables: The Figure and the axis, and the 2 plot parameters that store the
         line and point data. This is also called when changing the azimuth of the plot as the entire canvas needs to
@@ -634,14 +670,16 @@ class DataCaptureDisplay:
 
         Args:
             azimuth (int): Azimuth angle in degrees.
+            limits (tuple): Limits to be used when creating the plot axes.
         """
         fig = Figure(figsize=(3.5, 3.5), dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
         fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
         self.ax.set_position((0, 0, 1, 1))
 
-        self.ax = ut.initialiseAxis(self.ax, azimuth)
-        self.ax.disable_mouse_rotation()
+        self.ax = ut.initialiseAxis(self.ax, azimuth, limits)
+        # self.ax.disable_mouse_rotation()
+        self.windowMain['-SLIDER-AZIMUTH-'].update(value=azimuth)
 
         self.fig_agg = ut.drawFigure(fig, self.windowMain['-CANVAS-PLOT-'].TKCanvas)
 

@@ -195,7 +195,7 @@ def plotOrientationOnAxis(axis, quaternion, pointPlot, lineData):
     return axis
 
 
-def initialiseAxis(axis, azimuth):
+def initialiseAxis(axis, azimuth, limits=(-5, 5)):
     """
     Set the initial labels, limits, and azimuth of the given axis.
 
@@ -206,9 +206,9 @@ def initialiseAxis(axis, azimuth):
     Returns:
         axis (axis): Axis containing newly plotted points and lines.
     """
-    axis.set_xlim((-5, 5))
-    axis.set_ylim((-5, 5))
-    axis.set_zlim((-5, 5))
+    axis.set_xlim(limits)
+    axis.set_ylim(limits)
+    axis.set_zlim(limits)
 
     axis.set_xticklabels([])
     axis.set_yticklabels([])
