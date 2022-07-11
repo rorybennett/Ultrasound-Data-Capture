@@ -105,9 +105,9 @@ class Menu:
         True (in edit state):       The option to end editing is displayed.
         """
         if self.editingEnabled:
-            self.editMenu = ['Edit', ['Stop Editing']]
+            self.editMenu = ['Edit', ['Stop Editing::-MENU-EDIT-STOP-']]
         else:
-            self.editMenu = ['Edit', ['Start Editing']]
+            self.editMenu = ['Edit', ['Start Editing::-MENU-EDIT-START-']]
 
     def __generateMenus(self):
         """
@@ -118,3 +118,5 @@ class Menu:
         self.__generateSignalMenu()
         # IMU Menu.
         self.__generateImuMenu()
+        # Editing Menu
+        self.__generateEditMenu()
