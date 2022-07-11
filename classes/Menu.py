@@ -12,6 +12,7 @@ class Menu:
         self.editingEnabled = False
         self.signalMenu = None
         self.imuImenu = None
+        self.editMenu = None
         # Initial creation of menus.
         self.__generateMenus()
 
@@ -36,7 +37,7 @@ class Menu:
         # Generate menus.
         self.__generateMenus()
         # Return menu bar layout.
-        return [self.signalMenu, self.imuImenu]
+        return [self.signalMenu, self.imuImenu, self.editMenu]
 
     def __generateSignalMenu(self):
         """
@@ -95,6 +96,18 @@ class Menu:
                              ]
         if self.editingEnabled:
             self.imuImenu = ['!IMU']
+
+    def __generateEditMenu(self):
+        """
+        Function for creating editing menu, based on self.editingEnabled. If self.editingEnabled:
+
+        False (initial state):      The option to start editing is displayed.
+        True (in edit state):       The option to end editing is displayed.
+        """
+        if self.editingEnabled:
+            self.editMenu = ['Edit', ['Stop Editing']]
+        else:
+            self.editMenu = ['Edit', ['Start Editing']]
 
     def __generateMenus(self):
         """
