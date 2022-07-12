@@ -176,8 +176,6 @@ class RecordingDetails:
         withinRadius = False
 
         for centrePoint in self.pointData:
-            print(centrePoint)
-            print(self.frameNames[self.currentFramePosition - 1])
             if self.frameNames[self.currentFramePosition - 1] == centrePoint[0] and ut.pointWithinRadius(
                     [centrePoint[1], centrePoint[2]], point):
                 self.pointData.remove(centrePoint)
