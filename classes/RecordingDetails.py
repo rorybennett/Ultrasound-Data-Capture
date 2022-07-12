@@ -102,9 +102,8 @@ class RecordingDetails:
             widthRatio = self.depths[position] / (
                 (self.recordingOffsetRight - self.recordingOffsetLeft))
             # Extract point from line.
-            point = [[(row[1] - self.recordingOffsetLeft) * widthRatio, (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
-
-            print(point)
+            point = [
+                [(row[1] - self.recordingOffsetLeft) * widthRatio, (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
 
             axis = ut.plotPointOnAxis(axis, quaternion, point, pointPlot)
 
@@ -150,8 +149,8 @@ class RecordingDetails:
         Args:
             point [float, float]: x/width-, and y/height-coordinates returned by the Graph elements' event
         """
-        widthRatio = point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0]
-        heightRatio = (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1]
+        widthRatio = point[0] / c.DISPLAY_DIMENSIONS[0]
+        heightRatio = (c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1]
 
         newPoint = [widthRatio, heightRatio]
 
@@ -163,10 +162,10 @@ class RecordingDetails:
 
     def __checkIfWithinRadiusOfOtherPoints(self, point: [float, float]) -> bool:
         """
-        Check if the given point is with the constant radius of any other points that are already present. If it is
-        within an already saved points radius, remove the saved point and leave the function. This means only one point
-        can be removed at a time and points will be removed until there are no already saved points within range of the
-        point that is to be newly added.
+        Check if the given point is with the constant radius of any other points that are already present. This is
+        done per frame basis, so the frame names must also be checked. If it is within an already saved points radius,
+        remove the saved point and leave the function. This means only one point can be removed at a time and points
+        will be removed until there are no already saved points within range of the point that is to be newly added.
 
         Args:
             point [float, float]: New point to be tested against already saved points.
@@ -177,7 +176,10 @@ class RecordingDetails:
         withinRadius = False
 
         for centrePoint in self.pointData:
-            if ut.pointWithinRadius([centrePoint[1], centrePoint[2]], point):
+            print(centrePoint)
+            print(self.frameNames[self.currentFramePosition - 1])
+            if self.frameNames[self.currentFramePosition - 1] == centrePoint[0] and ut.pointWithinRadius(
+                    [centrePoint[1], centrePoint[2]], point):
                 self.pointData.remove(centrePoint)
                 withinRadius = True
                 break
@@ -328,29 +330,29 @@ class RecordingDetails:
         # Acquire current frame from stored location.
         frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFramePosition - 1] + '.png')
         # Resize the frame for the display element.
-        resizeFrame = ut.resizeFrame(frame, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
+        resizeFrame = ut.resizeFrame(frame, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
         # Add top offset line.
-        cv2.line(resizeFrame, (0, int(self.recordingOffsetTop * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
-                 (c.DEFAULT_DISPLAY_DIMENSIONS[0], int(self.recordingOffsetTop * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
+        cv2.line(resizeFrame, (0, int(self.recordingOffsetTop * c.DISPLAY_DIMENSIONS[1])),
+                 (c.DISPLAY_DIMENSIONS[0], int(self.recordingOffsetTop * c.DISPLAY_DIMENSIONS[1])),
                  color=(0, 0, 255), thickness=1)
         # Add bottom offset line.
-        cv2.line(resizeFrame, (0, int(self.recordingOffsetBottom * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
-                 (c.DEFAULT_DISPLAY_DIMENSIONS[0], int(self.recordingOffsetBottom * c.DEFAULT_DISPLAY_DIMENSIONS[1])),
+        cv2.line(resizeFrame, (0, int(self.recordingOffsetBottom * c.DISPLAY_DIMENSIONS[1])),
+                 (c.DISPLAY_DIMENSIONS[0], int(self.recordingOffsetBottom * c.DISPLAY_DIMENSIONS[1])),
                  color=(0, 0, 255), thickness=1)
         # Add left offset line.
-        cv2.line(resizeFrame, (int(self.recordingOffsetLeft * c.DEFAULT_DISPLAY_DIMENSIONS[0]), 0),
-                 (int(self.recordingOffsetLeft * c.DEFAULT_DISPLAY_DIMENSIONS[0]), c.DEFAULT_DISPLAY_DIMENSIONS[0]),
+        cv2.line(resizeFrame, (int(self.recordingOffsetLeft * c.DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.recordingOffsetLeft * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
                  color=(0, 0, 255), thickness=1)
         # Add right offset line.
-        cv2.line(resizeFrame, (int(self.recordingOffsetRight * c.DEFAULT_DISPLAY_DIMENSIONS[0]), 0),
-                 (int(self.recordingOffsetRight * c.DEFAULT_DISPLAY_DIMENSIONS[0]), c.DEFAULT_DISPLAY_DIMENSIONS[0]),
+        cv2.line(resizeFrame, (int(self.recordingOffsetRight * c.DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.recordingOffsetRight * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
                  color=(0, 0, 255), thickness=1)
         # Add point data.
         for point in self.pointData:
             if point[0] == self.frameNames[self.currentFramePosition - 1]:
                 cv2.circle(resizeFrame,
-                           (int(point[1] * c.DEFAULT_DISPLAY_DIMENSIONS[0]),
-                            int(point[2] * c.DEFAULT_DISPLAY_DIMENSIONS[1])), 5, color=(0, 255, 0), thickness=-1)
+                           (int(point[1] * c.DISPLAY_DIMENSIONS[0]),
+                            int(point[2] * c.DISPLAY_DIMENSIONS[1])), 5, color=(0, 255, 0), thickness=-1)
         # Convert resized frame to bytes.
         frameAsBytes = ut.frameToBytes(resizeFrame)
 
