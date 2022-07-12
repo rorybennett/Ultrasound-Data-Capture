@@ -47,7 +47,7 @@ IMU_RATE_OPTIONS = [
 SIGNAL_SOURCES = 5
 
 # The width and height of the displayed image. The input signal will be resized to fit these dimensions.
-DEFAULT_DISPLAY_DIMENSIONS = (1024, 576)
+DISPLAY_DIMENSIONS = (1024, 576)
 
 # Default frame rate of the video signal. This is dependent on the video signal source and the hardware being used.
 DEFAULT_FRAME_RATE = 100
