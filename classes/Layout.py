@@ -150,10 +150,9 @@ class Layout:
                        expand_x=True, disabled=True, border_width=3)],
             [sg.Button(key='-BUTTON-OFFSET-RIGHT-', button_text='Set Right Offset', font=st.BUTTON_FONT_SMALL,
                        expand_x=True, disabled=True, border_width=3)],
-            [sg.Text('Frame Scan Depth:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
+            [sg.Text('Frame Scan Depth:', font=st.DESC_FONT, expand_x=True, justification='left'),
              sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
-            [sg.Text('Set All Scan Depths:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True,
-                     justification='left'),
+            [sg.Text('Set All Scan Depths:', font=st.DESC_FONT, expand_x=True, justification='left'),
              sg.Input(key='-INPUT-EDIT-DEPTHS-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)]
         ]
 
@@ -166,15 +165,15 @@ class Layout:
             [sg.Text('Editing Details', font=st.DESC_FONT, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
             [sg.HSeparator()],
-            [sg.Column(editingDetails1, vertical_alignment='top'),
-             sg.Column(editingDetails2, vertical_alignment='top')]
+            [sg.Column(editingDetails1, vertical_alignment='top', pad=(0, 0)),
+             sg.Column(editingDetails2, vertical_alignment='top', pad=(0, 0))]
 
         ]
 
         layout = [
-            [sg.Column(selectColumn, vertical_alignment='top'),
-             sg.Column(detailsColumn),
-             sg.Column(navigationColumn, vertical_alignment='top'),
+            [sg.Column(selectColumn, vertical_alignment='top', pad=(0, 0)),
+             sg.Column(detailsColumn, vertical_alignment='top', pad=(0, 0)),
+             sg.Column(navigationColumn, vertical_alignment='top', pad=(0, 0)),
              sg.Column(editingDetailsColumn, expand_x=True, vertical_alignment='top', pad=(0, 0))],
             [sg.Text('Path:', font=st.INFO_TEXT, pad=((0, 0), (0, 0))),
              sg.Text(key='-TEXT-DETAILS-PATH-', font=st.INFO_TEXT + ' underline', text_color='blue',
@@ -237,8 +236,6 @@ class Layout:
                            font=st.BUTTON_FONT,
                            border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)]
             ]
-
-
 
         layout = [
             [sg.pin(sg.Column(key='-COL-EDIT-FALSE-', layout=displayColumn, vertical_alignment='top')),
