@@ -152,7 +152,8 @@ class Layout:
                        expand_x=True, disabled=True, border_width=3)],
             [sg.Text('Frame Scan Depth:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
              sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)],
-            [sg.Text('Set All Scan Depths:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
+            [sg.Text('Set All Scan Depths:', font=st.DESC_FONT, pad=((0, 0), (0, 0)), expand_x=True,
+                     justification='left'),
              sg.Input(key='-INPUT-EDIT-DEPTHS-', font=st.DESC_FONT, justification='center', size=(9, 1), disabled=True)]
         ]
 

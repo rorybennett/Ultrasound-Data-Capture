@@ -183,14 +183,14 @@ class RecordingDetails:
                 break
         return withinRadius
 
-    def changeScanDepth(self, newScanDepth: float):
+    def changeScanDepth(self, newScanDepth: str):
         """
         Change the scan depth of the current frame that is being edited. The scan depth can be a float and is
         read from the screen of the ultrasound image. This is manual for now, but perhaps that can be automated
         at some point.
 
         Args:
-            newScanDepth (float): Depth of the ultrasound scan as read from the signal display.
+            newScanDepth (str): Depth of the ultrasound scan as read from the signal display.
         """
         try:
             newScanDepth = float(newScanDepth)
@@ -198,6 +198,20 @@ class RecordingDetails:
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating scan depth, ensure a float was entered: {e}')
+
+    def changeAllScanDepths(self, newScanDepth: float):
+        """
+        Change the scan depth of all the frames in the recording, then save the details to file.
+
+        Args:
+            newScanDepth (str): Depth of the ultrasound scan as read from the signal display.
+        """
+        try:
+            newScanDepth = float(newScanDepth)
+            self.depths = [newScanDepth for _ in self.depths]
+            self.__saveDetailsToFile()
+        except Exception as e:
+            print(f'Error updating all scan depths at once: {e}')
 
     def changeOffsetTop(self, newOffset: int):
         """
