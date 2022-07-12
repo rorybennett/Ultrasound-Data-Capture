@@ -103,7 +103,8 @@ class RecordingDetails:
                 (self.recordingOffsetRight - self.recordingOffsetLeft))
             # Extract point from line.
             point = [
-                [(row[1] - self.recordingOffsetLeft) * widthRatio, (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
+                [(row[1] - self.recordingOffsetLeft) * widthRatio - self.depths[position] / 2,
+                 (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
 
             axis = ut.plotPointOnAxis(axis, quaternion, point, pointPlot)
 

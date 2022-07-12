@@ -58,7 +58,7 @@ class ImuBatterLifeTest:
         # Create main window for display.
         self.window = sg.Window('IMU Battery Tester', self.layout, finalize=True)
 
-        self.createOrientationPlot(c.DEFAULT_AZIMUTH)
+        self.createOrientationPlot(c.AZIMUTH)
 
         # Display loop.
         while True:
@@ -134,7 +134,7 @@ class ImuBatterLifeTest:
             [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
             [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (5, 0)))],
-            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(40, 10),
+            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)]
         ]
         # IMU values from callback.

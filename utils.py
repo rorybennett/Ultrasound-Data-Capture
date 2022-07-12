@@ -1,9 +1,7 @@
 """
 Helper script containing functions used throughout ultrasound_data_capture module.
 """
-import time
 from pathlib import Path
-from typing import Tuple
 
 import cv2
 import numpy as np
@@ -149,6 +147,8 @@ def plotPointOnAxis(axis, quaternion, point, pointPlot):
     """
     rpp = rotatePoints(point, quaternion)[0]
 
+    print(f'Point: {point}, Rotated: {rpp}, Quaternion: {quaternion}')
+
     pointPlot.set_data([rpp[0]], [rpp[1]])
     pointPlot.set_3d_properties([rpp[2]])
     axis.draw_artist(pointPlot)
@@ -200,6 +200,7 @@ def initialiseAxis(axis, azimuth, limits=(-5, 5)):
     Set the initial labels, limits, and azimuth of the given axis.
 
     Args:
+        limits:
         axis (axis): Axis that will have its labels, limits, and azimuth set.
         azimuth (int): Azimuth value applied to the axis.
 
@@ -221,6 +222,33 @@ def initialiseAxis(axis, azimuth, limits=(-5, 5)):
     return axis
 
 
+def initialiseEditingAxis(axis, azimuth, scanDepth):
+    """
+    Set the initial labels, limits, and azimuth of the given axis.
+
+    Args:
+        limits:
+        axis (axis): Axis that will have its labels, limits, and azimuth set.
+        azimuth (int): Azimuth value applied to the axis.
+
+    Returns:
+        axis (axis): Axis containing newly plotted points and lines.
+    """
+    axis.set_xlim(-scanDepth, scanDepth)
+    axis.set_ylim(-scanDepth, scanDepth)
+    axis.set_zlim(-scanDepth, scanDepth)
+
+    axis.set_xlabel('X')
+    axis.set_ylabel('Y')
+    axis.set_zlabel('Z')
+
+    axis.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
+
+    axis.azim = azimuth
+
+    return axis
+
+
 def drawFigure(figure, canvas):
     """
     Helper function for integrating matplotlib plots with PySimpleGui. Used to draw the initial canvas.
@@ -232,6 +260,7 @@ def drawFigure(figure, canvas):
     Returns:
         figure_canvas_agg (FigureCanvasTkAgg): A FigureCanvasTkAgg object.
     """
+
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)

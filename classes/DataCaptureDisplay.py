@@ -84,7 +84,7 @@ class DataCaptureDisplay:
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(), finalize=True)
 
         # Create the initial plot.
-        self.createPlot(c.DEFAULT_AZIMUTH, (-5, 5))
+        self.createPlot()
 
         self.run()
 
@@ -116,8 +116,7 @@ class DataCaptureDisplay:
 
             # Event for updating Graph frame (editing).
             if event == '-UPDATE-GRAPH-FRAME-':
-                self.windowMain['-GRAPH-FRAME-'].draw_image(data=values[event],
-                                                            location=(0, c.DEFAULT_DISPLAY_DIMENSIONS[1]))
+                self.windowMain['-GRAPH-FRAME-'].draw_image(data=values[event], location=(0, c.DISPLAY_DIMENSIONS[1]))
 
             # Signal source menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
@@ -187,6 +186,8 @@ class DataCaptureDisplay:
                 self.toggleChangingOffsetRight()
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
                 self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
+            elif event == '-INPUT-EDIT-DEPTHS-' + '_Enter':
+                self.changeAllScanDepths(values['-INPUT-EDIT-DEPTHS-'])
             elif event == '-BUTTON-POINTS-':
                 self.toggleAddingDataPoints()
             elif event == '-GRAPH-FRAME-':
@@ -197,6 +198,36 @@ class DataCaptureDisplay:
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TEXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
+
+    def recreateEditingAxis(self):
+        """
+        Recreate the axis for editing purposes.
+        """
+        # Clear axis.
+        self.ax.cla()
+        # Reinitialise axis.
+        self.ax = ut.initialiseEditingAxis(self.ax, c.AZIMUTH,
+                                           self.recordingDetails.depths[self.recordingDetails.currentFramePosition])
+        # Redraw new axis.
+        self.fig_agg.draw()
+        # Re-save background for blit.
+        self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
+        if self.recordingDetails:
+            self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
+        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+
+    def changeAllScanDepths(self, newScanDepth: str):
+        """
+        Call the changeAllScanDepths of the RecordingDetails object.
+        """
+        self.recordingDetails.changeAllScanDepths(newScanDepth)
+
+        self.recreateEditingAxis()
+
+        # Set element states.
+        self.windowMain['-INPUT-EDIT-DEPTH-'].update(
+            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition]}')
+        self.windowMain['-INPUT-EDIT-DEPTHS-'].update()
 
     def onGraphFrameClicked(self, point):
         """
@@ -219,42 +250,21 @@ class DataCaptureDisplay:
             self.fig_agg.restore_region(self.bg)
             self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THREAD-PLOT-', None)
-        elif self.enableOffsetChangeTop:
-            self.recordingDetails.changeOffsetTop(
-                (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1])
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recordingDetails.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeBottom:
-            self.recordingDetails.changeOffsetBottom(
-                (c.DEFAULT_DISPLAY_DIMENSIONS[1] - point[1]) / c.DEFAULT_DISPLAY_DIMENSIONS[1])
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recordingDetails.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeLeft:
-            self.recordingDetails.changeOffsetLeft(
-                point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0])
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recordingDetails.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeRight:
-            self.recordingDetails.changeOffsetRight(
-                point[0] / c.DEFAULT_DISPLAY_DIMENSIONS[0])
+        else:
+            if self.enableOffsetChangeTop:
+                self.recordingDetails.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+            elif self.enableOffsetChangeBottom:
+                self.recordingDetails.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+            elif self.enableOffsetChangeLeft:
+                self.recordingDetails.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
+            elif self.enableOffsetChangeRight:
+                self.recordingDetails.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               value=self.recordingDetails.getCurrentFrameAsBytes())
 
     def navigateFrames(self, navCommand):
         """
-        Call the navigateFrames function of the RecordingDetails object to change the current frame as required,
-        then update the window with the new details after the frame. The navCommand is a string that can either be
-        converted to an integer for a specific frame number or a navigation command:
-            str -   String representation of frame number.
-            PPP -   Move back 10 frames.
-            PP  -   Move back 5 frames.
-            P   -   Move back 1 frame.
-            N   -   Move forward 1 frame.
-            NN  -   Move forward 5 frames.
-            NNN -   Move forward 10 frames.
-
-        Args:
-            navCommand (str): String representation of the navigation command.
+        Call the navigateFrames function of the RecordingDetails object.
         """
         self.recordingDetails.navigateFrames(navCommand)
 
@@ -277,16 +287,11 @@ class DataCaptureDisplay:
         """
         print(f'Create editing data for: {videoDirectory}')
         self.recordingDetails = RecordingDetails(self.videosPath, videoDirectory)
-        self.enableOffsetChangeTop = False
-        self.enableOffsetChangeBottom = False
-        self.enableOffsetChangeLeft = False
-        self.enableOffsetChangeRight = False
+        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
+        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
         self.enableDataPoints = False
 
-        # Plot recorded points in 3D.
-        self.fig_agg.restore_region(self.bg)
-        self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
-        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+        self.recreateEditingAxis()
 
         # Set element states
         self.windowMain['-TEXT-DETAILS-DATE-'].update(self.recordingDetails.date)
@@ -306,77 +311,10 @@ class DataCaptureDisplay:
         self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
             f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}', disabled=False)
+        self.windowMain['-INPUT-EDIT-DEPTHS-'].update('', disabled=False)
         self.windowMain['-BUTTON-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
 
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
-
-    def toggleChangingOffsetTop(self):
-        """
-        Toggle the state of self.enableOffsetChangeTop to enable or disable changing of the top frame offset value.
-        """
-        self.enableOffsetChangeTop = not self.enableOffsetChangeTop
-        self.enableOffsetChangeBottom = False
-        self.enableOffsetChangeLeft = False
-        self.enableOffsetChangeRight = False
-        self.enableDataPoints = False
-        # Set element states.
-        self.windowMain['-BUTTON-OFFSET-TOP-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeTop else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-
-    def toggleChangingOffsetBottom(self):
-        """
-        Toggle the state of self.enableOffsetChangeBottom to enable or disable changing of the bottom frame offset value.
-        """
-        self.enableOffsetChangeBottom = not self.enableOffsetChangeBottom
-        self.enableOffsetChangeTop = False
-        self.enableOffsetChangeLeft = False
-        self.enableOffsetChangeRight = False
-        self.enableDataPoints = False
-        # Set element states.
-        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeBottom else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-
-    def toggleChangingOffsetLeft(self):
-        """
-        Toggle the state of self.enableOffsetChangeLeft to enable or disable changing of the left frame offset value.
-        """
-        self.enableOffsetChangeLeft = not self.enableOffsetChangeLeft
-        self.enableOffsetChangeTop = False
-        self.enableOffsetChangeBottom = False
-        self.enableOffsetChangeRight = False
-        self.enableDataPoints = False
-        # Set element states.
-        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeLeft else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-
-    def toggleChangingOffsetRight(self):
-        """
-        Toggle the state of self.enableOffsetChangeRight to enable or disable changing of the right frame offset value.
-        """
-        self.enableOffsetChangeRight = not self.enableOffsetChangeRight
-        self.enableOffsetChangeTop = False
-        self.enableOffsetChangeBottom = False
-        self.enableOffsetChangeLeft = False
-        self.enableDataPoints = False
-        # Set element states.
-        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeRight else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def toggleAddingDataPoints(self):
         """
@@ -397,7 +335,7 @@ class DataCaptureDisplay:
 
     def toggleEditing(self):
         """
-        Function to toggle the editing state of the program. When in editing state, the Signal Source and IMU menu items
+        Toggle the state of self.enableEditing. When in editing state (True), the Signal Source and IMU menu items
         are disabled. The FrameGrabber object and IMU are disconnected and the plot is cleared. Some buttons are
         disabled and some are reset to default values. The display and plot are enabled for consistency.
         """
@@ -410,7 +348,8 @@ class DataCaptureDisplay:
 
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
-        self.createPlot(c.DEFAULT_AZIMUTH, (0, 150))
+        self.createPlot(limits=(0, 150) if self.enableEditing else (-5, 5),
+                        size=(6, 6) if self.enableEditing else (3.5, 3.5))
 
         # Enable the frame display for consistency.
         self.enableDisplay = True
@@ -428,38 +367,24 @@ class DataCaptureDisplay:
             # Enter key bindings for input elements.
             self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
             self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
+            self.windowMain['-INPUT-EDIT-DEPTHS-'].bind('<Return>', '_Enter')
             time.sleep(0.5)
 
         # Set element states.
         self.updateMenus()
-        self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
-                                                          text='Disable Display',
-                                                          disabled=True if self.enableEditing else False)
-        self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(button_color=st.BUTTON_ACTIVE,
-                                                       text='Disable Plotting',
-                                                       disabled=True if self.enableEditing else False)
 
     def getFramesThread(self):
         """
-        Thread for acquiring frames from FrameGrabber object. Removed from main thread to provide a more consistent
-        frame rate from the signal source. As soon as a frame is acquired from the FrameGrabber object the currently
-        stored IMU values are copied to local variables. This may result in a slight time delay between the frame
-        and its associated IMU values, but for now it should be accurate enough. Threads seem to cause trouble
-        if the while loop does nothing.
+        Thread for acquiring frames from FrameGrabber object. As soon as a frame is acquired from the FrameGrabber
+        object the currently stored IMU values are copied to local variables. This may result in a slight time delay
+        between the frame and its associated IMU values.
 
         if self.enableRecording is True, the current frame will be saved with the IMU data available.
 
         If self.enableDisplay is True, the new frame will be resized and displayed in the main GUI.
-
-        This thread will run as long as the self.frameGrabber object is connected to a signal source. On disconnect
-        of the signal source the thread will be closed. Joining the thread to the parent thread does not seem
-        to be necessary.
         """
         print('Thread starting up: getFramesThread.')
-        while True:
-            # End thread if frameGrabber not connected.
-            if not self.frameGrabber.isConnected:
-                break
+        while self.frameGrabber.isConnected:
             signalFps1 = time.time()
             # Grab frame.
             res, self.frameRaw = self.frameGrabber.getFrame()
@@ -491,19 +416,13 @@ class DataCaptureDisplay:
         speed by the sleep call in the while loop. Currently, this thread is capped at 1/0.033=30Hz, any frames
         that are received during this threads sleep time are skipped over and not displayed to the user. This
         does not affect the saving of frames.
-
-
-        This thread will run as long as the self.frameGrabber object is connected to a signal source, but will only
-        resize a frame if the self.frameRawNew variable is set to True in the getFramesThread. On disconnect
-        of the signal source the thread will be closed. Joining the thread to the parent thread does not seem
-        to be necessary.
         """
         print('Thread starting up: resizeFramesThread.')
         while self.frameGrabber.isConnected:
             if self.resizeFrame:
                 self.resizeFrame = False
                 resizeFps1 = time.time()
-                resizedFrame = ut.resizeFrame(self.frameRaw, c.DEFAULT_DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
+                resizedFrame = ut.resizeFrame(self.frameRaw, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
                 frameBytes = ut.frameToBytes(resizedFrame)
                 self.windowMain.write_event_value(key='-UPDATE-IMAGE-FRAME-', value=frameBytes)
                 # Resize frame rate estimate.
@@ -526,11 +445,6 @@ class DataCaptureDisplay:
         enabled, if it is then the getFramesThread sets the self.saveFrame variable to True. When the self.saveFrame
         variable is True in the saveFramesThread the frame and IMU data is recorded. The IMU data will most
         likely be out of sync with the frames, but only marginally.
-
-        This thread will run as long as the self.frameGrabber object is connected to a signal source, but will only
-        save a frame if the self.saveFrame variable is set to True in the getFramesThread. On disconnect
-        of the signal source the thread will be closed. Joining the thread to the parent thread does not seem
-        to be necessary.
         """
         print('Thread starting up: saveFramesThread.\n')
         while self.frameGrabber.isConnected:
@@ -549,9 +463,8 @@ class DataCaptureDisplay:
 
     def plottingThread(self):
         """
-        Thread for plotting the orientation of the IMU. Moved to a thread as having it in the main run loop of the
-        main window was causing major delays. This thread will be limited to a fairly low frame rate and will call
-        an event in the main window when the plot is ready.
+        Thread for plotting the orientation of the IMU. This thread will be limited to a fairly low frame rate and
+        will call an event in the main window when the plot is ready.
 
         NB: When the main menu is open the system freezes. This delays the video signal for some reason. If the
         menu is open for 5 seconds, then the video signal will be delayed for 5 seconds. Once a delay is introduced
@@ -569,6 +482,66 @@ class DataCaptureDisplay:
         print('-------------------------------------------\nThread closing down: '
               'plottingThread.\n-------------------------------------------')
 
+    def toggleChangingOffsetTop(self):
+        """
+        Toggle the state of self.enableOffsetChangeTop to enable or disable changing of the top frame offset value.
+        """
+        self.enableOffsetChangeTop = not self.enableOffsetChangeTop
+        self.enableDataPoints, self.enableOffsetChangeBottom = False, False
+        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
+        # Set element states.
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeTop else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
+    def toggleChangingOffsetBottom(self):
+        """
+        Toggle the state of self.enableOffsetChangeBottom to enable or disable changing of the bottom frame offset value.
+        """
+        self.enableOffsetChangeBottom = not self.enableOffsetChangeBottom
+        self.enableOffsetChangeTop, self.enableDataPoints = False, False
+        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
+        # Set element states.
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeBottom else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
+    def toggleChangingOffsetLeft(self):
+        """
+        Toggle the state of self.enableOffsetChangeLeft to enable or disable changing of the left frame offset value.
+        """
+        self.enableOffsetChangeLeft = not self.enableOffsetChangeLeft
+        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
+        self.enableDataPoints, self.enableOffsetChangeRight = False, False
+        # Set element states.
+        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeLeft else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
+    def toggleChangingOffsetRight(self):
+        """
+        Toggle the state of self.enableOffsetChangeRight to enable or disable changing of the right frame offset value.
+        """
+        self.enableOffsetChangeRight = not self.enableOffsetChangeRight
+        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
+        self.enableOffsetChangeLeft, self.enableDataPoints = False, False
+        # Set element states.
+        self.windowMain['-BUTTON-OFFSET-RIGHT-'].update(
+            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeRight else sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BUTTON-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
     def record(self, frameName, frame, acceleration, quaternion):
         """
         Save a frame as part of a series of frames to be stitched together at a later stage. The frame is saved as a
@@ -578,8 +551,8 @@ class DataCaptureDisplay:
         Args:
             frameName (str): Name of the frame, without extension. Based on time.
             frame (Image): CV2 image.
-            acceleration (3D list): Acceleration returned by the imu object.
-            quaternion (4D list): Quaternion returned by the imu object.
+            acceleration (list): Acceleration returned by the imu object.
+            quaternion (list): Quaternion returned by the imu object.
         """
         try:
             self.currentDataFile.write(f'{frameName},:'
@@ -593,8 +566,8 @@ class DataCaptureDisplay:
 
     def toggleDisplay(self):
         """
-        Toggle whether the display should be updated or not. Disabling the display can give a moderate frame rate boost,
-        especially when recording frames.
+        Toggle self.enableDisplay. Disabling the display can give a moderate frame rate boost, especially when
+        recording frames.
         """
         self.enableDisplay = not self.enableDisplay
         self.windowMain['-BUTTON-DISPLAY-TOGGLE-'].update(
@@ -626,10 +599,7 @@ class DataCaptureDisplay:
 
     def updateTimes(self):
         """
-        Update the displayed times related to a recording that is currently taking place. The start time is initially
-        set, and its GUI element updated, in the self.toggleRecording method. Only the end time and elapsed time
-        are calculated and updated here. The main thread currently does not do too much so time updates will be
-        left on the main thread for now.
+        Update the displayed times related to a recording that is currently taking place.
         """
         endTime = time.time()
         elapsedTime = endTime - self.recordStartTime
@@ -639,7 +609,7 @@ class DataCaptureDisplay:
 
     def toggleRecording(self):
         """
-        Toggle whether recording is enabled or not. When in the recording state various elements are disabled.
+        Toggle self.enableRecording. When in the recording state various elements are disabled.
         """
         self.enableRecording = not self.enableRecording
         print(f'Enable Recording: {self.enableRecording}')
@@ -660,26 +630,24 @@ class DataCaptureDisplay:
             button_color=st.BUTTON_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.windowMain['-BUTTON-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
-        self.windowMain['-BUTTON-EDIT-TOGGLE-'].update(disabled=True if self.enableRecording else False)
 
-    def createPlot(self, azimuth, limits):
+    def createPlot(self, limits=(-5, 5), size=(3.5, 3.5)):
         """
         Instantiate the initial plotting variables: The Figure and the axis, and the 2 plot parameters that store the
-        line and point data. This is also called when changing the azimuth of the plot as the entire canvas needs to
-        be redrawn.
+        line and point data.
 
         Args:
-            azimuth (int): Azimuth angle in degrees.
-            limits (tuple): Limits to be used when creating the plot axes.
+            limits (tuple): Lower and upper limits applied to all axes.
+            size (tuple): Width and height of figure.
+
         """
-        fig = Figure(figsize=(3.5, 3.5), dpi=100)
+        fig = Figure(figsize=size, dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
         fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
         self.ax.set_position((0, 0, 1, 1))
 
-        self.ax = ut.initialiseAxis(self.ax, azimuth, limits)
-        # self.ax.disable_mouse_rotation()
-        self.windowMain['-SLIDER-AZIMUTH-'].update(value=azimuth)
+        self.ax = ut.initialiseAxis(self.ax, c.AZIMUTH, limits)
+        self.ax.disable_mouse_rotation()
 
         self.fig_agg = ut.drawFigure(fig, self.windowMain['-CANVAS-PLOT-'].TKCanvas)
 
@@ -690,9 +658,7 @@ class DataCaptureDisplay:
 
     def setAzimuth(self, azimuth):
         """
-        Set the azimuth of the plot to the slider value. This allows for aligning the plot to the user's orientation
-        since the IMU orientation is based on magnetic north. The axis needs to be cleared first, then reinitialised
-        to ensure a clean plot is saved for blit purposes.
+        Set the azimuth of the plot to the slider value.
 
         Args:
             azimuth (int): Azimuth to set the displayed plot to.
@@ -706,15 +672,9 @@ class DataCaptureDisplay:
         # Re-save background for blit.
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
 
-        if self.enableEditing and self.recordingDetails:
-            self.fig_agg.restore_region(self.bg)
-            self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
-            self.windowMain.write_event_value('-THREAD-PLOT-', None)
-
     def togglePlotting(self):
         """
-        Toggle whether the plot should be updated or not. Disabling plotting can give a slight frame rate boost, but
-        with blit the improvement tends to be marginal.
+        Toggle self.enablePlotting. Disabling plotting can give a slight frame rate boost.
         """
         self.enablePlotting = not self.enablePlotting
         self.windowMain['-BUTTON-PLOT-TOGGLE-'].update(

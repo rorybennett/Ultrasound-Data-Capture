@@ -198,15 +198,19 @@ class Layout:
         """
         if enableEditing:
             displayColumn = [
-                [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
-                          pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DEFAULT_DISPLAY_DIMENSIONS,
+                [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DISPLAY_DIMENSIONS, background_color='#000000',
+                          pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DISPLAY_DIMENSIONS,
                           enable_events=True)],
                 [sg.Text(key='-TEXT-NAV-CURRENT-', text='____/____', font=st.INFO_TEXT, justification='right',
                          expand_x=True)]
             ]
+
+            imuColumn = [
+                [sg.Canvas(key='-CANVAS-PLOT-')]
+            ]
         else:
             displayColumn = [
-                [sg.Image(key='-IMAGE-FRAME-', size=c.DEFAULT_DISPLAY_DIMENSIONS, background_color='#000000',
+                [sg.Image(key='-IMAGE-FRAME-', size=c.DISPLAY_DIMENSIONS, background_color='#000000',
                           pad=(0, 0))],
                 [sg.Text(key='-TEXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.INFO_TEXT, expand_x=True,
                          justification='left', pad=(0, 0)),
@@ -215,22 +219,26 @@ class Layout:
                          pad=(0, 0))]
             ]
 
-        imuColumn = [
-            [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (10, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (10, 0))),
-             sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
-                     pad=((0, 0), (10, 0)))],
-            [sg.Canvas(key='-CANVAS-PLOT-')],
-            [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.DEFAULT_AZIMUTH, size=(30, 10),
-                       orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
-            [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (0, 5)), button_color=st.BUTTON_ACTIVE)],
-            [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1), font=st.BUTTON_FONT,
-                       border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)]
-        ]
+            imuColumn = [
+                [sg.Text('IMU Acc:', font=st.DESC_FONT, pad=((5, 0), (10, 0))),
+                 sg.Text(key='-TEXT-ACCELERATION-X-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                         pad=((0, 0), (10, 0))),
+                 sg.Text(key='-TEXT-ACCELERATION-Y-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                         pad=((0, 0), (10, 0))),
+                 sg.Text(key='-TEXT-ACCELERATION-Z-', text='', font=st.DESC_FONT, justification='right', size=(8, 1),
+                         pad=((0, 0), (10, 0)))],
+                [sg.Canvas(key='-CANVAS-PLOT-')],
+                [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.AZIMUTH, size=(30, 10),
+                           orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
+                [sg.Button(key='-BUTTON-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1),
+                           font=st.BUTTON_FONT,
+                           border_width=3, pad=((0, 0), (0, 5)), button_color=st.BUTTON_ACTIVE)],
+                [sg.Button(key='-BUTTON-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
+                           font=st.BUTTON_FONT,
+                           border_width=3, pad=((0, 0), (5, 0)), button_color=st.BUTTON_ACTIVE)]
+            ]
+
+
 
         layout = [
             [sg.pin(sg.Column(key='-COL-EDIT-FALSE-', layout=displayColumn, vertical_alignment='top')),
