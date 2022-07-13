@@ -56,6 +56,8 @@ class Recording:
         self.dimensions = []
         # Depth of the scan, per frame basis.
         self.depths = []
+        # IMU offset during scan.
+        self.imuOffset = 0
         # Tracks position of current frame being displayed, starts at 1.
         self.currentFrame = 1
 
@@ -78,6 +80,14 @@ class Recording:
 
         self.__getEditDetailsFromFile()
         self.__getPointDataFromFile()
+
+    def getFrameAngles(self) -> list:
+        """
+        Return the Euler angles of the current frame.
+        """
+        euler = ut.quaternionToEuler(self.quaternion[self.currentFrame])
+
+        return euler
 
     def clearAllPoints(self):
         """
@@ -123,7 +133,7 @@ class Recording:
             # Extract point from line.
             point = [
                 [(row[1] - self.offsetLeft) * widthRatio - self.depths[position] / 2,
-                 (row[2] - self.offsetTop) * depthRatio, 0]]
+                 (row[2] - self.offsetTop) * depthRatio + self.imuOffset, 0]]
 
             axis = ut.plotPointOnAxis(axis, quaternion, point, pointPlot)
 
@@ -140,6 +150,7 @@ class Recording:
                 editingFile.write(f'recordingOffsetBottom:{self.offsetBottom}\n')
                 editingFile.write(f'recordingOffsetLeft:{self.offsetLeft}\n')
                 editingFile.write(f'recordingOffsetRight:{self.offsetRight}\n')
+                editingFile.write(f'imuOffset:{self.imuOffset}\n')
 
             with open(self.pointPath, 'w') as pointFile:
                 for point in self.pointData:
@@ -217,9 +228,9 @@ class Recording:
             self.depths[self.currentFrame - 1] = newScanDepth
             self.__saveDetailsToFile()
         except Exception as e:
-            print(f'Error updating scan depth, ensure a float was entered: {e}')
+            print(f'Error updating scan depth, ensure a float was entered: {e}.')
 
-    def changeAllScanDepths(self, newScanDepth: float):
+    def changeAllScanDepths(self, newScanDepth: str):
         """
         Change the scan depth of all the frames in the recording, then save the details to file.
 
@@ -231,7 +242,21 @@ class Recording:
             self.depths = [newScanDepth for _ in self.depths]
             self.__saveDetailsToFile()
         except Exception as e:
-            print(f'Error updating all scan depths at once: {e}')
+            print(f'Error updating all scan depths at once: {e}.')
+
+    def changeImuOffset(self, newIMuOffset: str):
+        """
+        Change the offset of the imu from the end of the probe, then save the details to file. This value will have an
+        effect on the volume calculations.
+        Args:
+            newIMuOffset (str): Offset between the IMU and the start of the scan.
+        """
+        try:
+            newIMuOffset = float(newIMuOffset)
+            self.imuOffset = newIMuOffset
+            self.__saveDetailsToFile()
+        except Exception as e:
+            print(f'Error updating the imu offset: {e}.')
 
     def changeOffsetTop(self, newOffset: int):
         """
@@ -246,7 +271,7 @@ class Recording:
             self.offsetTop = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
-            print(f'Error updating top offset, ensure that an integer was entered: {e}')
+            print(f'Error updating top offset, ensure that an integer was entered: {e}.')
 
     def changeOffsetBottom(self, newOffset: int):
         """
@@ -416,6 +441,8 @@ class Recording:
                     self.offsetLeft = float(value)
                 elif parameter == 'recordingOffsetRight':
                     self.offsetRight = float(value)
+                elif parameter == 'imuOffset':
+                    self.imuOffset = float(value)
 
     def __getImuDataFromFile(self):
         """

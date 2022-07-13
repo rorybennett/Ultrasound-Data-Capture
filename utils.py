@@ -265,6 +265,25 @@ def drawFigure(figure, canvas):
     return figure_canvas_agg
 
 
+def quaternionToEuler(quaternion: list):
+    """
+    Convert the given quaternion to Euler angels (yaw, pitch, and roll).
+
+    Args:
+        quaternion (list): Quaternion values.
+
+    Returns:
+    `   euler (list): Euler angles of the given quaternion.
+    """
+    quat = Quaternion(quaternion)
+
+    euler = np.array(quat.yaw_pitch_roll)
+
+    euler = np.round(euler * 180 / np.pi, 2)
+
+    return euler
+
+
 def resizeFrame(frame, newDimensions, interpolation) -> Image:
     """
     Resize the given frame to the given dimensions. This is used to make the returned frame fit in the display box, and

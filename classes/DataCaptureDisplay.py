@@ -116,6 +116,9 @@ class DataCaptureDisplay:
 
             # Event for updating Graph frame (editing).
             if event == '-UPDATE-GRAPH-FRAME-':
+                self.windowMain['-TXT-ANGLES-'].update(
+                    f'Yaw: {self.recording.getFrameAngles()[0]}\tPitch: {self.recording.getFrameAngles()[1]} \tRoll:'
+                    f' {self.recording.getFrameAngles()[2]}')
                 self.windowMain['-GRAPH-FRAME-'].draw_image(data=values[event], location=(0, c.DISPLAY_DIMENSIONS[1]))
 
             # Menu events.
@@ -161,14 +164,14 @@ class DataCaptureDisplay:
                 self.windowMain['-TXT-FRAMES-SAVED-'].update(f'{values[event]}')
             elif event == '-THREAD-PLOT-':
                 self.fig_agg.blit(self.ax.bbox)
-                self.fig_agg.flush_events()
+            self.fig_agg.flush_events()
 
             # Editing events.
             if event == '-COMBO-RECORDINGS-':
                 self.selectRecordingForEdit(values[event])
             elif event == '-TXT-DETAILS-PATH-' and self.recording:
                 ut.openWindowsExplorer(self.recording.path)
-            elif event in Layout.NAVIGATION_KEYS:
+            elif event in Layout.NAV_KEYS:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
                 self.navigateFrames(values['-INPUT-NAV-GOTO-'])
@@ -184,6 +187,8 @@ class DataCaptureDisplay:
                 self.recording.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
             elif event == '-INPUT-EDIT-DEPTHS-' + '_Enter':
                 self.changeAllScanDepths(values['-INPUT-EDIT-DEPTHS-'])
+            elif event == '-INPUT-IMU-OFFSET-' + '_Enter':
+                self.changeImuOffset(values['-INPUT-IMU-OFFSET-'])
             elif event == '-BTN-POINTS-':
                 self.toggleAddingDataPoints()
             elif event == '-BTN-CLEAR-FRAME-':
@@ -199,6 +204,16 @@ class DataCaptureDisplay:
 
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
 
+    def changeImuOffset(self, newImuOffset):
+        """
+        Change IMU offset value.
+        """
+        self.recording.changeImuOffset(newImuOffset)
+
+        self.fig_agg.restore_region(self.bg)
+        self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
+        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+
     def clearFramePoints(self, clearType):
         """
         Clear points from current frame or all frames.
@@ -212,6 +227,7 @@ class DataCaptureDisplay:
         self.fig_agg.restore_region(self.bg)
         self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
         self.windowMain.write_event_value('-THREAD-PLOT-', None)
+        self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
 
     def recreateEditingAxis(self):
         """
@@ -264,6 +280,7 @@ class DataCaptureDisplay:
             self.fig_agg.restore_region(self.bg)
             self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THREAD-PLOT-', None)
+            self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
         else:
             if self.enableOffsetChangeTop:
                 self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
@@ -315,10 +332,12 @@ class DataCaptureDisplay:
         self.windowMain['-TXT-DETAILS-FRAMES-'].update(self.recording.frameCount)
         self.windowMain['-TXT-DETAILS-POINTS-'].update(self.recording.imuCount)
         self.windowMain['-TXT-DETAILS-FPS-'].update(self.recording.fps)
-        [self.windowMain[i].update(disabled=False) for i in Layout.NAVIGATION_KEYS]
+
+        [self.windowMain[i].update(disabled=False) for i in Layout.NAV_KEYS]
         self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
         self.windowMain['-TXT-NAV-CURRENT-'].update(
             f'{self.recording.currentFrame}/{self.recording.frameCount}')
+
         self.windowMain['-BTN-OFFSET-TOP-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -326,9 +345,12 @@ class DataCaptureDisplay:
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
             f'{self.recording.depths[self.recording.currentFrame - 1]}', disabled=False)
         self.windowMain['-INPUT-EDIT-DEPTHS-'].update('', disabled=False)
+        self.windowMain['-INPUT-IMU-OFFSET-'].update(self.recording.imuOffset, disabled=False)
+
         self.windowMain['-BTN-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-CLEAR-FRAME-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-CLEAR-ALL-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
 
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
@@ -384,6 +406,7 @@ class DataCaptureDisplay:
             self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
             self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
             self.windowMain['-INPUT-EDIT-DEPTHS-'].bind('<Return>', '_Enter')
+            self.windowMain['-INPUT-IMU-OFFSET-'].bind('<Return>', '_Enter')
             time.sleep(0.5)
 
         # Set element states.
