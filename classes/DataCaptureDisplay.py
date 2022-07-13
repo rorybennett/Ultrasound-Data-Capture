@@ -206,7 +206,7 @@ class DataCaptureDisplay:
         if clearType == Recording.CLEAR_FRAME:
             self.recording.clearFramePoints()
         elif clearType == Recording.CLEAR_ALL:
-            print('Clear all')
+            self.recording.clearAllPoints()
 
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', self.recording.getCurrentFrameAsBytes())
         self.fig_agg.restore_region(self.bg)
