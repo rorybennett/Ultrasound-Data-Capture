@@ -147,8 +147,6 @@ def plotPointOnAxis(axis, quaternion, point, pointPlot):
     """
     rpp = rotatePoints(point, quaternion)[0]
 
-    print(f'Point: {point}, Rotated: {rpp}, Quaternion: {quaternion}')
-
     pointPlot.set_data([rpp[0]], [rpp[1]])
     pointPlot.set_3d_properties([rpp[2]])
     axis.draw_artist(pointPlot)

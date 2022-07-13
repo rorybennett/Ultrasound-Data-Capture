@@ -10,7 +10,7 @@ from classes import FrameGrabber
 import constants as c
 from classes import Menu
 from classes import Layout
-from classes.RecordingDetails import RecordingDetails
+from classes import Recording
 
 import PySimpleGUI as sg
 import time
@@ -69,7 +69,7 @@ class DataCaptureDisplay:
         # Editing state.
         self.enableEditing = False
         # RecordingDetails object.
-        self.recordingDetails = None
+        self.recording = None
         # Do Graph clicks add data points?
         self.enableDataPoints = False
         # Should a Graph click change the offset?
@@ -118,7 +118,7 @@ class DataCaptureDisplay:
             if event == '-UPDATE-GRAPH-FRAME-':
                 self.windowMain['-GRAPH-FRAME-'].draw_image(data=values[event], location=(0, c.DISPLAY_DIMENSIONS[1]))
 
-            # Signal source menu events.
+            # Menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
                 self.setSignalSourceAndConnect(int(event.split('::')[0]))
             elif event.endswith('::-MENU-SIGNAL-DISCONNECT-'):
@@ -126,9 +126,7 @@ class DataCaptureDisplay:
                 self.updateMenus()
             elif event.endswith('::-MENU-SIGNAL-DIMENSIONS-'):
                 self.changeSignalDimensions(event.split('::')[0].split('x'))
-
-            # IMU menu events.
-            if event.endswith('::-MENU-IMU-CONNECT-'):
+            elif event.endswith('::-MENU-IMU-CONNECT-'):
                 self.showImuConnectWindow()
             elif event.endswith('::-MENU-IMU-DISCONNECT-'):
                 self.imu.disconnect()
@@ -137,9 +135,7 @@ class DataCaptureDisplay:
                 self.imu.setReturnRate(float(event.split('Hz')[0]))
             elif event.endswith('::-MENU-IMU-CALIBRATE-'):
                 self.imu.calibrateAcceleration()
-
-            # Editing menu events.
-            if event.endswith('::-MENU-EDIT-START-') or event.endswith('::-MENU-EDIT-TOGGLE-'):
+            elif event.endswith('::-MENU-EDIT-TOGGLE-'):
                 self.toggleEditing()
 
             # Signal Display Events.
@@ -170,8 +166,8 @@ class DataCaptureDisplay:
             # Editing events.
             if event == '-COMBO-RECORDINGS-':
                 self.selectRecordingForEdit(values[event])
-            elif event == '-TXT-DETAILS-PATH-' and self.recordingDetails:
-                ut.openWindowsExplorer(self.recordingDetails.path)
+            elif event == '-TXT-DETAILS-PATH-' and self.recording:
+                ut.openWindowsExplorer(self.recording.path)
             elif event in Layout.NAVIGATION_KEYS:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INPUT-NAV-GOTO-' + '_Enter':
@@ -185,11 +181,15 @@ class DataCaptureDisplay:
             elif event == '-BTN-OFFSET-RIGHT-':
                 self.toggleChangingOffsetRight()
             elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
-                self.recordingDetails.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
+                self.recording.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
             elif event == '-INPUT-EDIT-DEPTHS-' + '_Enter':
                 self.changeAllScanDepths(values['-INPUT-EDIT-DEPTHS-'])
             elif event == '-BTN-POINTS-':
                 self.toggleAddingDataPoints()
+            elif event == '-BTN-CLEAR-FRAME-':
+                self.clearFramePoints(Recording.CLEAR_FRAME)
+            elif event == '-BTN-CLEAR-ALL-':
+                self.clearFramePoints(Recording.CLEAR_ALL)
             elif event == '-GRAPH-FRAME-':
                 self.onGraphFrameClicked(values[event])
 
@@ -199,6 +199,20 @@ class DataCaptureDisplay:
 
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
 
+    def clearFramePoints(self, clearType):
+        """
+        Clear points from current frame or all frames.
+        """
+        if clearType == Recording.CLEAR_FRAME:
+            self.recording.clearFramePoints()
+        elif clearType == Recording.CLEAR_ALL:
+            print('Clear all')
+
+        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', self.recording.getCurrentFrameAsBytes())
+        self.fig_agg.restore_region(self.bg)
+        self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
+        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+
     def recreateEditingAxis(self):
         """
         Recreate the axis for editing purposes.
@@ -207,26 +221,26 @@ class DataCaptureDisplay:
         self.ax.cla()
         # Reinitialise axis.
         self.ax = ut.initialiseEditingAxis(self.ax, c.AZIMUTH,
-                                           self.recordingDetails.depths[self.recordingDetails.currentFramePosition])
+                                           self.recording.depths[self.recording.currentFrame])
         # Redraw new axis.
         self.fig_agg.draw()
         # Re-save background for blit.
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
-        if self.recordingDetails:
-            self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
+        if self.recording:
+            self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
         self.windowMain.write_event_value('-THREAD-PLOT-', None)
 
     def changeAllScanDepths(self, newScanDepth: str):
         """
         Call the changeAllScanDepths of the RecordingDetails object.
         """
-        self.recordingDetails.changeAllScanDepths(newScanDepth)
+        self.recording.changeAllScanDepths(newScanDepth)
 
         self.recreateEditingAxis()
 
         # Set element states.
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
-            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition]}')
+            f'{self.recording.depths[self.recording.currentFrame]}')
         self.windowMain['-INPUT-EDIT-DEPTHS-'].update()
 
     def onGraphFrameClicked(self, point):
@@ -244,37 +258,37 @@ class DataCaptureDisplay:
         """
 
         if self.enableDataPoints:
-            self.recordingDetails.addRemovePointData(point)
+            self.recording.addRemovePointData(point)
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              self.recordingDetails.getCurrentFrameAsBytes())
+                                              self.recording.getCurrentFrameAsBytes())
             self.fig_agg.restore_region(self.bg)
-            self.ax = self.recordingDetails.plotDataPointsOnAxis(self.ax, self.pointPlot)
+            self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THREAD-PLOT-', None)
         else:
             if self.enableOffsetChangeTop:
-                self.recordingDetails.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+                self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
             elif self.enableOffsetChangeBottom:
-                self.recordingDetails.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+                self.recording.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
             elif self.enableOffsetChangeLeft:
-                self.recordingDetails.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
+                self.recording.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
             elif self.enableOffsetChangeRight:
-                self.recordingDetails.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
+                self.recording.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recordingDetails.getCurrentFrameAsBytes())
+                                              value=self.recording.getCurrentFrameAsBytes())
 
     def navigateFrames(self, navCommand):
         """
         Call the navigateFrames function of the RecordingDetails object.
         """
-        self.recordingDetails.navigateFrames(navCommand)
+        self.recording.navigateFrames(navCommand)
 
         # Set element states.
         self.windowMain['-TXT-NAV-CURRENT-'].update(
-            f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
+            f'{self.recording.currentFrame}/{self.recording.frameCount}')
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
-            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}')
+            f'{self.recording.depths[self.recording.currentFrame - 1]}')
 
-        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
     def selectRecordingForEdit(self, videoDirectory: str):
         """
@@ -286,7 +300,7 @@ class DataCaptureDisplay:
             videoDirectory (str): Directory name where the recording is stored.
         """
         print(f'Create editing data for: {videoDirectory}')
-        self.recordingDetails = RecordingDetails(self.videosPath, videoDirectory)
+        self.recording = Recording.Recording(self.videosPath, videoDirectory)
         self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
         self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
         self.enableDataPoints = False
@@ -294,27 +308,29 @@ class DataCaptureDisplay:
         self.recreateEditingAxis()
 
         # Set element states
-        self.windowMain['-TXT-DETAILS-DATE-'].update(self.recordingDetails.date)
-        self.windowMain['-TXT-DETAILS-PATH-'].update(self.recordingDetails.path)
+        self.windowMain['-TXT-DETAILS-DATE-'].update(self.recording.date)
+        self.windowMain['-TXT-DETAILS-PATH-'].update(self.recording.path)
         self.windowMain['-TXT-DETAILS-DURATION-'].update(
-            time.strftime('%H:%M:%S', time.localtime(self.recordingDetails.duration / 1000)))
-        self.windowMain['-TXT-DETAILS-FRAMES-'].update(self.recordingDetails.frameCount)
-        self.windowMain['-TXT-DETAILS-POINTS-'].update(self.recordingDetails.imuCount)
-        self.windowMain['-TXT-DETAILS-FPS-'].update(self.recordingDetails.fps)
+            time.strftime('%H:%M:%S', time.localtime(self.recording.duration / 1000)))
+        self.windowMain['-TXT-DETAILS-FRAMES-'].update(self.recording.frameCount)
+        self.windowMain['-TXT-DETAILS-POINTS-'].update(self.recording.imuCount)
+        self.windowMain['-TXT-DETAILS-FPS-'].update(self.recording.fps)
         [self.windowMain[i].update(disabled=False) for i in Layout.NAVIGATION_KEYS]
         self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
         self.windowMain['-TXT-NAV-CURRENT-'].update(
-            f'{self.recordingDetails.currentFramePosition}/{self.recordingDetails.frameCount}')
+            f'{self.recording.currentFrame}/{self.recording.frameCount}')
         self.windowMain['-BTN-OFFSET-TOP-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INPUT-EDIT-DEPTH-'].update(
-            f'{self.recordingDetails.depths[self.recordingDetails.currentFramePosition - 1]}', disabled=False)
+            f'{self.recording.depths[self.recording.currentFrame - 1]}', disabled=False)
         self.windowMain['-INPUT-EDIT-DEPTHS-'].update('', disabled=False)
         self.windowMain['-BTN-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BTN-CLEAR-FRAME-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BTN-CLEAR-ALL-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
 
-        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recordingDetails.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
     def toggleAddingDataPoints(self):
         """
@@ -327,7 +343,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeRight = False
         # Set element states.
         self.windowMain['-BTN-POINTS-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableDataPoints else sg.DEFAULT_BUTTON_COLOR)
+            button_color=st.COLOUR_BTN_ACTIVE if self.enableDataPoints else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -353,7 +369,7 @@ class DataCaptureDisplay:
 
         # Enable the frame display for consistency.
         self.enableDisplay = True
-        self.recordingDetails = None
+        self.recording = None
         print(f'Entering editing mode: {self.enableEditing}')
         # Editing has been enabled.
         if self.enableEditing:
@@ -491,7 +507,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
         # Set element states.
         self.windowMain['-BTN-OFFSET-TOP-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeTop else sg.DEFAULT_BUTTON_COLOR)
+            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeTop else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -506,7 +522,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
         # Set element states.
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeBottom else sg.DEFAULT_BUTTON_COLOR)
+            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeBottom else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -521,7 +537,7 @@ class DataCaptureDisplay:
         self.enableDataPoints, self.enableOffsetChangeRight = False, False
         # Set element states.
         self.windowMain['-BTN-OFFSET-LEFT-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeLeft else sg.DEFAULT_BUTTON_COLOR)
+            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeLeft else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -536,7 +552,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeLeft, self.enableDataPoints = False, False
         # Set element states.
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableOffsetChangeRight else sg.DEFAULT_BUTTON_COLOR)
+            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeRight else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -572,7 +588,7 @@ class DataCaptureDisplay:
         self.enableDisplay = not self.enableDisplay
         self.windowMain['-BTN-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display',
-            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enableDisplay else st.BUTTON_ACTIVE)
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enableDisplay else st.COLOUR_BTN_ACTIVE)
 
     def setSignalSourceAndConnect(self, signalSource):
         """
@@ -627,7 +643,7 @@ class DataCaptureDisplay:
 
         # Set element states.
         self.windowMain['-BTN-RECORD-TOGGLE-'].update(
-            button_color=st.BUTTON_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
+            button_color=st.COLOUR_BTN_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.windowMain['-BTN-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
@@ -679,7 +695,7 @@ class DataCaptureDisplay:
         self.enablePlotting = not self.enablePlotting
         self.windowMain['-BTN-PLOT-TOGGLE-'].update(
             text='Disable Plotting' if self.enablePlotting else 'Enable Plotting',
-            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else st.BUTTON_ACTIVE)
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else st.COLOUR_BTN_ACTIVE)
 
     def changeSignalDimensions(self, dimensions):
         """

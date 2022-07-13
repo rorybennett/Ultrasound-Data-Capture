@@ -112,74 +112,74 @@ class ImuBatterLifeTest:
         """
         # IMU controls.
         imuLayout = [
-            [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.HEADING_FONT,
+            [sg.Text('IMU Controls', size=(40, 1), justification='center', font=st.FONT_HEADING,
                      pad=((0, 0), (0, 20)))],
             [sg.Button(key='-BUTTON-COM-REFRESH-', button_text='', image_source=refreshIcon,
                        image_subsample=4, border_width=3),
              sg.Combo(key='-COMBO-COM-PORT-', default_value=self.comPort, values=self.availableComPorts, size=7,
-                      font=st.COMBO_FONT, enable_events=True, readonly=True),
-             sg.Text('Baud Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
+                      font=st.FONT_COMBO, enable_events=True, readonly=True),
+             sg.Text('Baud Rate:', justification='right', font=st.FONT_DESCR, pad=((20, 0), (0, 0))),
              sg.Combo(key='-COMBO-BAUD-RATE-', default_value=self.baudRate, values=c.COMMON_BAUD_RATES, size=7,
-                      font=st.COMBO_FONT, enable_events=True, readonly=True)],
-            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.BUTTON_FONT,
+                      font=st.FONT_COMBO, enable_events=True, readonly=True)],
+            [sg.Button(key='-BUTTON-IMU-CONNECT-', button_text='Connect IMU', size=(15, 1), font=st.FONT_BTN,
                        border_width=3, pad=((0, 0), (20, 20)))],
-            [sg.Text('Return Rate:', justification='right', font=st.DESC_FONT, pad=((20, 0), (0, 0))),
-             sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.COMBO_FONT,
+            [sg.Text('Return Rate:', justification='right', font=st.FONT_DESCR, pad=((20, 0), (0, 0))),
+             sg.Combo(key='-COMBO-RETURN-RATE-', values=c.IMU_RATE_OPTIONS, size=7, font=st.FONT_COMBO,
                       enable_events=True, readonly=True, disabled=True),
              sg.Button(key='-BUTTON-IMU-CALIBRATE-', button_text='Calibrate Acc', size=(15, 1),
-                       font=st.BUTTON_FONT, border_width=3, pad=((40, 0), (0, 0)), disabled=True)]
+                       font=st.FONT_BTN, border_width=3, pad=((40, 0), (0, 0)), disabled=True)]
         ]
         # Orientation plot.
         imuPlotLayout = [
-            [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.HEADING_FONT)],
+            [sg.Text('IMU Orientation Plot', size=(40, 1), justification='center', font=st.FONT_HEADING)],
             [sg.Canvas(key='-CANVAS-PLOT-', size=(500, 500))],
-            [sg.Text('Select Azimuth', font=st.DESC_FONT, pad=((0, 0), (5, 0)))],
+            [sg.Text('Select Azimuth', font=st.FONT_DESCR, pad=((0, 0), (5, 0)))],
             [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.AZIMUTH, size=(40, 10),
                        orientation='h', enable_events=True)]
         ]
         # IMU values from callback.
         imuValuesLayout = [
-            [sg.Text('IMU Values (Raw)', size=(40, 1), justification='center', font=st.HEADING_FONT)],
-            [sg.Text('Acceleration (m/s^2): ', justification='left', font=st.DESC_FONT, size=(20, 1)),
-             sg.Text(key='-TEXT-ACCELERATION-', text='', justification='right', font=st.DESC_FONT, size=(30, 1))],
-            [sg.Text('Quaternion: ', justification='left', font=st.DESC_FONT, size=(20, 1)),
-             sg.Text(key='-TEXT-QUATERNION-', text='', justification='right', font=st.DESC_FONT, size=(30, 1))],
-            [sg.Text('Euler Angles (deg): ', justification='left', font=st.DESC_FONT, size=(20, 1)),
-             sg.Text(key='-TEXT-ANGLE-', text='', justification='right', font=st.DESC_FONT, size=(30, 1))]
+            [sg.Text('IMU Values (Raw)', size=(40, 1), justification='center', font=st.FONT_HEADING)],
+            [sg.Text('Acceleration (m/s^2): ', justification='left', font=st.FONT_DESCR, size=(20, 1)),
+             sg.Text(key='-TEXT-ACCELERATION-', text='', justification='right', font=st.FONT_DESCR, size=(30, 1))],
+            [sg.Text('Quaternion: ', justification='left', font=st.FONT_DESCR, size=(20, 1)),
+             sg.Text(key='-TEXT-QUATERNION-', text='', justification='right', font=st.FONT_DESCR, size=(30, 1))],
+            [sg.Text('Euler Angles (deg): ', justification='left', font=st.FONT_DESCR, size=(20, 1)),
+             sg.Text(key='-TEXT-ANGLE-', text='', justification='right', font=st.FONT_DESCR, size=(30, 1))]
         ]
 
         # Test start column.
         testStartLayout = [
-            [sg.Text(text='Start Time', font=st.DESC_FONT + ' underline', size=(15, 1))],
-            [sg.Text(key='-TEXT-TEST-START-', font=st.DESC_FONT, size=(15, 1))]
+            [sg.Text(text='Start Time', font=st.FONT_DESCR + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-START-', font=st.FONT_DESCR, size=(15, 1))]
         ]
 
         # Test last message received column.
         testLastLayout = [
-            [sg.Text(text='Last Message\nReceived At', font=st.DESC_FONT + ' underline', size=(15, 1))],
-            [sg.Text(key='-TEXT-TEST-LAST-', font=st.DESC_FONT, size=(15, 1))]
+            [sg.Text(text='Last Message\nReceived At', font=st.FONT_DESCR + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-LAST-', font=st.FONT_DESCR, size=(15, 1))]
         ]
         # Test elapsed time column.
         testElapsedLayout = [
-            [sg.Text(text='Elapsed Time', font=st.DESC_FONT + ' underline', size=(15, 1))],
-            [sg.Text(key='-TEXT-TEST-ELAPSED-', font=st.DESC_FONT, size=(15, 1))]
+            [sg.Text(text='Elapsed Time', font=st.FONT_DESCR + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-ELAPSED-', font=st.FONT_DESCR, size=(15, 1))]
         ]
         # Test counter layout
         testCounterLayout = [
-            [sg.Text(text='Total Messages', font=st.DESC_FONT + ' underline', size=(15, 1))],
-            [sg.Text(key='-TEXT-TEST-COUNTER-', font=st.DESC_FONT, size=(15, 1))]
+            [sg.Text(text='Total Messages', font=st.FONT_DESCR + ' underline', size=(15, 1))],
+            [sg.Text(key='-TEXT-TEST-COUNTER-', font=st.FONT_DESCR, size=(15, 1))]
         ]
         # Test control layout.
         testControlLayout = [
-            [sg.Button(key='-BUTTON-TEST-START-', button_text='Start', font=st.BUTTON_FONT, border_width=3,
+            [sg.Button(key='-BUTTON-TEST-START-', button_text='Start', font=st.FONT_BTN, border_width=3,
                        pad=((0, 10), (20, 20)), disabled=True, button_color='#33ff77'),
              sg.Column(testStartLayout, element_justification='center', vertical_alignment='top'),
              sg.Column(testLastLayout, element_justification='center', vertical_alignment='top'),
              sg.Column(testElapsedLayout, element_justification='center', vertical_alignment='top'),
              sg.Column(testCounterLayout, element_justification='center', vertical_alignment='top'),
-             sg.Button(key='-BUTTON-TEST-STOP-', button_text='Stop', font=st.BUTTON_FONT, border_width=3,
+             sg.Button(key='-BUTTON-TEST-STOP-', button_text='Stop', font=st.FONT_BTN, border_width=3,
                        pad=((0, 10), (20, 20)), disabled=True, button_color='#ff2121')],
-            [sg.Text('Test Name', font=st.DESC_FONT, justification='left'),
+            [sg.Text('Test Name', font=st.FONT_DESCR, justification='left'),
              sg.Input(key='-INPUT-TEST-NAME-', justification='left', default_text='Drain Test')]
         ]
         # Total layout.

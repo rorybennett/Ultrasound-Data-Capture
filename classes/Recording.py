@@ -10,8 +10,11 @@ import numpy as np
 import utils as ut
 import constants as c
 
+CLEAR_FRAME = '-CLEAR-FRAME-'
+CLEAR_ALL = '-CLEAR-ALL-'
 
-class RecordingDetails:
+
+class Recording:
     def __init__(self, videosPath: Path, recordingDirectory: str):
         """
         Initially created variables for the RecordingDetails class:
@@ -54,7 +57,7 @@ class RecordingDetails:
         # Depth of the scan, per frame basis.
         self.depths = []
         # Tracks position of current frame being displayed, starts at 1.
-        self.currentFramePosition = 1
+        self.currentFrame = 1
 
         self.__getImuDataFromFile()
 
@@ -64,10 +67,10 @@ class RecordingDetails:
         # Path to EditingData.txt file.
         self.editingPath = ''
         # Offsets between top, bottom, left, and right of frame and scan in fractions of display dimensions.
-        self.recordingOffsetTop = 0
-        self.recordingOffsetBottom = 0.999
-        self.recordingOffsetLeft = 0
-        self.recordingOffsetRight = 0.999
+        self.offsetTop = 0
+        self.offsetBottom = 0.999
+        self.offsetLeft = 0
+        self.offsetRight = 0.999
         # Path to PointData.txt.
         self.pointPath = ''
         # Point data of the frames.
@@ -75,6 +78,22 @@ class RecordingDetails:
 
         self.__getEditDetailsFromFile()
         self.__getPointDataFromFile()
+
+    def clearAllPoints(self):
+        """
+        Clear all points on all frames.
+        """
+        self.pointData = []
+
+        self.__saveDetailsToFile()
+
+    def clearFramePoints(self):
+        """
+        Clear points on the currently displayed frame.
+        """
+        self.pointData = [point for point in self.pointData if not point[0] == self.frameNames[self.currentFrame - 1]]
+
+        self.__saveDetailsToFile()
 
     def plotDataPointsOnAxis(self, axis, pointPlot):
         """
@@ -97,14 +116,14 @@ class RecordingDetails:
             quaternion = self.quaternion[position]
             # Depth ratio used to go from pixel ratio to mm for height.
             depthRatio = self.depths[position] / (
-                (self.recordingOffsetBottom - self.recordingOffsetTop))
+                (self.offsetBottom - self.offsetTop))
             # Width ratio used to go from pixel ratio to mm for width.
             widthRatio = self.depths[position] / (
-                (self.recordingOffsetRight - self.recordingOffsetLeft))
+                (self.offsetRight - self.offsetLeft))
             # Extract point from line.
             point = [
-                [(row[1] - self.recordingOffsetLeft) * widthRatio - self.depths[position] / 2,
-                 (row[2] - self.recordingOffsetTop) * depthRatio, 0]]
+                [(row[1] - self.offsetLeft) * widthRatio - self.depths[position] / 2,
+                 (row[2] - self.offsetTop) * depthRatio, 0]]
 
             axis = ut.plotPointOnAxis(axis, quaternion, point, pointPlot)
 
@@ -117,10 +136,10 @@ class RecordingDetails:
         """
         try:
             with open(self.editingPath, 'w') as editingFile:
-                editingFile.write(f'recordingOffsetTop:{self.recordingOffsetTop}\n')
-                editingFile.write(f'recordingOffsetBottom:{self.recordingOffsetBottom}\n')
-                editingFile.write(f'recordingOffsetLeft:{self.recordingOffsetLeft}\n')
-                editingFile.write(f'recordingOffsetRight:{self.recordingOffsetRight}\n')
+                editingFile.write(f'recordingOffsetTop:{self.offsetTop}\n')
+                editingFile.write(f'recordingOffsetBottom:{self.offsetBottom}\n')
+                editingFile.write(f'recordingOffsetLeft:{self.offsetLeft}\n')
+                editingFile.write(f'recordingOffsetRight:{self.offsetRight}\n')
 
             with open(self.pointPath, 'w') as pointFile:
                 for point in self.pointData:
@@ -157,7 +176,7 @@ class RecordingDetails:
 
         # Check if within radius, if NOT, add point, else remove a point.
         if not self.__checkIfWithinRadiusOfOtherPoints(newPoint):
-            self.pointData.append([self.frameNames[self.currentFramePosition - 1], newPoint[0], newPoint[1]])
+            self.pointData.append([self.frameNames[self.currentFrame - 1], newPoint[0], newPoint[1]])
 
         self.__saveDetailsToFile()
 
@@ -177,7 +196,7 @@ class RecordingDetails:
         withinRadius = False
 
         for centrePoint in self.pointData:
-            if self.frameNames[self.currentFramePosition - 1] == centrePoint[0] and ut.pointWithinRadius(
+            if self.frameNames[self.currentFrame - 1] == centrePoint[0] and ut.pointWithinRadius(
                     [centrePoint[1], centrePoint[2]], point):
                 self.pointData.remove(centrePoint)
                 withinRadius = True
@@ -195,7 +214,7 @@ class RecordingDetails:
         """
         try:
             newScanDepth = float(newScanDepth)
-            self.depths[self.currentFramePosition - 1] = newScanDepth
+            self.depths[self.currentFrame - 1] = newScanDepth
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating scan depth, ensure a float was entered: {e}')
@@ -224,7 +243,7 @@ class RecordingDetails:
         """
         try:
             newOffset = float(newOffset)
-            self.recordingOffsetTop = newOffset
+            self.offsetTop = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating top offset, ensure that an integer was entered: {e}')
@@ -239,7 +258,7 @@ class RecordingDetails:
         """
         try:
             newOffset = float(newOffset)
-            self.recordingOffsetBottom = newOffset
+            self.offsetBottom = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating top offset, ensure that an integer was entered: {e}')
@@ -254,7 +273,7 @@ class RecordingDetails:
         """
         try:
             newOffset = float(newOffset)
-            self.recordingOffsetLeft = newOffset
+            self.offsetLeft = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating top offset, ensure that an integer was entered: {e}')
@@ -271,7 +290,7 @@ class RecordingDetails:
         """
         try:
             newOffset = float(newOffset)
-            self.recordingOffsetRight = newOffset
+            self.offsetRight = newOffset
             self.__saveDetailsToFile()
         except Exception as e:
             print(f'Error updating top offset, ensure that an integer was entered: {e}')
@@ -294,30 +313,30 @@ class RecordingDetails:
         try:
             goToFrame = int(navCommand)
             if self.frameCount >= goToFrame > 0:
-                self.currentFramePosition = goToFrame
+                self.currentFrame = goToFrame
             elif goToFrame > self.frameCount:
-                self.currentFramePosition = self.frameCount
+                self.currentFrame = self.frameCount
             elif goToFrame < 1:
-                self.currentFramePosition = 1
+                self.currentFrame = 1
         except ValueError:
             if navCommand == 'PPP':
-                self.currentFramePosition -= 10
+                self.currentFrame -= 10
             elif navCommand == 'PP':
-                self.currentFramePosition -= 5
+                self.currentFrame -= 5
             elif navCommand == 'P':
-                self.currentFramePosition -= 1
+                self.currentFrame -= 1
             elif navCommand == 'N':
-                self.currentFramePosition += 1
+                self.currentFrame += 1
             elif navCommand == 'NN':
-                self.currentFramePosition += 5
+                self.currentFrame += 5
             elif navCommand == 'NNN':
-                self.currentFramePosition += 10
+                self.currentFrame += 10
 
             # If the frame position goes beyond max or min, cycle around.
-            if self.currentFramePosition <= 0:
-                self.currentFramePosition = self.frameCount + self.currentFramePosition
-            elif self.currentFramePosition > self.frameCount:
-                self.currentFramePosition = self.currentFramePosition - self.frameCount
+            if self.currentFrame <= 0:
+                self.currentFrame = self.frameCount + self.currentFrame
+            elif self.currentFrame > self.frameCount:
+                self.currentFrame = self.currentFrame - self.frameCount
 
     def getCurrentFrameAsBytes(self):
         """
@@ -327,28 +346,28 @@ class RecordingDetails:
             frameAsBytes (bytes): Bytes representation of frame for displaying.
         """
         # Acquire current frame from stored location.
-        frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFramePosition - 1] + '.png')
+        frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFrame - 1] + '.png')
         # Resize the frame for the display element.
         resizeFrame = ut.resizeFrame(frame, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
         # Add top offset line.
-        cv2.line(resizeFrame, (0, int(self.recordingOffsetTop * c.DISPLAY_DIMENSIONS[1])),
-                 (c.DISPLAY_DIMENSIONS[0], int(self.recordingOffsetTop * c.DISPLAY_DIMENSIONS[1])),
+        cv2.line(resizeFrame, (0, int(self.offsetTop * c.DISPLAY_DIMENSIONS[1])),
+                 (c.DISPLAY_DIMENSIONS[0], int(self.offsetTop * c.DISPLAY_DIMENSIONS[1])),
                  color=(0, 0, 255), thickness=1)
         # Add bottom offset line.
-        cv2.line(resizeFrame, (0, int(self.recordingOffsetBottom * c.DISPLAY_DIMENSIONS[1])),
-                 (c.DISPLAY_DIMENSIONS[0], int(self.recordingOffsetBottom * c.DISPLAY_DIMENSIONS[1])),
+        cv2.line(resizeFrame, (0, int(self.offsetBottom * c.DISPLAY_DIMENSIONS[1])),
+                 (c.DISPLAY_DIMENSIONS[0], int(self.offsetBottom * c.DISPLAY_DIMENSIONS[1])),
                  color=(0, 0, 255), thickness=1)
         # Add left offset line.
-        cv2.line(resizeFrame, (int(self.recordingOffsetLeft * c.DISPLAY_DIMENSIONS[0]), 0),
-                 (int(self.recordingOffsetLeft * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
+        cv2.line(resizeFrame, (int(self.offsetLeft * c.DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.offsetLeft * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
                  color=(0, 0, 255), thickness=1)
         # Add right offset line.
-        cv2.line(resizeFrame, (int(self.recordingOffsetRight * c.DISPLAY_DIMENSIONS[0]), 0),
-                 (int(self.recordingOffsetRight * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
+        cv2.line(resizeFrame, (int(self.offsetRight * c.DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.offsetRight * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
                  color=(0, 0, 255), thickness=1)
         # Add point data.
         for point in self.pointData:
-            if point[0] == self.frameNames[self.currentFramePosition - 1]:
+            if point[0] == self.frameNames[self.currentFrame - 1]:
                 cv2.circle(resizeFrame,
                            (int(point[1] * c.DISPLAY_DIMENSIONS[0]),
                             int(point[2] * c.DISPLAY_DIMENSIONS[1])), 5, color=(0, 255, 0), thickness=-1)
@@ -390,13 +409,13 @@ class RecordingDetails:
                 value = lineSplit[1]
 
                 if parameter == 'recordingOffsetTop':
-                    self.recordingOffsetTop = float(value)
+                    self.offsetTop = float(value)
                 elif parameter == 'recordingOffsetBottom':
-                    self.recordingOffsetBottom = float(value)
+                    self.offsetBottom = float(value)
                 elif parameter == 'recordingOffsetLeft':
-                    self.recordingOffsetLeft = float(value)
+                    self.offsetLeft = float(value)
                 elif parameter == 'recordingOffsetRight':
-                    self.recordingOffsetRight = float(value)
+                    self.offsetRight = float(value)
 
     def __getImuDataFromFile(self):
         """
