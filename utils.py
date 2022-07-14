@@ -225,9 +225,9 @@ def initialiseEditingAxis(axis, azimuth, scanDepth):
     Set the initial labels, limits, and azimuth of the given axis.
 
     Args:
-        limits:
         axis (axis): Axis that will have its labels, limits, and azimuth set.
         azimuth (int): Azimuth value applied to the axis.
+        scanDepth (float): Scan depth in mm.
 
     Returns:
         axis (axis): Axis containing newly plotted points and lines.
