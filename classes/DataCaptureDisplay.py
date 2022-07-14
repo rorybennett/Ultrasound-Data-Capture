@@ -281,15 +281,20 @@ class DataCaptureDisplay:
             self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THREAD-PLOT-', None)
             self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
-        else:
-            if self.enableOffsetChangeTop:
-                self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
-            elif self.enableOffsetChangeBottom:
-                self.recording.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
-            elif self.enableOffsetChangeLeft:
-                self.recording.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
-            elif self.enableOffsetChangeRight:
-                self.recording.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
+        elif self.enableOffsetChangeTop:
+            self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                              value=self.recording.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeBottom:
+            self.recording.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                              value=self.recording.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeLeft:
+            self.recording.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
+            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
+                                              value=self.recording.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeRight:
+            self.recording.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
             self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
                                               value=self.recording.getCurrentFrameAsBytes())
 
