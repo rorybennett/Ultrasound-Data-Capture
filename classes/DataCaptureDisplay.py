@@ -392,7 +392,7 @@ class DataCaptureDisplay:
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
         self.createPlot(limits=(0, 150) if self.enableEditing else (-5, 5),
-                        size=(6, 6) if self.enableEditing else (3.5, 3.5))
+                        size=(5, 5) if self.enableEditing else (3.5, 3.5))
 
         # Enable the frame display for consistency.
         self.enableDisplay = True
