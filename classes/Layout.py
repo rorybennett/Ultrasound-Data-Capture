@@ -49,7 +49,7 @@ class Layout:
         miscellaneousRow = self.__createMiscellaneousRow()
 
         layout = [
-            [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu())],
+            [sg.Menu(k='-MENU-', menu_definition=self.menu.getMenu())],
             [displayRow],
             [sg.HSep(pad=((0, 0), (0, 10)))],
             [recordRow],
@@ -79,7 +79,7 @@ class Layout:
         miscellaneousRow = self.__createMiscellaneousRow()
 
         layout = [
-            [sg.Menu(key='-MENU-', menu_definition=self.menu.getMenu())],
+            [sg.Menu(k='-MENU-', menu_definition=self.menu.getMenu())],
             [displayRow],
             [sg.HSep(pad=((0, 0), (0, 10)))],
             [editRow],
@@ -100,7 +100,7 @@ class Layout:
             [sg.Text('Select Recording', font=st.FONT_DESCR, pad=((0, 0), (0, 10)), justification='center',
                      expand_x=True)],
             [sg.HSeparator()],
-            [sg.Combo(key='-COMBO-RECORDINGS-', size=21, font=st.FONT_COMBO_SMALL, values=[], enable_events=True,
+            [sg.Combo(k='-COMBO-RECORDINGS-', size=21, font=st.FONT_COMBO_SMALL, values=[], enable_events=True,
                       readonly=True)]
         ]
 
@@ -109,66 +109,66 @@ class Layout:
                      justification='center')],
             [sg.HSeparator()],
             [sg.Text('Date:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left', size=(10, 1)),
-             sg.Text(key='-TXT-DETAILS-DATE-', font=st.FONT_DESCR, justification='right', size=(12, 2))],
+             sg.Text(k='-TXT-DETAILS-DATE-', font=st.FONT_DESCR, justification='right', size=(12, 2))],
             [sg.Text('Duration:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left', size=(10, 1)),
-             sg.Text(key='-TXT-DETAILS-DURATION-', font=st.FONT_DESCR, expand_x=True, justification='right')],
+             sg.Text(k='-TXT-DETAILS-DURATION-', font=st.FONT_DESCR, expand_x=True, justification='right')],
             [sg.Text('Frames:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left'),
-             sg.Text(key='-TXT-DETAILS-FRAMES-', font=st.FONT_DESCR, expand_x=True, justification='right')],
+             sg.Text(k='-TXT-DETAILS-FRAMES-', font=st.FONT_DESCR, expand_x=True, justification='right')],
             [sg.Text('IMU Data Points:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left'),
-             sg.Text(key='-TXT-DETAILS-POINTS-', font=st.FONT_DESCR, expand_x=True, justification='right')],
+             sg.Text(k='-TXT-DETAILS-POINTS-', font=st.FONT_DESCR, expand_x=True, justification='right')],
             [sg.Text('Estimated FPS:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left'),
-             sg.Text(key='-TXT-DETAILS-FPS-', font=st.FONT_DESCR, expand_x=True, justification='right')]
+             sg.Text(k='-TXT-DETAILS-FPS-', font=st.FONT_DESCR, expand_x=True, justification='right')]
         ]
 
         navigationColumn = [
             [sg.Text('Navigation', font=st.FONT_DESCR, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
             [sg.HSeparator()],
-            [sg.Button(key=NAV_KEYS[0], button_text='-10', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
+            [sg.Button(k=NAV_KEYS[0], button_text='-10', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key=NAV_KEYS[1], button_text='-5', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
+             sg.Button(k=NAV_KEYS[1], button_text='-5', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key=NAV_KEYS[2], button_text='-1', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
+             sg.Button(k=NAV_KEYS[2], button_text='-1', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key=NAV_KEYS[3], button_text='+1', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
+             sg.Button(k=NAV_KEYS[3], button_text='+1', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key=NAV_KEYS[4], button_text='+5', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
+             sg.Button(k=NAV_KEYS[4], button_text='+5', size=(3, 1), font=st.FONT_BTN_SMALL, border_width=3,
                        disabled=True),
-             sg.Button(key=NAV_KEYS[5], button_text='+10', size=(3, 1), font=st.FONT_BTN_SMALL,
-                       border_width=3, disabled=True),
+             sg.Button(k=NAV_KEYS[5], button_text='+10', size=(3, 1), font=st.FONT_BTN_SMALL,
+                       border_width=3, disabled=True)
              ],
             [sg.Text('Go to frame:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-NAV-GOTO-', font=st.FONT_DESCR, justification='center', size=(9, 1), disabled=True)]
+             sg.Input(k='-INPUT-NAV-GOTO-', font=st.FONT_DESCR, justification='center', size=(9, 1), disabled=True)]
         ]
 
         editingDetails1 = [
-            [sg.Button(key='-BTN-OFFSET-TOP-', button_text='Set Top Offset', font=st.FONT_BTN_SMALL,
+            [sg.Button(k='-BTN-OFFSET-TOP-', button_text='Set Top Offset', font=st.FONT_BTN_SMALL,
                        expand_x=True, disabled=True, border_width=3)],
-            [sg.Button(key='-BTN-OFFSET-BOTTOM-', button_text='Set Bottom Offset', font=st.FONT_BTN_SMALL,
+            [sg.Button(k='-BTN-OFFSET-BOTTOM-', button_text='Set Bottom Offset', font=st.FONT_BTN_SMALL,
                        expand_x=True, disabled=True, border_width=3)],
-            [sg.Button(key='-BTN-OFFSET-LEFT-', button_text='Set Left Offset', font=st.FONT_BTN_SMALL,
+            [sg.Button(k='-BTN-OFFSET-LEFT-', button_text='Set Left Offset', font=st.FONT_BTN_SMALL,
                        expand_x=True, disabled=True, border_width=3)],
-            [sg.Button(key='-BTN-OFFSET-RIGHT-', button_text='Set Right Offset', font=st.FONT_BTN_SMALL,
+            [sg.Button(k='-BTN-OFFSET-RIGHT-', button_text='Set Right Offset', font=st.FONT_BTN_SMALL,
                        expand_x=True, disabled=True, border_width=3)],
             [sg.Text('Scan Depth [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-EDIT-DEPTH-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+             sg.Input(k='-INPUT-EDIT-DEPTH-', font=st.FONT_DESCR, justification='center', size=(9, 1),
                       disabled=True)],
             [sg.Text('All Scan Depths [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-EDIT-DEPTHS-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+             sg.Input(k='-INPUT-EDIT-DEPTHS-', font=st.FONT_DESCR, justification='center', size=(9, 1),
                       disabled=True)],
             [sg.Text('IMU Offset [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(key='-INPUT-IMU-OFFSET-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+             sg.Input(k='-INPUT-IMU-OFFSET-', font=st.FONT_DESCR, justification='center', size=(9, 1),
                       disabled=True)]
         ]
 
         editingDetails2 = [
-            [sg.Button(key='-BTN-POINTS-', button_text='Add Points', font=st.FONT_BTN_SMALL, disabled=True,
+            [sg.Button(k='-BTN-POINTS-', button_text='Add Points', font=st.FONT_BTN_SMALL, disabled=True,
                        expand_x=True, border_width=3)],
-            [sg.Button(key='-BTN-CLEAR-FRAME-', button_text='Clear Frame', font=st.FONT_BTN_SMALL, disabled=True,
+            [sg.Button(k='-BTN-CLEAR-FRAME-', button_text='Clear Frame', font=st.FONT_BTN_SMALL, disabled=True,
                        expand_x=True, border_width=3)],
-            [sg.Button(key='-BTN-CLEAR-ALL-', button_text='Clear All', font=st.FONT_BTN_SMALL, disabled=True,
+            [sg.Button(k='-BTN-CLEAR-ALL-', button_text='Clear All', font=st.FONT_BTN_SMALL, disabled=True,
                        expand_x=True, border_width=3)],
-            [sg.Text(key='-TXT-TOTAL-POINTS-', text='Total Points: ', font=st.FONT_DESCR, expand_x=True,
+            [sg.Text(k='-TXT-TOTAL-POINTS-', text='Total Points: ', font=st.FONT_DESCR, expand_x=True,
                      justification='center', size=(17, 1))]
         ]
 
@@ -187,7 +187,7 @@ class Layout:
              sg.Column(navigationColumn, vertical_alignment='top', pad=(0, 0)),
              sg.Column(editingDetailsColumn, expand_x=True, vertical_alignment='top', pad=(0, 0))],
             [sg.Text('Path:', font=st.FONT_INFO, pad=((0, 0), (0, 0))),
-             sg.Text(key='-TXT-DETAILS-PATH-', font=st.FONT_INFO + ' underline', text_color='blue',
+             sg.Text(k='-TXT-DETAILS-PATH-', font=st.FONT_INFO + ' underline', text_color='blue',
                      click_submits=True)]
         ]
 
@@ -208,52 +208,52 @@ class Layout:
         """
         if enableEditing:
             displayColumn = [
-                [sg.Graph(key='-GRAPH-FRAME-', canvas_size=c.DISPLAY_DIMENSIONS, background_color='#000000',
+                [sg.Graph(k='-GRAPH-FRAME-', canvas_size=c.DISPLAY_DIMENSIONS, background_color='#000000',
                           pad=(0, 0), graph_bottom_left=(0, 0), graph_top_right=c.DISPLAY_DIMENSIONS,
                           enable_events=True)],
-                [sg.Text(key='-TXT-NAV-CURRENT-', text='____/____', font=st.FONT_DESCR, justification='right',
+                [sg.Text(k='-TXT-NAV-CURRENT-', text='____/____', font=st.FONT_DESCR, justification='right',
                          expand_x=True)]
             ]
 
             imuColumn = [
                 [sg.Text('Frame Orientation', font=st.FONT_DESCR, pad=((0, 0), (10, 0)), expand_x=True,
                          justification='center')],
-                [sg.Text(key='-TXT-ANGLES-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
+                [sg.Text(k='-TXT-ANGLES-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
                          pad=((0, 0), (10, 0)))],
-                [sg.Canvas(key='-CANVAS-PLOT-')]
+                [sg.Canvas(k='-CANVAS-PLOT-')]
             ]
         else:
             displayColumn = [
-                [sg.Image(key='-IMAGE-FRAME-', size=c.DISPLAY_DIMENSIONS, background_color='#000000',
+                [sg.Image(k='-IMAGE-FRAME-', size=c.DISPLAY_DIMENSIONS, background_color='#000000',
                           pad=(0, 0))],
-                [sg.Text(key='-TXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
+                [sg.Text(k='-TXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
                          justification='left', pad=(0, 0)),
                  sg.Text(text=' Signal FPS: ', justification='right', font=st.FONT_INFO, pad=(0, 0)),
-                 sg.Text(key='-TXT-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, size=(3, 1),
+                 sg.Text(k='-TXT-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, size=(3, 1),
                          pad=(0, 0))]
             ]
 
             imuColumn = [
                 [sg.Text('IMU Acc:', font=st.FONT_DESCR, pad=((5, 0), (10, 0))),
-                 sg.Text(key='-TXT-ACCELERATION-X-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
+                 sg.Text(k='-TXT-ACCELERATION-X-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
                          pad=((0, 0), (10, 0))),
-                 sg.Text(key='-TXT-ACCELERATION-Y-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
+                 sg.Text(k='-TXT-ACCELERATION-Y-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
                          pad=((0, 0), (10, 0))),
-                 sg.Text(key='-TXT-ACCELERATION-Z-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
+                 sg.Text(k='-TXT-ACCELERATION-Z-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
                          pad=((0, 0), (10, 0)))],
-                [sg.Canvas(key='-CANVAS-PLOT-')],
-                [sg.Slider(key='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.AZIMUTH, size=(30, 10),
+                [sg.Canvas(k='-CANVAS-PLOT-')],
+                [sg.Slider(k='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.AZIMUTH, size=(30, 10),
                            orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
-                [sg.Button(key='-BTN-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1),
+                [sg.Button(k='-BTN-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1),
                            font=st.FONT_BTN,
                            border_width=3, pad=((0, 0), (0, 5)), button_color=st.COLOUR_BTN_ACTIVE)],
-                [sg.Button(key='-BTN-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
+                [sg.Button(k='-BTN-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
                            font=st.FONT_BTN,
                            border_width=3, pad=((0, 0), (5, 0)), button_color=st.COLOUR_BTN_ACTIVE)]
             ]
 
         layout = [
-            [sg.pin(sg.Column(key='-COL-EDIT-FALSE-', layout=displayColumn, vertical_alignment='top')),
+            [sg.pin(sg.Column(k='-COL-EDIT-FALSE-', layout=displayColumn, vertical_alignment='top')),
              sg.Column(imuColumn, vertical_alignment='top', element_justification='center')]
         ]
 
@@ -269,30 +269,30 @@ class Layout:
         """
         recordStartColumn = [
             [sg.Text(text='Record Start', font=st.FONT_DESCR)],
-            [sg.Text(key='-TXT-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
+            [sg.Text(k='-TXT-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
                      justification='center')]
         ]
 
         recordEndColumn = [
             [sg.Text(text='Record End', font=st.FONT_DESCR)],
-            [sg.Text(key='-TXT-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1), justification='center')]
+            [sg.Text(k='-TXT-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1), justification='center')]
         ]
 
         recordElapsedColumn = [
             [sg.Text(text='Elapsed Time', font=st.FONT_DESCR)],
-            [sg.Text(key='-TXT-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
+            [sg.Text(k='-TXT-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
                      justification='center')]
         ]
 
         recordFramesColumn = [
             [sg.Text(text='Frames saved', font=st.FONT_DESCR)],
-            [sg.Text(key='-TXT-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, size=(12, 1), justification='center')]
+            [sg.Text(k='-TXT-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, size=(12, 1), justification='center')]
         ]
 
         layout = [
-            [sg.Button(key='-BTN-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.FONT_BTN,
+            [sg.Button(k='-BTN-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.FONT_BTN,
                        border_width=3, pad=((0, 20), (0, 0)), disabled=True),
-             sg.Button(key='-BTN-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.FONT_BTN,
+             sg.Button(k='-BTN-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.FONT_BTN,
                        border_width=3, pad=((0, 0), (0, 0)), disabled=True),
              sg.Column(recordStartColumn, element_justification='center', pad=(0, 0)),
              sg.Column(recordEndColumn, element_justification='center', pad=(0, 0)),
@@ -313,11 +313,11 @@ class Layout:
         frameRateDetails = [
             [sg.Text(text='GUI: ', justification='right', font=st.FONT_INFO, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
                      border_width=2),
-             sg.Text(key='-TXT-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
+             sg.Text(k='-TXT-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
                      size=(4, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2),
              sg.Text(text=' Resize: ', justification='right', font=st.FONT_INFO, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
                      border_width=2),
-             sg.Text(key='-TXT-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
+             sg.Text(k='-TXT-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
                      size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
         ]
 
@@ -340,15 +340,15 @@ class Layout:
             layout (list): Layout in the form of a list.
         """
         layout = [
-            [sg.Button(key='-BTN-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+            [sg.Button(k='-BTN-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
                        image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
-             sg.Combo(key='-COMBO-COM-PORT-', values=availableComPorts, size=7, font=st.FONT_COMBO,
+             sg.Combo(k='-COMBO-COM-PORT-', values=availableComPorts, size=7, font=st.FONT_COMBO,
                       enable_events=True, readonly=True, default_value=comPort, pad=((0, 0), (20, 0))),
              sg.Text('Baud Rate:', justification='right', font=st.FONT_DESCR, pad=((20, 0), (20, 0))),
-             sg.Combo(key='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.FONT_COMBO,
+             sg.Combo(k='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.FONT_COMBO,
                       enable_events=True, readonly=True, default_value=baudRate, pad=((0, 0), (20, 0)))],
             [sg.HSeparator(pad=((10, 10), (20, 20)))],
-            [sg.Button(key='-BTN-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
+            [sg.Button(k='-BTN-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
         ]
 
         return layout
