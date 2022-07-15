@@ -136,7 +136,7 @@ class Layout:
                        border_width=3, disabled=True)
              ],
             [sg.Text('Go to frame:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(k='-INPUT-NAV-GOTO-', font=st.FONT_DESCR, justification='center', size=(9, 1), disabled=True)]
+             sg.Input(k='-INP-NAV-GOTO-', font=st.FONT_DESCR, justification='center', size=(9, 1), disabled=True)]
         ]
 
         editingDetails1 = [
@@ -163,13 +163,13 @@ class Layout:
 
         editingDetails3 = [
             [sg.Text('Scan Depth [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(k='-INPUT-EDIT-DEPTH-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+             sg.Input(k='-INP-EDIT-DEPTH-', font=st.FONT_DESCR, justification='center', size=(9, 1),
                       disabled=True)],
             [sg.Text('All Scan Depths [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(k='-INPUT-EDIT-DEPTHS-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+             sg.Input(k='-INP-EDIT-DEPTHS-', font=st.FONT_DESCR, justification='center', size=(9, 1),
                       disabled=True)],
             [sg.Text('IMU Offset [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(k='-INPUT-IMU-OFFSET-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+             sg.Input(k='-INP-IMU-OFFSET-', font=st.FONT_DESCR, justification='center', size=(9, 1),
                       disabled=True)]
         ]
 

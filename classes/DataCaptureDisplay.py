@@ -168,8 +168,8 @@ class DataCaptureDisplay:
                 ut.openWindowsExplorer(self.recording.path)
             elif event in Layout.NAV_KEYS:
                 self.navigateFrames(event.split('-')[-2])
-            elif event == '-INPUT-NAV-GOTO-' + '_Enter':
-                self.navigateFrames(values['-INPUT-NAV-GOTO-'])
+            elif event == '-INP-NAV-GOTO-' + '_Enter':
+                self.navigateFrames(values['-INP-NAV-GOTO-'])
             elif event == '-BTN-OFFSET-TOP-':
                 self.toggleChangingOffsetTop()
             elif event == '-BTN-OFFSET-BOTTOM-':
@@ -178,12 +178,12 @@ class DataCaptureDisplay:
                 self.toggleChangingOffsetLeft()
             elif event == '-BTN-OFFSET-RIGHT-':
                 self.toggleChangingOffsetRight()
-            elif event == '-INPUT-EDIT-DEPTH-' + '_Enter':
-                self.recording.changeScanDepth(values['-INPUT-EDIT-DEPTH-'])
-            elif event == '-INPUT-EDIT-DEPTHS-' + '_Enter':
-                self.changeAllScanDepths(values['-INPUT-EDIT-DEPTHS-'])
-            elif event == '-INPUT-IMU-OFFSET-' + '_Enter':
-                self.changeImuOffset(values['-INPUT-IMU-OFFSET-'])
+            elif event == '-INP-EDIT-DEPTH-' + '_Enter':
+                self.recording.changeScanDepth(values['-INP-EDIT-DEPTH-'])
+            elif event == '-INP-EDIT-DEPTHS-' + '_Enter':
+                self.changeAllScanDepths(values['-INP-EDIT-DEPTHS-'])
+            elif event == '-INP-IMU-OFFSET-' + '_Enter':
+                self.changeImuOffset(values['-INP-IMU-OFFSET-'])
             elif event == '-BTN-POINTS-':
                 self.toggleAddingDataPoints()
             elif event == '-BTN-CLEAR-FRAME-':
@@ -268,9 +268,9 @@ class DataCaptureDisplay:
         self.recreateEditingAxis()
 
         # Set element states.
-        self.windowMain['-INPUT-EDIT-DEPTH-'].update(
+        self.windowMain['-INP-EDIT-DEPTH-'].update(
             f'{self.recording.depths[self.recording.currentFrame]}')
-        self.windowMain['-INPUT-EDIT-DEPTHS-'].update()
+        self.windowMain['-INP-EDIT-DEPTHS-'].update()
 
     def onGraphFrameClicked(self, point):
         """
@@ -312,7 +312,7 @@ class DataCaptureDisplay:
         # Set element states.
         self.windowMain['-TXT-NAV-CURRENT-'].update(
             f'{self.recording.currentFrame}/{self.recording.frameCount}')
-        self.windowMain['-INPUT-EDIT-DEPTH-'].update(
+        self.windowMain['-INP-EDIT-DEPTH-'].update(
             f'{self.recording.depths[self.recording.currentFrame - 1]}')
 
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
@@ -343,7 +343,7 @@ class DataCaptureDisplay:
         self.windowMain['-TXT-DETAILS-FPS-'].update(self.recording.fps)
 
         [self.windowMain[i].update(disabled=False) for i in Layout.NAV_KEYS]
-        self.windowMain['-INPUT-NAV-GOTO-'].update(disabled=False)
+        self.windowMain['-INP-NAV-GOTO-'].update(disabled=False)
         self.windowMain['-TXT-NAV-CURRENT-'].update(
             f'{self.recording.currentFrame}/{self.recording.frameCount}')
 
@@ -351,10 +351,10 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-INPUT-EDIT-DEPTH-'].update(
-            f'{self.recording.depths[self.recording.currentFrame - 1]}', disabled=False)
-        self.windowMain['-INPUT-EDIT-DEPTHS-'].update('', disabled=False)
-        self.windowMain['-INPUT-IMU-OFFSET-'].update(self.recording.imuOffset, disabled=False)
+        self.windowMain['-INP-EDIT-DEPTH-'].update(f'{self.recording.depths[self.recording.currentFrame - 1]}',
+                                                     disabled=False)
+        self.windowMain['-INP-EDIT-DEPTHS-'].update('', disabled=False)
+        self.windowMain['-INP-IMU-OFFSET-'].update(self.recording.imuOffset, disabled=False)
 
         self.windowMain['-BTN-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-CLEAR-FRAME-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -412,10 +412,10 @@ class DataCaptureDisplay:
             self.windowMain['-COMBO-RECORDINGS-'].update(
                 values=ut.getRecordingDirectories(self.videosPath))
             # Enter key bindings for input elements.
-            self.windowMain['-INPUT-NAV-GOTO-'].bind('<Return>', '_Enter')
-            self.windowMain['-INPUT-EDIT-DEPTH-'].bind('<Return>', '_Enter')
-            self.windowMain['-INPUT-EDIT-DEPTHS-'].bind('<Return>', '_Enter')
-            self.windowMain['-INPUT-IMU-OFFSET-'].bind('<Return>', '_Enter')
+            self.windowMain['-INP-NAV-GOTO-'].bind('<Return>', '_Enter')
+            self.windowMain['-INP-EDIT-DEPTH-'].bind('<Return>', '_Enter')
+            self.windowMain['-INP-EDIT-DEPTHS-'].bind('<Return>', '_Enter')
+            self.windowMain['-INP-IMU-OFFSET-'].bind('<Return>', '_Enter')
             time.sleep(0.5)
 
         # Set element states.
