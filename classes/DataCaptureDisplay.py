@@ -99,9 +99,7 @@ class DataCaptureDisplay:
                 self.updateTimes()
             # Update IMU values if present.
             if self.imu.isConnected and self.imu.acceleration:
-                self.windowMain['-TXT-ACCELERATION-X-'].update(f'{self.imu.acceleration[0]:.4f}')
-                self.windowMain['-TXT-ACCELERATION-Y-'].update(f'{self.imu.acceleration[1]:.4f}')
-                self.windowMain['-TXT-ACCELERATION-Z-'].update(f'{self.imu.acceleration[2]:.4f}')
+                self.updateAccelerations()
 
             event, values = self.windowMain.read(timeout=100)
 
@@ -116,10 +114,7 @@ class DataCaptureDisplay:
 
             # Event for updating Graph frame (editing).
             if event == '-UPDATE-GRAPH-FRAME-':
-                self.windowMain['-TXT-ANGLES-'].update(
-                    f'Yaw: {self.recording.getFrameAngles()[0]}\tPitch: {self.recording.getFrameAngles()[1]} \tRoll:'
-                    f' {self.recording.getFrameAngles()[2]}')
-                self.windowMain['-GRAPH-FRAME-'].draw_image(data=values[event], location=(0, c.DISPLAY_DIMENSIONS[1]))
+                self.updateGraphFrame(values[event])
 
             # Menu events.
             if event.endswith('::-MENU-SIGNAL-CONNECT-'):
@@ -204,6 +199,24 @@ class DataCaptureDisplay:
 
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
 
+    def updateAccelerations(self):
+        """
+        update displayed acceleration values.
+        """
+        self.windowMain['-TXT-IMU-ACC-'].update(
+            f'Ax: {self.imu.acceleration[0]:.3f}\t'
+            f'Ay: {self.imu.acceleration[1]:.3f}\t'
+            f'Az: {self.imu.acceleration[2]:.3f}')
+
+    def updateGraphFrame(self, data):
+        """
+        Update Graph element with given data.
+        """
+        self.windowMain['-TXT-ANGLES-'].update(
+            f'Yaw: {self.recording.getFrameAngles()[0]:0.2f}\tPitch: {self.recording.getFrameAngles()[1]:0.2f} \tRoll:'
+            f' {self.recording.getFrameAngles()[2]:0.2f}')
+        self.windowMain['-GRAPH-FRAME-'].draw_image(data=data, location=(0, c.DISPLAY_DIMENSIONS[1]))
+
     def changeImuOffset(self, newImuOffset):
         """
         Change IMU offset value.
@@ -261,16 +274,8 @@ class DataCaptureDisplay:
 
     def onGraphFrameClicked(self, point):
         """
-        Click handler function for when the Graph frame element is clicked. If:
-            1. enableDataPoints         -   A new data point is added or removed (if within proximity of existing point)
-                                            to the frame.
-            2. enableOffsetChangeTop    -   The vertical portion of the point is used as the new top offset value.
-            3. enableOffsetChangeBottom -   The vertical portion of the point is used as the new bottom offset value.
-            4. enableOffsetChangeLeft   -   The horizontal portion of the point is used as the new left offset value.
-            5. enableOffsetChangeRight  -   The horizontal portion of the point is used as the new right offset value.
-
-        Args:
-            point: Coordinates of where the Graph element was clicked.
+        Click handler function for when the Graph frame element is clicked. Handles when offsets are changed and points
+        are altered.
         """
 
         if self.enableDataPoints:
@@ -665,7 +670,7 @@ class DataCaptureDisplay:
             self.recordStartTime = time.time()
             self.windowMain['-TXT-RECORD-START-'].update(time.strftime('%H:%M:%S'))
         else:
-            print(f'Closing data file {self.currentDataFilePath}...')
+            print(f'Closing data file {self.currentDataFilePath}...\n')
             self.currentDataFile.close()
 
         # Set element states.

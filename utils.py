@@ -279,7 +279,7 @@ def quaternionToEuler(quaternion: list):
 
     euler = np.array(quat.yaw_pitch_roll)
 
-    euler = np.round(euler * 180 / np.pi, 2)
+    euler = euler * 180 / np.pi
 
     return euler
 

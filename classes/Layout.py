@@ -171,7 +171,7 @@ class Layout:
             [sg.Text('IMU Offset [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
              sg.Input(k='-INPUT-IMU-OFFSET-', font=st.FONT_DESCR, justification='center', size=(9, 1),
                       disabled=True)]
-            ]
+        ]
 
         editingDetailsColumn = [
             [sg.Text('Editing Details', font=st.FONT_DESCR, pad=((0, 0), (0, 10)), expand_x=True,
@@ -236,13 +236,8 @@ class Layout:
             ]
 
             imuColumn = [
-                [sg.Text('IMU Acc:', font=st.FONT_DESCR, pad=((5, 0), (10, 0))),
-                 sg.Text(k='-TXT-ACCELERATION-X-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
-                         pad=((0, 0), (10, 0))),
-                 sg.Text(k='-TXT-ACCELERATION-Y-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
-                         pad=((0, 0), (10, 0))),
-                 sg.Text(k='-TXT-ACCELERATION-Z-', text='', font=st.FONT_DESCR, justification='right', size=(8, 1),
-                         pad=((0, 0), (10, 0)))],
+                [sg.Text('IMU Accelerations', font=st.FONT_DESCR, pad=((5, 0), (10, 0)))],
+                [sg.Text(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True)],
                 [sg.Canvas(k='-CANVAS-PLOT-')],
                 [sg.Slider(k='-SLIDER-AZIMUTH-', range=(0, 360), default_value=c.AZIMUTH, size=(30, 10),
                            orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
