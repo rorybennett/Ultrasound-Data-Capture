@@ -173,14 +173,21 @@ class Layout:
                       disabled=True)]
         ]
 
+        editingDetails4 = [
+            [sg.Button(k='-BTN-ELLIPSE-1-', button_text='2D Ellipse', font=st.FONT_BTN_SMALL, expand_x=True,
+                       disabled=True, border_width=3)],
+            [sg.Button(k='-BTN-ELLIPSE-1-', button_text='2D Ellipse', font=st.FONT_BTN_SMALL, expand_x=True,
+                       disabled=True, border_width=3)],
+        ]
+
         editingDetailsColumn = [
             [sg.Text('Editing Details', font=st.FONT_DESCR, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
             [sg.HSeparator()],
             [sg.Column(editingDetails1, vertical_alignment='top', pad=(0, 0)),
              sg.Column(editingDetails2, vertical_alignment='top', pad=(0, 0)),
-             sg.Column(editingDetails3, vertical_alignment='top', pad=(0, 0))]
-
+             sg.Column(editingDetails3, vertical_alignment='top', pad=(0, 0)),
+             sg.Column(editingDetails4, vertical_alignment='top', pad=(0, 0))]
         ]
 
         layout = [
