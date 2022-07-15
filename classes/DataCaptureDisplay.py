@@ -190,6 +190,10 @@ class DataCaptureDisplay:
                 self.clearFramePoints(Recording.CLEAR_FRAME)
             elif event == '-BTN-CLEAR-ALL-':
                 self.clearFramePoints(Recording.CLEAR_ALL)
+            elif event == '-BTN-ELLIPSE-1-':
+                print('Fit 2D ellipse clicked.')
+            elif event == '-BTN-ELLIPSE-2-':
+                print('Fit 3D ellipse clicked.')
             elif event == '-GRAPH-FRAME-':
                 self.onGraphFrameClicked(values[event])
 
@@ -360,6 +364,9 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-CLEAR-FRAME-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-CLEAR-ALL-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
+
+        self.windowMain['-BTN-ELLIPSE-1-'].update(disabled=False)
+        self.windowMain['-BTN-ELLIPSE-2-'].update(disabled=False)
 
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
