@@ -334,7 +334,6 @@ class DataCaptureDisplay:
         self.windowMain['-TXT-DETAILS-PATH-'].update(self.recording.path)
         self.windowMain['-TXT-DETAILS-DURATION-'].update(
             time.strftime('%H:%M:%S', time.localtime(self.recording.duration / 1000)))
-        self.windowMain['-TXT-DETAILS-FRAMES-'].update(self.recording.frameCount)
         self.windowMain['-TXT-DETAILS-POINTS-'].update(self.recording.imuCount)
         self.windowMain['-TXT-DETAILS-FPS-'].update(self.recording.fps)
 

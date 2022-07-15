@@ -112,8 +112,6 @@ class Layout:
              sg.Text(k='-TXT-DETAILS-DATE-', font=st.FONT_DESCR, justification='right', size=(12, 2))],
             [sg.Text('Duration:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left', size=(10, 1)),
              sg.Text(k='-TXT-DETAILS-DURATION-', font=st.FONT_DESCR, expand_x=True, justification='right')],
-            [sg.Text('Frames:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left'),
-             sg.Text(k='-TXT-DETAILS-FRAMES-', font=st.FONT_DESCR, expand_x=True, justification='right')],
             [sg.Text('IMU Data Points:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left'),
              sg.Text(k='-TXT-DETAILS-POINTS-', font=st.FONT_DESCR, expand_x=True, justification='right')],
             [sg.Text('Estimated FPS:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), justification='left'),
@@ -137,7 +135,7 @@ class Layout:
              sg.Button(k=NAV_KEYS[5], button_text='+10', size=(3, 1), font=st.FONT_BTN_SMALL,
                        border_width=3, disabled=True)
              ],
-            [sg.Text('Go to frame:', font=st.FONT_DESCR, pad=((0, 0), (0, 0)), expand_x=True, justification='left'),
+            [sg.Text('Go to frame:', font=st.FONT_DESCR, expand_x=True, justification='left'),
              sg.Input(k='-INPUT-NAV-GOTO-', font=st.FONT_DESCR, justification='center', size=(9, 1), disabled=True)]
         ]
 
@@ -149,16 +147,7 @@ class Layout:
             [sg.Button(k='-BTN-OFFSET-LEFT-', button_text='Set Left Offset', font=st.FONT_BTN_SMALL,
                        expand_x=True, disabled=True, border_width=3)],
             [sg.Button(k='-BTN-OFFSET-RIGHT-', button_text='Set Right Offset', font=st.FONT_BTN_SMALL,
-                       expand_x=True, disabled=True, border_width=3)],
-            [sg.Text('Scan Depth [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(k='-INPUT-EDIT-DEPTH-', font=st.FONT_DESCR, justification='center', size=(9, 1),
-                      disabled=True)],
-            [sg.Text('All Scan Depths [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(k='-INPUT-EDIT-DEPTHS-', font=st.FONT_DESCR, justification='center', size=(9, 1),
-                      disabled=True)],
-            [sg.Text('IMU Offset [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
-             sg.Input(k='-INPUT-IMU-OFFSET-', font=st.FONT_DESCR, justification='center', size=(9, 1),
-                      disabled=True)]
+                       expand_x=True, disabled=True, border_width=3)]
         ]
 
         editingDetails2 = [
@@ -172,12 +161,25 @@ class Layout:
                      justification='center', size=(17, 1))]
         ]
 
+        editingDetails3 = [
+            [sg.Text('Scan Depth [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
+             sg.Input(k='-INPUT-EDIT-DEPTH-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+                      disabled=True)],
+            [sg.Text('All Scan Depths [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
+             sg.Input(k='-INPUT-EDIT-DEPTHS-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+                      disabled=True)],
+            [sg.Text('IMU Offset [mm]:', font=st.FONT_DESCR, expand_x=True, justification='left'),
+             sg.Input(k='-INPUT-IMU-OFFSET-', font=st.FONT_DESCR, justification='center', size=(9, 1),
+                      disabled=True)]
+            ]
+
         editingDetailsColumn = [
             [sg.Text('Editing Details', font=st.FONT_DESCR, pad=((0, 0), (0, 10)), expand_x=True,
                      justification='center')],
             [sg.HSeparator()],
             [sg.Column(editingDetails1, vertical_alignment='top', pad=(0, 0)),
-             sg.Column(editingDetails2, vertical_alignment='top', pad=(0, 0))]
+             sg.Column(editingDetails2, vertical_alignment='top', pad=(0, 0)),
+             sg.Column(editingDetails3, vertical_alignment='top', pad=(0, 0))]
 
         ]
 
