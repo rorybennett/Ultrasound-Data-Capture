@@ -151,13 +151,13 @@ class DataCaptureDisplay:
                 self.togglePlotting()
 
             # Thread events.
-            if event == '-THREAD-SIGNAL-RATE-':
+            if event == '-THD-SIGNAL-RATE-':
                 self.windowMain['-TXT-SIGNAL-RATE-'].update(f'{values[event]}')
-            elif event == '-THREAD-RESIZE-RATE-':
+            elif event == '-THD-RESIZE-RATE-':
                 self.windowMain['-TXT-RESIZE-RATE-'].update(f'{values[event]}')
-            elif event == '-THREAD-FRAMES-SAVED-':
+            elif event == '-THD-FRAMES-SAVED-':
                 self.windowMain['-TXT-FRAMES-SAVED-'].update(f'{values[event]}')
-            elif event == '-THREAD-PLOT-':
+            elif event == '-THD-PLOT-':
                 self.fig_agg.blit(self.ax.bbox)
             self.fig_agg.flush_events()
 
@@ -225,7 +225,7 @@ class DataCaptureDisplay:
 
         self.fig_agg.restore_region(self.bg)
         self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
-        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+        self.windowMain.write_event_value('-THD-PLOT-', None)
 
     def clearFramePoints(self, clearType):
         """
@@ -239,7 +239,7 @@ class DataCaptureDisplay:
         self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', self.recording.getCurrentFrameAsBytes())
         self.fig_agg.restore_region(self.bg)
         self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
-        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+        self.windowMain.write_event_value('-THD-PLOT-', None)
         self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
 
     def recreateEditingAxis(self):
@@ -257,7 +257,7 @@ class DataCaptureDisplay:
         self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
         if self.recording:
             self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
-        self.windowMain.write_event_value('-THREAD-PLOT-', None)
+        self.windowMain.write_event_value('-THD-PLOT-', None)
 
     def changeAllScanDepths(self, newScanDepth: str):
         """
@@ -284,7 +284,7 @@ class DataCaptureDisplay:
                                               self.recording.getCurrentFrameAsBytes())
             self.fig_agg.restore_region(self.bg)
             self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
-            self.windowMain.write_event_value('-THREAD-PLOT-', None)
+            self.windowMain.write_event_value('-THD-PLOT-', None)
             self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
         elif self.enableOffsetChangeTop:
             self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
@@ -444,7 +444,7 @@ class DataCaptureDisplay:
                 # Signal frame rate estimate.
                 signalDt = time.time() - signalFps1
                 signalFps = int(1 / signalDt) if signalDt != 0 else 100
-                self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=signalFps)
+                self.windowMain.write_event_value(key='-THD-SIGNAL-RATE-', value=signalFps)
                 # Record frames?
                 if self.enableRecording:
                     self.saveFrame = True
@@ -455,7 +455,7 @@ class DataCaptureDisplay:
 
         print('-------------------------------------------\nThread closing down: '
               'getFramesThread.\n-------------------------------------------')
-        self.windowMain.write_event_value(key='-THREAD-SIGNAL-RATE-', value=0)
+        self.windowMain.write_event_value(key='-THD-SIGNAL-RATE-', value=0)
 
     def resizeFramesThread(self):
         """
@@ -476,16 +476,16 @@ class DataCaptureDisplay:
                 # Resize frame rate estimate.
                 resizeFpsDt = time.time() - resizeFps1
                 resizeFps = int(1 / resizeFpsDt)
-                self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=resizeFps)
+                self.windowMain.write_event_value(key='-THD-RESIZE-RATE-', value=resizeFps)
             else:
-                self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=0)
+                self.windowMain.write_event_value(key='-THD-RESIZE-RATE-', value=0)
 
             # Sleep thread.
             time.sleep(0.03)
 
         print('-------------------------------------------\nThread closing down: '
               'resizeFramesThread.\n-------------------------------------------')
-        self.windowMain.write_event_value(key='-THREAD-RESIZE-RATE-', value=0)
+        self.windowMain.write_event_value(key='-THD-RESIZE-RATE-', value=0)
 
     def saveFramesThread(self):
         """
@@ -501,7 +501,7 @@ class DataCaptureDisplay:
                 frameName = f'{self.frameGrabCounter}-{int(time.time() * 1000)}'
                 self.record(frameName, self.frameRaw, self.acceleration, self.quaternion)
                 self.frameGrabCounter += 1
-                self.windowMain.write_event_value(key='-THREAD-FRAMES-SAVED-', value=self.frameGrabCounter)
+                self.windowMain.write_event_value(key='-THD-FRAMES-SAVED-', value=self.frameGrabCounter)
             else:
                 # When not recording the empty while loop causes issues for the controlling process.
                 time.sleep(0.001)
@@ -524,7 +524,7 @@ class DataCaptureDisplay:
             if self.enablePlotting and self.imu.quaternion:
                 self.fig_agg.restore_region(self.bg)
                 self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointPlot, self.linePlot)
-                self.windowMain.write_event_value('-THREAD-PLOT-', None)
+                self.windowMain.write_event_value('-THD-PLOT-', None)
 
             time.sleep(0.1)
         print('-------------------------------------------\nThread closing down: '
