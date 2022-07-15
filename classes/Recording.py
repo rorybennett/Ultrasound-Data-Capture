@@ -167,7 +167,8 @@ class Recording:
                 with open(self.path + '/data.txt', 'w') as dataFile:
                     for i in range(self.imuCount):
                         dataFile.write(f'{self.frameNames[i]},:'
-                                       f'acc[,{self.acceleration[i][0]},{self.acceleration[i][1]},{self.acceleration[i][2]},]'
+                                       f'acc[,{self.acceleration[i][0]},{self.acceleration[i][1]},'
+                                       f'{self.acceleration[i][2]},]'
                                        f'q[,{self.quaternion[i][0]},{self.quaternion[i][1]},{self.quaternion[i][2]},'
                                        f'{self.quaternion[i][3]},]'
                                        f'dimensions[,{self.dimensions[i][0]},{self.dimensions[i][1]},]'
