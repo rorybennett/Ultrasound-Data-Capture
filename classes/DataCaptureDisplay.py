@@ -352,7 +352,7 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-OFFSET-LEFT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-INP-EDIT-DEPTH-'].update(f'{self.recording.depths[self.recording.currentFrame - 1]}',
-                                                     disabled=False)
+                                                   disabled=False)
         self.windowMain['-INP-EDIT-DEPTHS-'].update('', disabled=False)
         self.windowMain['-INP-IMU-OFFSET-'].update(self.recording.imuOffset, disabled=False)
 
@@ -547,7 +547,8 @@ class DataCaptureDisplay:
 
     def toggleChangingOffsetBottom(self):
         """
-        Toggle the state of self.enableOffsetChangeBottom to enable or disable changing of the bottom frame offset value.
+        Toggle the state of self.enableOffsetChangeBottom to enable or disable changing of the bottom frame offset
+        value.
         """
         self.enableOffsetChangeBottom = not self.enableOffsetChangeBottom
         self.enableOffsetChangeTop, self.enableDataPoints = False, False
