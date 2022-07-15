@@ -176,7 +176,7 @@ class Layout:
         editingDetails4 = [
             [sg.Button(k='-BTN-ELLIPSE-1-', button_text='2D Ellipse', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],
-            [sg.Button(k='-BTN-ELLIPSE-1-', button_text='2D Ellipse', font=st.FONT_BTN_SMALL, expand_x=True,
+            [sg.Button(k='-BTN-ELLIPSE-1-', button_text='3D Ellipse', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],
         ]
 
