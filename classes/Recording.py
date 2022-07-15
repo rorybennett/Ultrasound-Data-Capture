@@ -28,10 +28,17 @@ class Recording:
             acceleration (list)         -       Acceleration values stored in data.txt file.
             quaternion (list)           -       Quaternion values stored in data.txt file.
             dimensions (list)           -       Frame dimensions stored in data.txt file.
-            currentFramePosition (int)  -       Position of current frame of interest.
+            depths (list)               -       Scan depth of each frame.
+            imuOffset (float)           -       Offset between IMU and end of probe.
+            currentFrame (int)          -       Position of current frame of interest.
+            fps (int)                   -       Estimated frame rate of the recording.
             editingPath (str)           -       Path to EditingData.txt file.
-            scanDepth (int)             -       Depth of scan in millimetres.
-            frameOffset (int)           -       Top offset between frame and ultrasound start.
+            offsetTop (float)           -       Top offset as faction of display dimensions.
+            offsetBottom (float)        -       Bottom offset as faction of display dimensions.
+            offsetLeft (float)          -       Left offset as faction of display dimensions.
+            offsetRight (float)         -       Right offset as faction of display dimensions.
+            pointPath (str)             -       Path to point data file.
+            pointData (list)            -       Point data for points on frames.
 
 
             Args:
@@ -85,7 +92,7 @@ class Recording:
         """
         Return the Euler angles of the current frame.
         """
-        euler = ut.quaternionToEuler(self.quaternion[self.currentFrame])
+        euler = ut.quaternionToEuler(self.quaternion[self.currentFrame - 1])
 
         return euler
 
@@ -343,6 +350,7 @@ class Recording:
                 self.currentFrame = self.frameCount
             elif goToFrame < 1:
                 self.currentFrame = 1
+
         except ValueError:
             if navCommand == 'PPP':
                 self.currentFrame -= 10
