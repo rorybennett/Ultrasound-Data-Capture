@@ -190,6 +190,10 @@ class DataCaptureDisplay:
                 self.clearFramePoints(Recording.CLEAR_FRAME)
             elif event == '-BTN-CLEAR-ALL-':
                 self.clearFramePoints(Recording.CLEAR_ALL)
+            elif event == '-BTN-BULLET-1-':
+                print('Bullet 1 clicked')
+            elif event == '-BTN-BULLET-2-':
+                print('Bullet 2 clicked.')
             elif event == '-BTN-ELLIPSE-1-':
                 print('Fit 2D ellipse clicked.')
             elif event == '-BTN-ELLIPSE-2-':
@@ -254,7 +258,7 @@ class DataCaptureDisplay:
         self.ax.cla()
         # Reinitialise axis.
         self.ax = ut.initialiseEditingAxis(self.ax, c.AZIMUTH,
-                                           self.recording.depths[self.recording.currentFrame])
+                                           self.recording.depths[self.recording.currentFrame - 1])
         # Redraw new axis.
         self.fig_agg.draw()
         # Re-save background for blit.
@@ -273,7 +277,7 @@ class DataCaptureDisplay:
 
         # Set element states.
         self.windowMain['-INP-EDIT-DEPTH-'].update(
-            f'{self.recording.depths[self.recording.currentFrame]}')
+            f'{self.recording.depths[self.recording.currentFrame - 1]}')
         self.windowMain['-INP-EDIT-DEPTHS-'].update()
 
     def onGraphFrameClicked(self, point):
@@ -365,6 +369,8 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-CLEAR-ALL-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
 
+        self.windowMain['-BTN-BULLET-1-'].update(disabled=False)
+        self.windowMain['-BTN-BULLET-2-'].update(disabled=False)
         self.windowMain['-BTN-ELLIPSE-1-'].update(disabled=False)
         self.windowMain['-BTN-ELLIPSE-2-'].update(disabled=False)
 

@@ -475,8 +475,9 @@ class Recording:
                 self.dimensions.append(ut.getDimensionsFromRow(row))
                 self.depths.append(ut.getDepthFromRow(row))
             self.imuCount = len(self.frameNames)
-            self.duration = ut.getTimeFromName(self.frameNames[-1]) - ut.getTimeFromName(self.frameNames[1])
-
+            self.duration = ut.getTimeFromName(self.frameNames[-1]) - ut.getTimeFromName(self.frameNames[0])
+            if self.duration == 0:
+                self.duration = 1
             """
             Run some variable validation tests to ensure the numbers match. If they do not, display a warning.
             This wont stop the program running but it will indicate future problems that may occur.
