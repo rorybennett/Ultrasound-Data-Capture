@@ -55,6 +55,24 @@ def getRecordingDirectories(videosPath: Path) -> list:
     return videoDirectories
 
 
+def checkBulletDataFile(recordingPath: str):
+    """
+    Check if the given directory contains a BulletData.txt file, if True return a Path object to it, else create
+    the file and return a Path object to it.
+
+    Args:
+        recordingPath (Path): Path to a recording directory.
+
+    Returns:
+        editFileDir (Path): Path object to existing or newly created EditingData.txt file.
+    """
+    bulletFileDir = Path(recordingPath, 'BulletData.txt')
+    if not bulletFileDir.is_file():
+        with open(bulletFileDir, 'a'):
+            pass
+
+    return bulletFileDir
+
 def checkEditDataFile(recordingPath: str) -> Path:
     """
     Check if the given directory contains an EditingData.txt file, if True return a Path object to it, else create
