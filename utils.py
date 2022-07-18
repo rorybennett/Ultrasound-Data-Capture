@@ -58,7 +58,8 @@ def getRecordingDirectories(videosPath: Path) -> list:
 def checkEditDataFile(recordingPath: str) -> Path:
     """
     Check if the given directory contains an EditingData.txt file, if True return a Path object to it, else create
-    the file and return a Path object to it. When creating the file add some default values to it.
+    the file and return a Path object to it. When creating the file add some default values to it. These default
+    values align with the offsets of the Canon Aplio i700 with a scan depth of 150mm.
 
     Args:
         recordingPath (Path): Path to a recording directory.
@@ -69,10 +70,10 @@ def checkEditDataFile(recordingPath: str) -> Path:
     editFileDir = Path(recordingPath, 'EditingData.txt')
     if not editFileDir.is_file():
         with open(editFileDir, 'a') as editingFile:
-            editingFile.write('recordingOffsetTop:0\n')
-            editingFile.write(f'recordingOffsetBottom:1\n')
-            editingFile.write(f'recordingOffsetLeft:0\n')
-            editingFile.write(f'recordingOffsetRight:1\n')
+            editingFile.write('recordingOffsetTop:0.21180555555555555\n')
+            editingFile.write(f'recordingOffsetBottom:0.8125\n')
+            editingFile.write(f'recordingOffsetLeft:0.248046875\n')
+            editingFile.write(f'recordingOffsetRight:0.6982421875\n')
 
     return editFileDir
 
