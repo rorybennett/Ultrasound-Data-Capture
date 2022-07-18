@@ -178,6 +178,11 @@ class Layout:
                        disabled=True, border_width=3)],
             [sg.Button(k='-BTN-BULLET-2-', button_text='Bullet 2', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],
+            [sg.Button(k='-BTN-BULLET-CLEAR-', button_text='Clear Bullet', font=st.FONT_BTN_SMALL, expand_x=True,
+                       disabled=True, border_width=3)]
+        ]
+
+        editingDetails5 = [
             [sg.Button(k='-BTN-ELLIPSE-1-', button_text='2D Ellipse', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],
             [sg.Button(k='-BTN-ELLIPSE-2-', button_text='3D Ellipse', font=st.FONT_BTN_SMALL, expand_x=True,
@@ -191,7 +196,9 @@ class Layout:
             [sg.Column(editingDetails1, vertical_alignment='top', pad=(0, 0)),
              sg.Column(editingDetails2, vertical_alignment='top', pad=(0, 0)),
              sg.Column(editingDetails3, vertical_alignment='top', pad=(0, 0)),
-             sg.Column(editingDetails4, vertical_alignment='top', pad=(0, 0))]
+             sg.Column(editingDetails4, vertical_alignment='top', pad=(0, 0)),
+             sg.Column(editingDetails5, vertical_alignment='top', pad=(0, 0)),
+             ]
         ]
 
         layout = [
