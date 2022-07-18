@@ -82,6 +82,8 @@ class DataCaptureDisplay:
         self.bulletOneCounter = 0
         self.enableBulletTwo = False
         self.bulletTwoCounter = 0
+        # Enable scrolling through frames.
+        self.enableFrameScroll = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -175,6 +177,10 @@ class DataCaptureDisplay:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INP-NAV-GOTO-' + '_Enter':
                 self.navigateFrames(values['-INP-NAV-GOTO-'])
+            elif event == 'MouseWheel:Up' and self.enableFrameScroll:
+                self.navigateFrames(Layout.NAV_KEYS[2].split('-')[-2])
+            elif event == 'MouseWheel:Down' and self.enableFrameScroll:
+                self.navigateFrames(Layout.NAV_KEYS[3].split('-')[-2])
             elif event == '-BTN-OFFSET-TOP-':
                 self.toggleChangingOffsetTop()
             elif event == '-BTN-OFFSET-BOTTOM-':
@@ -279,6 +285,7 @@ class DataCaptureDisplay:
         self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
         self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
         self.enableDataPoints = False
+        self.enableFrameScroll = True
 
         self.recreateEditingAxis()
 
@@ -436,7 +443,9 @@ class DataCaptureDisplay:
         self.windowMain = sg.Window('Ultrasound Data Capture',
                                     self.layout.getEditingLayout() if self.enableEditing else
                                     self.layout.getInitialLayout(),
-                                    finalize=True)
+                                    return_keyboard_events=True if self.enableEditing else False, finalize=True)
+        # Disable frame scrolling.
+        self.enableFrameScroll = False
 
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
