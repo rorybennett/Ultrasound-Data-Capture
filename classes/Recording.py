@@ -84,9 +84,73 @@ class Recording:
         self.pointPath = ''
         # Point data of the frames.
         self.pointData = []
+        # Path to BulletData.txt.
+        self.bulletPath = ''
+        # Point data for the bullet equation (LWHC).
+        self.bulletData = []
 
         self.__getEditDetailsFromFile()
         self.__getPointDataFromFile()
+        self.__getBulletDataFromFile()
+
+    def addBulletPoint(self, position, point):
+        """
+        Add bullet point at specified position. Position ranges from 0 to 5 (6 points are required for the bullet
+        equation).
+        """
+        widthRatio = point[0] / c.DISPLAY_DIMENSIONS[0]
+        heightRatio = (c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1]
+
+        newPoint = [widthRatio, heightRatio]
+
+        if len(self.bulletData) <= position:
+            self.bulletData.append([self.frameNames[self.currentFrame - 1], newPoint[0], newPoint[1]])
+        else:
+            self.bulletData[position] = [self.frameNames[self.currentFrame - 1], newPoint[0], newPoint[1]]
+
+        self.__saveDetailsToFile()
+
+    def getCurrentFrameAsBytes(self):
+        """
+        Return the byte representation of the current frame, based of self.currentFramePosition.
+
+        Returns:
+            frameAsBytes (bytes): Bytes representation of frame for displaying.
+        """
+        # Acquire current frame from stored location.
+        frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFrame - 1] + '.png')
+        # Resize the frame for the display element.
+        resizeFrame = ut.resizeFrame(frame, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
+        # Add offset lines
+        cv2.line(resizeFrame, (0, int(self.offsetTop * c.DISPLAY_DIMENSIONS[1])),
+                 (c.DISPLAY_DIMENSIONS[0], int(self.offsetTop * c.DISPLAY_DIMENSIONS[1])),
+                 color=(0, 0, 255), thickness=1)
+        cv2.line(resizeFrame, (0, int(self.offsetBottom * c.DISPLAY_DIMENSIONS[1])),
+                 (c.DISPLAY_DIMENSIONS[0], int(self.offsetBottom * c.DISPLAY_DIMENSIONS[1])),
+                 color=(0, 0, 255), thickness=1)
+        cv2.line(resizeFrame, (int(self.offsetLeft * c.DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.offsetLeft * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
+                 color=(0, 0, 255), thickness=1)
+        cv2.line(resizeFrame, (int(self.offsetRight * c.DISPLAY_DIMENSIONS[0]), 0),
+                 (int(self.offsetRight * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
+                 color=(0, 0, 255), thickness=1)
+        # Add point data.
+        for point in self.pointData:
+            if point[0] == self.frameNames[self.currentFrame - 1]:
+                cv2.circle(resizeFrame,
+                           (int(point[1] * c.DISPLAY_DIMENSIONS[0]),
+                            int(point[2] * c.DISPLAY_DIMENSIONS[1])), 5, color=(0, 255, 0), thickness=-1)
+        # Add bullet data.
+        for point in self.bulletData:
+            if point[0] == self.frameNames[self.currentFrame - 1]:
+                cv2.circle(resizeFrame,
+                           (int(point[1] * c.DISPLAY_DIMENSIONS[0]),
+                            int(point[2] * c.DISPLAY_DIMENSIONS[1])), 5, color=(255, 249, 125), thickness=-1)
+
+        # Convert resized frame to bytes.
+        frameAsBytes = ut.frameToBytes(resizeFrame)
+
+        return frameAsBytes
 
     def getFrameAngles(self) -> list:
         """
@@ -163,6 +227,10 @@ class Recording:
                 for point in self.pointData:
                     pointFile.write(f'{point[0]},{point[1]},{point[2]}\n')
 
+            with open(self.bulletPath, 'w') as bulletFile:
+                for point in self.bulletData:
+                    bulletFile.write(f'{point[0]},{point[1]},{point[2]}\n')
+            # todo Should probably move this to its own function, this is quite a lot of writing
             if self.imuCount == self.frameCount:
                 with open(self.path + '/data.txt', 'w') as dataFile:
                     for i in range(self.imuCount):
@@ -372,51 +440,24 @@ class Recording:
             elif self.currentFrame > self.frameCount:
                 self.currentFrame = self.currentFrame - self.frameCount
 
-    def getCurrentFrameAsBytes(self):
+    def __getBulletDataFromFile(self):
         """
-        Return the byte representation of the current frame, based of self.currentFramePosition.
-
-        Returns:
-            frameAsBytes (bytes): Bytes representation of frame for displaying.
+        Helper function to get bullet data that has already been saved. If there is no file it is created. The frame
+        name and coordinates of 6 points are stored. The coordinates are stored as x-, and y-values that represent
+        the location of the points as ratios pf the width and height of the display dimensions.
         """
-        # Acquire current frame from stored location.
-        frame = cv2.imread(self.path + '/' + self.frameNames[self.currentFrame - 1] + '.png')
-        # Resize the frame for the display element.
-        resizeFrame = ut.resizeFrame(frame, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_AREA)
-        # Add top offset line.
-        cv2.line(resizeFrame, (0, int(self.offsetTop * c.DISPLAY_DIMENSIONS[1])),
-                 (c.DISPLAY_DIMENSIONS[0], int(self.offsetTop * c.DISPLAY_DIMENSIONS[1])),
-                 color=(0, 0, 255), thickness=1)
-        # Add bottom offset line.
-        cv2.line(resizeFrame, (0, int(self.offsetBottom * c.DISPLAY_DIMENSIONS[1])),
-                 (c.DISPLAY_DIMENSIONS[0], int(self.offsetBottom * c.DISPLAY_DIMENSIONS[1])),
-                 color=(0, 0, 255), thickness=1)
-        # Add left offset line.
-        cv2.line(resizeFrame, (int(self.offsetLeft * c.DISPLAY_DIMENSIONS[0]), 0),
-                 (int(self.offsetLeft * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
-                 color=(0, 0, 255), thickness=1)
-        # Add right offset line.
-        cv2.line(resizeFrame, (int(self.offsetRight * c.DISPLAY_DIMENSIONS[0]), 0),
-                 (int(self.offsetRight * c.DISPLAY_DIMENSIONS[0]), c.DISPLAY_DIMENSIONS[0]),
-                 color=(0, 0, 255), thickness=1)
-        # Add point data.
-        for point in self.pointData:
-            if point[0] == self.frameNames[self.currentFrame - 1]:
-                cv2.circle(resizeFrame,
-                           (int(point[1] * c.DISPLAY_DIMENSIONS[0]),
-                            int(point[2] * c.DISPLAY_DIMENSIONS[1])), 5, color=(0, 255, 0), thickness=-1)
-        # Convert resized frame to bytes.
-        frameAsBytes = ut.frameToBytes(resizeFrame)
+        self.bulletPath = ut.checkBulletDataFile(self.path)
 
-        return frameAsBytes
+        with open(self.bulletPath, 'r') as bulletFile:
+            for line in bulletFile.readlines():
+                lineSplit = line.split(',')
+                self.bulletData.append([lineSplit[0], float(lineSplit[1]), float(lineSplit[2])])
 
     def __getPointDataFromFile(self):
         """
         Helper function to get point data that has already been saved. If there is no file it is created. The
         frame name and coordinates of a point are stored on each line. The coordinates are stored as x-, and y-values
-        that represent the location of the point as a percentage of the width and height of the signal dimensions.
-        This makes it easier if the display dimensions are ever changed, but requires some conversion to go from
-        percent of signal to pixel in display dimensions.
+        that represent the location of the point as a ratio of the width and height of the display dimensions.
         """
         self.pointPath = ut.checkPointDataFile(self.path)
 

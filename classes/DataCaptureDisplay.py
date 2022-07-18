@@ -77,6 +77,9 @@ class DataCaptureDisplay:
         self.enableOffsetChangeBottom = False
         self.enableOffsetChangeLeft = False
         self.enableOffsetChangeRight = False
+        # Bullet equation variables.
+        self.enableBulletOne = False
+        self.bulletOneCounter = 0
 
         # IMU connect window
         self.windowImuConnect = None
@@ -109,11 +112,11 @@ class DataCaptureDisplay:
                 break
 
             # Event for updating Image frame (recording).
-            if event == '-UPDATE-IMAGE-FRAME-':
+            if event == '-UPDT-IMAGE-FRAME-':
                 self.windowMain['-IMAGE-FRAME-'].update(data=values[event])
 
             # Event for updating Graph frame (editing).
-            if event == '-UPDATE-GRAPH-FRAME-':
+            if event == '-UPDT-GRAPH-FRAME-':
                 self.updateGraphFrame(values[event])
 
             # Menu events.
@@ -191,7 +194,7 @@ class DataCaptureDisplay:
             elif event == '-BTN-CLEAR-ALL-':
                 self.clearFramePoints(Recording.CLEAR_ALL)
             elif event == '-BTN-BULLET-1-':
-                print('Bullet 1 clicked')
+                self.bulletOneClick()
             elif event == '-BTN-BULLET-2-':
                 print('Bullet 2 clicked.')
             elif event == '-BTN-ELLIPSE-1-':
@@ -207,23 +210,49 @@ class DataCaptureDisplay:
 
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
 
-    def updateAccelerations(self):
+    def onGraphFrameClicked(self, point):
         """
-        update displayed acceleration values.
+        Click handler function for when the Graph frame element is clicked. Handles when offsets are changed and points
+        are altered.
         """
-        self.windowMain['-TXT-IMU-ACC-'].update(
-            f'Ax: {self.imu.acceleration[0]:.3f}\t'
-            f'Ay: {self.imu.acceleration[1]:.3f}\t'
-            f'Az: {self.imu.acceleration[2]:.3f}')
 
-    def updateGraphFrame(self, data):
+        if self.enableDataPoints:
+            self.recording.addRemovePointData(point)
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-',
+                                              self.recording.getCurrentFrameAsBytes())
+            self.fig_agg.restore_region(self.bg)
+            self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
+            self.windowMain.write_event_value('-THD-PLOT-', None)
+            self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
+        elif self.enableOffsetChangeTop:
+            self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeBottom:
+            self.recording.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeLeft:
+            self.recording.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+        elif self.enableOffsetChangeRight:
+            self.recording.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+        elif self.enableBulletOne and self.bulletOneCounter < 4:
+            self.recording.addBulletPoint(self.bulletOneCounter, point)
+            self.bulletOneCounter += 1
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+            if self.bulletOneCounter == 4:
+                self.enableBulletOne = False
+                self.bulletOneCounter = 0
+                self.windowMain['-BTN-BULLET-1-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
+    def bulletOneClick(self):
         """
-        Update Graph element with given data.
+        Start process for Length and Height bullet points.
         """
-        self.windowMain['-TXT-ANGLES-'].update(
-            f'Yaw: {self.recording.getFrameAngles()[0]:0.2f}\tPitch: {self.recording.getFrameAngles()[1]:0.2f} \tRoll:'
-            f' {self.recording.getFrameAngles()[2]:0.2f}')
-        self.windowMain['-GRAPH-FRAME-'].draw_image(data=data, location=(0, c.DISPLAY_DIMENSIONS[1]))
+        self.enableBulletOne = True
+        self.bulletOneCounter = 0
+
+        self.windowMain['-BTN-BULLET-1-'].update(button_color=st.COLOUR_BTN_ACTIVE)
 
     def changeImuOffset(self, newImuOffset):
         """
@@ -244,7 +273,7 @@ class DataCaptureDisplay:
         elif clearType == Recording.CLEAR_ALL:
             self.recording.clearAllPoints()
 
-        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', self.recording.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', self.recording.getCurrentFrameAsBytes())
         self.fig_agg.restore_region(self.bg)
         self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
         self.windowMain.write_event_value('-THD-PLOT-', None)
@@ -280,36 +309,6 @@ class DataCaptureDisplay:
             f'{self.recording.depths[self.recording.currentFrame - 1]}')
         self.windowMain['-INP-EDIT-DEPTHS-'].update()
 
-    def onGraphFrameClicked(self, point):
-        """
-        Click handler function for when the Graph frame element is clicked. Handles when offsets are changed and points
-        are altered.
-        """
-
-        if self.enableDataPoints:
-            self.recording.addRemovePointData(point)
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              self.recording.getCurrentFrameAsBytes())
-            self.fig_agg.restore_region(self.bg)
-            self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
-            self.windowMain.write_event_value('-THD-PLOT-', None)
-            self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
-        elif self.enableOffsetChangeTop:
-            self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeBottom:
-            self.recording.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeLeft:
-            self.recording.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeRight:
-            self.recording.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
-            self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-',
-                                              value=self.recording.getCurrentFrameAsBytes())
 
     def navigateFrames(self, navCommand):
         """
@@ -323,7 +322,7 @@ class DataCaptureDisplay:
         self.windowMain['-INP-EDIT-DEPTH-'].update(
             f'{self.recording.depths[self.recording.currentFrame - 1]}')
 
-        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
     def selectRecordingForEdit(self, videoDirectory: str):
         """
@@ -374,7 +373,7 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-ELLIPSE-1-'].update(disabled=False)
         self.windowMain['-BTN-ELLIPSE-2-'].update(disabled=False)
 
-        self.windowMain.write_event_value('-UPDATE-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+        self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
     def toggleAddingDataPoints(self):
         """
@@ -422,8 +421,7 @@ class DataCaptureDisplay:
             if self.imu.isConnected:
                 self.imu.disconnect()
 
-            self.windowMain['-COMBO-RECORDINGS-'].update(
-                values=ut.getRecordingDirectories(self.videosPath))
+            self.windowMain['-COMBO-RECORDINGS-'].update(values=ut.getRecordingDirs(self.videosPath))
             # Enter key bindings for input elements.
             self.windowMain['-INP-NAV-GOTO-'].bind('<Return>', '_Enter')
             self.windowMain['-INP-EDIT-DEPTH-'].bind('<Return>', '_Enter')
@@ -485,7 +483,7 @@ class DataCaptureDisplay:
                 resizeFps1 = time.time()
                 resizedFrame = ut.resizeFrame(self.frameRaw, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
                 frameBytes = ut.frameToBytes(resizedFrame)
-                self.windowMain.write_event_value(key='-UPDATE-IMAGE-FRAME-', value=frameBytes)
+                self.windowMain.write_event_value(key='-UPDT-IMAGE-FRAME-', value=frameBytes)
                 # Resize frame rate estimate.
                 resizeFpsDt = time.time() - resizeFps1
                 resizeFps = int(1 / resizeFpsDt)
@@ -692,6 +690,24 @@ class DataCaptureDisplay:
             button_color=st.COLOUR_BTN_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.windowMain['-BTN-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
+
+    def updateAccelerations(self):
+        """
+        update displayed acceleration values.
+        """
+        self.windowMain['-TXT-IMU-ACC-'].update(
+            f'Ax: {self.imu.acceleration[0]:.3f}\t'
+            f'Ay: {self.imu.acceleration[1]:.3f}\t'
+            f'Az: {self.imu.acceleration[2]:.3f}')
+
+    def updateGraphFrame(self, data):
+        """
+        Update Graph element with given data.
+        """
+        self.windowMain['-TXT-ANGLES-'].update(
+            f'Yaw: {self.recording.getFrameAngles()[0]:0.2f}\tPitch: {self.recording.getFrameAngles()[1]:0.2f} \tRoll:'
+            f' {self.recording.getFrameAngles()[2]:0.2f}')
+        self.windowMain['-GRAPH-FRAME-'].draw_image(data=data, location=(0, c.DISPLAY_DIMENSIONS[1]))
 
     def createPlot(self, limits=(-5, 5), size=(3.5, 3.5)):
         """
