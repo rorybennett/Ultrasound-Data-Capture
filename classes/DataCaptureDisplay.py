@@ -199,6 +199,10 @@ class DataCaptureDisplay:
                 self.bulletOneClick()
             elif event == '-BTN-BULLET-2-':
                 self.bulletTwoClick()
+            elif event == '-BTN-BULLET-CLEAR-':
+                self.clearFramePoints(Recording.CLEAR_BULLET)
+            elif event == '-BTN-BULLET-PRINT-':
+                self.printBulletDetails()
             elif event == '-BTN-ELLIPSE-1-':
                 print('Fit 2D ellipse clicked.')
             elif event == '-BTN-ELLIPSE-2-':
@@ -211,6 +215,12 @@ class DataCaptureDisplay:
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
+
+    def printBulletDetails(self):
+        """
+        Print bullet details to screen.
+        """
+        self.recording.calculateBulletVolume()
 
     def onGraphFrameClicked(self, point):
         """
@@ -255,6 +265,60 @@ class DataCaptureDisplay:
                 self.bulletTwoCounter = 0
                 self.windowMain['-BTN-BULLET-2-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
+    def selectRecordingForEdit(self, videoDirectory: str):
+        """
+        Update main window to allow editing of the selected recording. This creates the recordingDetails object and
+        sets the elements to the correct states. The first frame from the recording is shown in the display and
+        the details of the recording are displayed.
+
+        Args:
+            videoDirectory (str): Directory name where the recording is stored.
+        """
+        print(f'Create editing data for: {videoDirectory}')
+        self.recording = Recording.Recording(self.videosPath, videoDirectory)
+        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
+        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
+        self.enableDataPoints = False
+
+        self.recreateEditingAxis()
+
+        # Set element states
+        self.windowMain['-TXT-DETAILS-DATE-'].update(self.recording.date)
+        self.windowMain['-TXT-DETAILS-PATH-'].update(self.recording.path)
+        self.windowMain['-TXT-DETAILS-DURATION-'].update(
+            time.strftime('%H:%M:%S', time.localtime(self.recording.duration / 1000)))
+        self.windowMain['-TXT-DETAILS-POINTS-'].update(self.recording.imuCount)
+        self.windowMain['-TXT-DETAILS-FPS-'].update(self.recording.fps)
+
+        [self.windowMain[i].update(disabled=False) for i in Layout.NAV_KEYS]
+        self.windowMain['-INP-NAV-GOTO-'].update(disabled=False)
+        self.windowMain['-TXT-NAV-CURRENT-'].update(
+            f'{self.recording.currentFrame}/{self.recording.frameCount}')
+
+        self.windowMain['-BTN-OFFSET-TOP-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BTN-OFFSET-BOTTOM-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BTN-OFFSET-LEFT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BTN-OFFSET-RIGHT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-INP-EDIT-DEPTH-'].update(f'{self.recording.depths[self.recording.currentFrame - 1]}',
+                                                   disabled=False)
+        self.windowMain['-INP-EDIT-DEPTHS-'].update('', disabled=False)
+        self.windowMain['-INP-IMU-OFFSET-'].update(self.recording.imuOffset, disabled=False)
+
+        self.windowMain['-BTN-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BTN-CLEAR-FRAME-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-BTN-CLEAR-ALL-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
+        self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
+
+        self.windowMain['-BTN-BULLET-1-'].update(disabled=False)
+        self.windowMain['-BTN-BULLET-2-'].update(disabled=False)
+        self.windowMain['-BTN-BULLET-CLEAR-'].update(disabled=False)
+        self.windowMain['-BTN-BULLET-PRINT-'].update(disabled=False)
+
+        self.windowMain['-BTN-ELLIPSE-1-'].update(disabled=False)
+        self.windowMain['-BTN-ELLIPSE-2-'].update(disabled=False)
+
+        self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+
     def bulletTwoClick(self):
         """
         Start process for Width bullet points.
@@ -291,6 +355,8 @@ class DataCaptureDisplay:
             self.recording.clearFramePoints()
         elif clearType == Recording.CLEAR_ALL:
             self.recording.clearAllPoints()
+        elif clearType == Recording.CLEAR_BULLET:
+            self.recording.clearBulletPoints()
 
         self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', self.recording.getCurrentFrameAsBytes())
         self.fig_agg.restore_region(self.bg)
@@ -339,57 +405,6 @@ class DataCaptureDisplay:
             f'{self.recording.currentFrame}/{self.recording.frameCount}')
         self.windowMain['-INP-EDIT-DEPTH-'].update(
             f'{self.recording.depths[self.recording.currentFrame - 1]}')
-
-        self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-
-    def selectRecordingForEdit(self, videoDirectory: str):
-        """
-        Update main window to allow editing of the selected recording. This creates the recordingDetails object and
-        sets the elements to the correct states. The first frame from the recording is shown in the display and
-        the details of the recording are displayed.
-
-        Args:
-            videoDirectory (str): Directory name where the recording is stored.
-        """
-        print(f'Create editing data for: {videoDirectory}')
-        self.recording = Recording.Recording(self.videosPath, videoDirectory)
-        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
-        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
-        self.enableDataPoints = False
-
-        self.recreateEditingAxis()
-
-        # Set element states
-        self.windowMain['-TXT-DETAILS-DATE-'].update(self.recording.date)
-        self.windowMain['-TXT-DETAILS-PATH-'].update(self.recording.path)
-        self.windowMain['-TXT-DETAILS-DURATION-'].update(
-            time.strftime('%H:%M:%S', time.localtime(self.recording.duration / 1000)))
-        self.windowMain['-TXT-DETAILS-POINTS-'].update(self.recording.imuCount)
-        self.windowMain['-TXT-DETAILS-FPS-'].update(self.recording.fps)
-
-        [self.windowMain[i].update(disabled=False) for i in Layout.NAV_KEYS]
-        self.windowMain['-INP-NAV-GOTO-'].update(disabled=False)
-        self.windowMain['-TXT-NAV-CURRENT-'].update(
-            f'{self.recording.currentFrame}/{self.recording.frameCount}')
-
-        self.windowMain['-BTN-OFFSET-TOP-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-BOTTOM-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-LEFT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-RIGHT-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-INP-EDIT-DEPTH-'].update(f'{self.recording.depths[self.recording.currentFrame - 1]}',
-                                                   disabled=False)
-        self.windowMain['-INP-EDIT-DEPTHS-'].update('', disabled=False)
-        self.windowMain['-INP-IMU-OFFSET-'].update(self.recording.imuOffset, disabled=False)
-
-        self.windowMain['-BTN-POINTS-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-CLEAR-FRAME-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-CLEAR-ALL-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
-
-        self.windowMain['-BTN-BULLET-1-'].update(disabled=False)
-        self.windowMain['-BTN-BULLET-2-'].update(disabled=False)
-        self.windowMain['-BTN-ELLIPSE-1-'].update(disabled=False)
-        self.windowMain['-BTN-ELLIPSE-2-'].update(disabled=False)
 
         self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 

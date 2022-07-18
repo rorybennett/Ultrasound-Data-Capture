@@ -179,6 +179,8 @@ class Layout:
             [sg.Button(k='-BTN-BULLET-2-', button_text='Bullet 2', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],
             [sg.Button(k='-BTN-BULLET-CLEAR-', button_text='Clear Bullet', font=st.FONT_BTN_SMALL, expand_x=True,
+                       disabled=True, border_width=3)],
+            [sg.Button(k='-BTN-BULLET-PRINT-', button_text='Print Bullet', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)]
         ]
 

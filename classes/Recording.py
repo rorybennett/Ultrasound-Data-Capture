@@ -12,6 +12,7 @@ import constants as c
 
 CLEAR_FRAME = '-CLEAR-FRAME-'
 CLEAR_ALL = '-CLEAR-ALL-'
+CLEAR_BULLET = '-CLEAR-BULLET-'
 
 
 class Recording:
@@ -93,6 +94,51 @@ class Recording:
         self.__getPointDataFromFile()
         self.__getBulletDataFromFile()
 
+        return
+
+    def calculateBulletVolume(self):
+        """
+        Calculate the volume using the bullet data. The Length, Width, and Height are calculated and displayed, as
+        well as the volume using the formula:
+                    Volume = LWH x C
+        where C is a constant. The order in which the bullet points are entered does matter. They need to be entered
+        sequentially, where points 1 and 2 are across from each other, 3 and 4 the same, and 5 and 6 on a different
+        frame to points 1 to 4.
+        """
+        if len(self.bulletData) == 6:
+            bulletDataConverted = []
+
+            for point in self.bulletData:
+                position = self.frameNames.index(point[0])
+                # Depth ratio used to go from pixel ratio to mm for height.
+                depthRatio = self.depths[position] / (
+                    (self.offsetBottom - self.offsetTop))
+                # Width ratio used to go from pixel ratio to mm for width.
+                widthRatio = self.depths[position] / (
+                    (self.offsetRight - self.offsetLeft))
+                # Extract point from line.
+                bulletDataConverted.append([
+                    (point[1] - self.offsetLeft) * widthRatio - self.depths[position] / 2,
+                    (point[2] - self.offsetTop) * depthRatio + self.imuOffset, 0])
+
+            length = ut.distanceBetweenPoints(bulletDataConverted[0], bulletDataConverted[1])
+            width = ut.distanceBetweenPoints(bulletDataConverted[2], bulletDataConverted[3])
+            height = ut.distanceBetweenPoints(bulletDataConverted[4], bulletDataConverted[5])
+
+            volume = length * width * height * 0.65
+
+            print(f'\n'
+                  f'==========================\n'
+                  f'= Bullet Equation Values =\n'
+                  f'==========================\n'
+                  f'   Length: {length:.2f} mm\n'
+                  f'   Width: {width:.2f} mm\n'
+                  f'   Height: {height:.2f} mm\n'
+                  f'   Volume: {volume: .2f} mm\n'
+                  f'==========================\n')
+        else:
+            print('Not all bullet data is available, make sure all 6 points have been placed.')
+
     def addBulletPoint(self, position, point):
         """
         Add bullet point at specified position. Position ranges from 0 to 5 (6 points are required for the bullet
@@ -159,6 +205,14 @@ class Recording:
         euler = ut.quaternionToEuler(self.quaternion[self.currentFrame - 1])
 
         return euler
+
+    def clearBulletPoints(self):
+        """
+        Clear all bullet points from recording.
+        """
+        self.bulletData = []
+
+        self.__saveDetailsToFile()
 
     def clearAllPoints(self):
         """

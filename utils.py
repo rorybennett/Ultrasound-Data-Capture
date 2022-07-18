@@ -74,6 +74,25 @@ def checkBulletDataFile(recordingPath: str):
     return bulletFileDir
 
 
+def distanceBetweenPoints(point1: list, point2: list) -> float:
+    """
+    Calculate the distance between two points. The points should already be converted to mm.
+
+    Args:
+        point1 (list): (x, y) coordinates of the first point (mm).
+        point2 (list): (x, y) coordinates of the second point (mm).
+
+    Returns:
+        distance (float): Calculated distance in mm.
+    """
+    point1 = np.array(point1)
+    point2 = np.array(point2)
+
+    distance = np.linalg.norm(point2 - point1, axis=0)
+
+    return distance
+
+
 def checkEditDataFile(recordingPath: str) -> Path:
     """
     Check if the given directory contains an EditingData.txt file, if True return a Path object to it, else create
