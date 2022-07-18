@@ -80,6 +80,8 @@ class DataCaptureDisplay:
         # Bullet equation variables.
         self.enableBulletOne = False
         self.bulletOneCounter = 0
+        self.enableBulletTwo = False
+        self.bulletTwoCounter = 0
 
         # IMU connect window
         self.windowImuConnect = None
@@ -196,7 +198,7 @@ class DataCaptureDisplay:
             elif event == '-BTN-BULLET-1-':
                 self.bulletOneClick()
             elif event == '-BTN-BULLET-2-':
-                print('Bullet 2 clicked.')
+                self.bulletTwoClick()
             elif event == '-BTN-ELLIPSE-1-':
                 print('Fit 2D ellipse clicked.')
             elif event == '-BTN-ELLIPSE-2-':
@@ -244,6 +246,23 @@ class DataCaptureDisplay:
                 self.enableBulletOne = False
                 self.bulletOneCounter = 0
                 self.windowMain['-BTN-BULLET-1-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        elif self.enableBulletTwo and self.bulletTwoCounter < 2:
+            self.recording.addBulletPoint(self.bulletTwoCounter + 4, point)
+            self.bulletTwoCounter += 1
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+            if self.bulletTwoCounter == 2:
+                self.enableBulletTwo = False
+                self.bulletTwoCounter = 0
+                self.windowMain['-BTN-BULLET-2-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+
+    def bulletTwoClick(self):
+        """
+        Start process for Width bullet points.
+        """
+        self.enableBulletTwo = True
+        self.bulletTwoCounter = 0
+
+        self.windowMain['-BTN-BULLET-2-'].update(button_color=st.COLOUR_BTN_ACTIVE)
 
     def bulletOneClick(self):
         """
@@ -308,7 +327,6 @@ class DataCaptureDisplay:
         self.windowMain['-INP-EDIT-DEPTH-'].update(
             f'{self.recording.depths[self.recording.currentFrame - 1]}')
         self.windowMain['-INP-EDIT-DEPTHS-'].update()
-
 
     def navigateFrames(self, navCommand):
         """
