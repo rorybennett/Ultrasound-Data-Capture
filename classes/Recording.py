@@ -111,7 +111,6 @@ class Recording:
         """
         bulletDataConverted = []
 
-        print(self.bulletData)
         length = 0
         width = 0
         height = 0
@@ -130,6 +129,11 @@ class Recording:
             bulletDataConverted.append([
                 (self.bulletData[1][1] - self.offsetLeft) * wRL - self.depths[positionL] / 2,
                 (self.bulletData[1][2] - self.offsetTop) * dRL + self.imuOffset, 0])
+            length = ut.distanceBetweenPoints(bulletDataConverted[0], bulletDataConverted[1])
+        except Exception as e:
+            print(f'Length data not available: {e}')
+
+        try:
             # Width: position of frame name, then width and depth ratio, finally bullet data in mm (converted).
             positionW = self.frameNames.index(self.bulletData[2][0])
             dRW = self.depths[positionW] / (
@@ -142,6 +146,11 @@ class Recording:
             bulletDataConverted.append([
                 (self.bulletData[3][1] - self.offsetLeft) * wRW - self.depths[positionW] / 2,
                 (self.bulletData[3][2] - self.offsetTop) * dRW + self.imuOffset, 0])
+            width = ut.distanceBetweenPoints(bulletDataConverted[2], bulletDataConverted[3])
+        except Exception as e:
+            print(f'Width data not available: {e}')
+
+        try:
             # Height: position of frame name, then width and depth ratio, finally bullet data in mm (converted).
             positionH = self.frameNames.index(self.bulletData[4][0])
             dRH = self.depths[positionH] / (
@@ -154,26 +163,23 @@ class Recording:
             bulletDataConverted.append([
                 (self.bulletData[5][1] - self.offsetLeft) * wRH - self.depths[positionH] / 2,
                 (self.bulletData[5][2] - self.offsetTop) * dRH + self.imuOffset, 0])
-
-            length = ut.distanceBetweenPoints(bulletDataConverted[0], bulletDataConverted[1])
-            width = ut.distanceBetweenPoints(bulletDataConverted[2], bulletDataConverted[3])
             height = ut.distanceBetweenPoints(bulletDataConverted[4], bulletDataConverted[5])
-
-            volume = length * width * height * constant
         except Exception as e:
-            print(f'It appears not all bullet data has been entered: {e}')
+            print(f'Height data not available: {e}')
+
+        volume = length * width * height * constant
 
         print(f'\n'
-              f'============================\n'
-              f'=  Bullet Equation Values  =\n'
-              f'============================\n'
-              f'   Length: {length:.4f} mm\n'
-              f'   Width: {width:.4f} mm\n'
-              f'   Height: {height:.4f} mm\n'
-              f'   Volume: {volume: .4f} mm\n'
-              f'============================\n')
+              f'====================================\n'
+              f'=      Bullet Equation Values      =\n'
+              f'====================================\n'
+              f'     Length: {length:.4f} mm\n'
+              f'     Width: {width:.4f} mm\n'
+              f'     Height: {height:.4f} mm\n'
+              f'     Volume: {volume: .4f} mm\n'
+              f'====================================\n')
 
-    def addBulletPoint(self, type, position, point):
+    def addBulletPoint(self, bulletDimension, position, point):
         """
         Add bullet point at specified position. Position ranges from 0 to 5 (6 points are required for the bullet
         equation).
@@ -183,11 +189,11 @@ class Recording:
 
         newPoint = [widthRatio, heightRatio]
 
-        if type == BULLET_LENGTH:
+        if bulletDimension == BULLET_LENGTH:
             self.bulletData[position] = [self.frameNames[self.currentFrame - 1], newPoint[0], newPoint[1]]
-        elif type == BULLET_WIDTH:
+        elif bulletDimension == BULLET_WIDTH:
             self.bulletData[position + 2] = [self.frameNames[self.currentFrame - 1], newPoint[0], newPoint[1]]
-        elif type == BULLET_HEIGHT:
+        elif bulletDimension == BULLET_HEIGHT:
             self.bulletData[position + 4] = [self.frameNames[self.currentFrame - 1], newPoint[0], newPoint[1]]
 
         self.__saveDetailsToFile()
