@@ -68,8 +68,13 @@ def checkBulletDataFile(recordingPath: str):
     """
     bulletFileDir = Path(recordingPath, 'BulletData.txt')
     if not bulletFileDir.is_file():
-        with open(bulletFileDir, 'a'):
-            pass
+        with open(bulletFileDir, 'a') as bulletFile:
+            bulletFile.write(',0,0\n')
+            bulletFile.write(',0,0\n')
+            bulletFile.write(',0,0\n')
+            bulletFile.write(',0,0\n')
+            bulletFile.write(',0,0\n')
+            bulletFile.write(',0,0\n')
 
     return bulletFileDir
 

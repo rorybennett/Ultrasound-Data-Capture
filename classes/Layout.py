@@ -174,9 +174,11 @@ class Layout:
         ]
 
         editingDetails4 = [
-            [sg.Button(k='-BTN-BULLET-1-', button_text='Bullet 1', font=st.FONT_BTN_SMALL, expand_x=True,
+            [sg.Button(k='-BTN-BULLET-L-', button_text='Bullet Length', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],
-            [sg.Button(k='-BTN-BULLET-2-', button_text='Bullet 2', font=st.FONT_BTN_SMALL, expand_x=True,
+            [sg.Button(k='-BTN-BULLET-W-', button_text='Bullet Width', font=st.FONT_BTN_SMALL, expand_x=True,
+                       disabled=True, border_width=3)],
+            [sg.Button(k='-BTN-BULLET-H-', button_text='Bullet Height', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],
             [sg.Button(k='-BTN-BULLET-CLEAR-', button_text='Clear Bullet', font=st.FONT_BTN_SMALL, expand_x=True,
                        disabled=True, border_width=3)],

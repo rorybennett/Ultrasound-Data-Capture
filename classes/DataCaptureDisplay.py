@@ -78,10 +78,12 @@ class DataCaptureDisplay:
         self.enableOffsetChangeLeft = False
         self.enableOffsetChangeRight = False
         # Bullet equation variables.
-        self.enableBulletOne = False
-        self.bulletOneCounter = 0
-        self.enableBulletTwo = False
-        self.bulletTwoCounter = 0
+        self.enableBulletL = False
+        self.bulletLCounter = 0
+        self.enableBulletW = False
+        self.bulletWCounter = 0
+        self.enableBulletH = False
+        self.bulletHCounter = 0
         # Enable scrolling through frames.
         self.enableFrameScroll = False
 
@@ -201,10 +203,12 @@ class DataCaptureDisplay:
                 self.clearFramePoints(Recording.CLEAR_FRAME)
             elif event == '-BTN-CLEAR-ALL-':
                 self.clearFramePoints(Recording.CLEAR_ALL)
-            elif event == '-BTN-BULLET-1-':
-                self.bulletOneClick()
-            elif event == '-BTN-BULLET-2-':
-                self.bulletTwoClick()
+            elif event == '-BTN-BULLET-L-':
+                self.bulletLClick()
+            elif event == '-BTN-BULLET-W-':
+                self.bulletWClick()
+            elif event == '-BTN-BULLET-H-':
+                self.bulletHClick()
             elif event == '-BTN-BULLET-CLEAR-':
                 self.clearFramePoints(Recording.CLEAR_BULLET)
             elif event == '-BTN-BULLET-PRINT-':
@@ -233,7 +237,6 @@ class DataCaptureDisplay:
         Click handler function for when the Graph frame element is clicked. Handles when offsets are changed and points
         are altered.
         """
-
         if self.enableDataPoints:
             self.recording.addRemovePointData(point)
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-',
@@ -254,22 +257,30 @@ class DataCaptureDisplay:
         elif self.enableOffsetChangeRight:
             self.recording.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableBulletOne and self.bulletOneCounter < 4:
-            self.recording.addBulletPoint(self.bulletOneCounter, point)
-            self.bulletOneCounter += 1
+        elif self.enableBulletL and self.bulletLCounter < 2:
+            self.recording.addBulletPoint(Recording.BULLET_LENGTH, self.bulletLCounter, point)
+            self.bulletLCounter += 1
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-            if self.bulletOneCounter == 4:
-                self.enableBulletOne = False
-                self.bulletOneCounter = 0
-                self.windowMain['-BTN-BULLET-1-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        elif self.enableBulletTwo and self.bulletTwoCounter < 2:
-            self.recording.addBulletPoint(self.bulletTwoCounter + 4, point)
-            self.bulletTwoCounter += 1
+            if self.bulletLCounter >= 2:
+                self.enableBulletL = False
+                self.bulletLCounter = 0
+                self.windowMain['-BTN-BULLET-L-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        elif self.enableBulletW and self.bulletWCounter < 2:
+            self.recording.addBulletPoint(Recording.BULLET_WIDTH, self.bulletWCounter, point)
+            self.bulletWCounter += 1
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-            if self.bulletTwoCounter == 2:
-                self.enableBulletTwo = False
-                self.bulletTwoCounter = 0
-                self.windowMain['-BTN-BULLET-2-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+            if self.bulletWCounter >= 2:
+                self.enableBulletW = False
+                self.bulletWCounter = 0
+                self.windowMain['-BTN-BULLET-W-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+        elif self.enableBulletH and self.bulletHCounter < 2:
+            self.recording.addBulletPoint(Recording.BULLET_HEIGHT, self.bulletHCounter, point)
+            self.bulletHCounter += 1
+            self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
+            if self.bulletHCounter >= 2:
+                self.enableBulletH = False
+                self.bulletHCounter = 0
+                self.windowMain['-BTN-BULLET-H-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def selectRecordingForEdit(self, videoDirectory: str):
         """
@@ -316,33 +327,40 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-CLEAR-ALL-'].update(disabled=False, button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
 
-        self.windowMain['-BTN-BULLET-1-'].update(disabled=False)
-        self.windowMain['-BTN-BULLET-2-'].update(disabled=False)
+        self.windowMain['-BTN-BULLET-L-'].update(disabled=False)
+        self.windowMain['-BTN-BULLET-W-'].update(disabled=False)
+        self.windowMain['-BTN-BULLET-H-'].update(disabled=False)
         self.windowMain['-BTN-BULLET-CLEAR-'].update(disabled=False)
         self.windowMain['-BTN-BULLET-PRINT-'].update(disabled=False)
 
-        self.windowMain['-BTN-ELLIPSE-1-'].update(disabled=False)
-        self.windowMain['-BTN-ELLIPSE-2-'].update(disabled=False)
-
         self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
-    def bulletTwoClick(self):
+    def bulletHClick(self):
+        """
+        Start process for Height bullet points.
+        """
+        self.enableBulletH = True
+        self.bulletHCounter = 0
+
+        self.windowMain['-BTN-BULLET-H-'].update(button_color=st.COLOUR_BTN_ACTIVE)
+
+    def bulletWClick(self):
         """
         Start process for Width bullet points.
         """
-        self.enableBulletTwo = True
-        self.bulletTwoCounter = 0
+        self.enableBulletW = True
+        self.bulletWCounter = 0
 
-        self.windowMain['-BTN-BULLET-2-'].update(button_color=st.COLOUR_BTN_ACTIVE)
+        self.windowMain['-BTN-BULLET-W-'].update(button_color=st.COLOUR_BTN_ACTIVE)
 
-    def bulletOneClick(self):
+    def bulletLClick(self):
         """
-        Start process for Length and Height bullet points.
+        Start process for Length bullet points.
         """
-        self.enableBulletOne = True
-        self.bulletOneCounter = 0
+        self.enableBulletL = True
+        self.bulletLCounter = 0
 
-        self.windowMain['-BTN-BULLET-1-'].update(button_color=st.COLOUR_BTN_ACTIVE)
+        self.windowMain['-BTN-BULLET-L-'].update(button_color=st.COLOUR_BTN_ACTIVE)
 
     def changeImuOffset(self, newImuOffset):
         """

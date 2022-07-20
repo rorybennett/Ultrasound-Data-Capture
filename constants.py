@@ -3,6 +3,8 @@ This file contains constant values used by the program.
 """
 
 # List of commonly used baud rates, add more if required.
+import numpy as np
+
 COMMON_BAUD_RATES = [
     2400,
     4800,
@@ -67,3 +69,7 @@ DEFAULT_SCAN_DEPTH = 150
 
 # If a point is added within this radius, the nearest point is removed instead (as a fraction).
 DEFAULT_POINT_RADIUS = 0.01
+
+# Constant used in the bullet equation.
+# BULLET_CONSTANT = 5 * np.pi / 24
+BULLET_CONSTANT = 0.65
