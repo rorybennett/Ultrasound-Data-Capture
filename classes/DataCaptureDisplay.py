@@ -168,7 +168,7 @@ class DataCaptureDisplay:
                 self.windowMain['-TXT-FRAMES-SAVED-'].update(f'{values[event]}')
             elif event == '-THD-PLOT-':
                 self.fig_agg.blit(self.ax.bbox)
-            self.fig_agg.flush_events()
+                self.fig_agg.flush_events()
 
             # Editing events.
             if event == '-COMBO-RECORDINGS-':
@@ -241,7 +241,7 @@ class DataCaptureDisplay:
             self.recording.addRemovePointData(point)
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-',
                                               self.recording.getCurrentFrameAsBytes())
-            self.fig_agg.restore_region(self.bg)
+            # self.fig_agg.restore_region(self.bg)
             self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THD-PLOT-', None)
             self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
@@ -785,7 +785,9 @@ class DataCaptureDisplay:
         self.ax.set_position((0, 0, 1, 1))
 
         self.ax = ut.initialiseAxis(self.ax, c.AZIMUTH, limits)
-        self.ax.disable_mouse_rotation()
+
+        if not self.enableEditing:
+            self.ax.disable_mouse_rotation()
 
         self.fig_agg = ut.drawFigure(fig, self.windowMain['-CANVAS-PLOT-'].TKCanvas)
 

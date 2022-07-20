@@ -181,8 +181,8 @@ class Recording:
 
     def addBulletPoint(self, bulletDimension, position, point):
         """
-        Add bullet point at specified position. Position ranges from 0 to 5 (6 points are required for the bullet
-        equation).
+        Add bullet point at specified position. Position ranges from 0 to 1 for each dimension L, W, and H (6 points
+        are required for the bullet equation).
         """
         widthRatio = point[0] / c.DISPLAY_DIMENSIONS[0]
         heightRatio = (c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1]

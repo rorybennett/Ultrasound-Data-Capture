@@ -71,5 +71,5 @@ DEFAULT_SCAN_DEPTH = 150
 DEFAULT_POINT_RADIUS = 0.01
 
 # Constant used in the bullet equation.
-# BULLET_CONSTANT = 5 * np.pi / 24
-BULLET_CONSTANT = 0.65
+BULLET_CONSTANT = 5 * np.pi / 24
+# BULLET_CONSTANT = 0.65
