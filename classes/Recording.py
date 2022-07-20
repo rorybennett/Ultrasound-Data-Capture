@@ -124,18 +124,19 @@ class Recording:
             length = ut.distanceBetweenPoints(bulletDataConverted[0], bulletDataConverted[1])
             width = ut.distanceBetweenPoints(bulletDataConverted[2], bulletDataConverted[3])
             height = ut.distanceBetweenPoints(bulletDataConverted[4], bulletDataConverted[5])
+            constant = 5 * np.pi / 24
 
-            volume = length * width * height * 0.65
+            volume = length * width * height * constant
 
             print(f'\n'
-                  f'==========================\n'
-                  f'= Bullet Equation Values =\n'
-                  f'==========================\n'
-                  f'   Length: {length:.2f} mm\n'
-                  f'   Width: {width:.2f} mm\n'
-                  f'   Height: {height:.2f} mm\n'
-                  f'   Volume: {volume: .2f} mm\n'
-                  f'==========================\n')
+                  f'============================\n'
+                  f'=  Bullet Equation Values  =\n'
+                  f'============================\n'
+                  f'   Length: {length:.4f} mm\n'
+                  f'   Width: {width:.4f} mm\n'
+                  f'   Height: {height:.4f} mm\n'
+                  f'   Volume: {volume: .4f} mm\n'
+                  f'============================\n')
         else:
             print('Not all bullet data is available, make sure all 6 points have been placed.')
 
