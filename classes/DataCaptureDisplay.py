@@ -105,7 +105,7 @@ class DataCaptureDisplay:
             guiFps1 = time.time()
             # Update recording times.
             if self.enableRecording:
-                self.updateTimes()
+                self.updateDisplayedTimes()
             # Update IMU values if present.
             if self.imu.isConnected and self.imu.acceleration:
                 self.updateAccelerations()
@@ -212,7 +212,7 @@ class DataCaptureDisplay:
             elif event == '-BTN-BULLET-CLEAR-':
                 self.clearFramePoints(Recording.CLEAR_BULLET)
             elif event == '-BTN-BULLET-PRINT-':
-                self.printBulletDetails()
+                self.recording.calculateBulletVolume()
             elif event == '-BTN-ELLIPSE-1-':
                 print('Fit 2D ellipse clicked.')
             elif event == '-BTN-ELLIPSE-2-':
@@ -226,11 +226,47 @@ class DataCaptureDisplay:
 
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}' if not self.enableEditing else '0')
 
-    def printBulletDetails(self):
+    def toggleEditing(self):
         """
-        Print bullet details to screen.
+        Toggle the state of self.enableEditing. When in editing state (True), the Signal Source and IMU menu items
+        are disabled. The FrameGrabber object and IMU are disconnected and the plot is cleared. Some buttons are
+        disabled and some are reset to default values. The display and plot are enabled for consistency.
         """
-        self.recording.calculateBulletVolume()
+        self.enableEditing = not self.enableEditing
+        self.windowMain.close()
+        self.windowMain = sg.Window('Ultrasound Data Capture',
+                                    self.layout.getEditingLayout() if self.enableEditing else
+                                    self.layout.getInitialLayout(),
+                                    return_keyboard_events=True if self.enableEditing else False, finalize=True)
+        # Disable frame scrolling.
+        self.enableFrameScroll = False
+
+        # Enable/Disable plotting for consistency, clear plot.
+        self.enablePlotting = False if self.enableEditing else True
+        self.createPlot(limits=(0, 150) if self.enableEditing else (-5, 5),
+                        size=(5, 5) if self.enableEditing else (3.5, 3.5))
+
+        # Enable the frame display for consistency.
+        self.enableDisplay = True
+        self.recording = None
+        print(f'Entering editing mode: {self.enableEditing}')
+        # Editing has been enabled.
+        if self.enableEditing:
+            if self.frameGrabber.isConnected:
+                self.frameGrabber.disconnect()
+            if self.imu.isConnected:
+                self.imu.disconnect()
+
+            self.windowMain['-COMBO-RECORDINGS-'].update(values=ut.getRecordingDirs(self.videosPath))
+            # Enter key bindings for input elements.
+            self.windowMain['-INP-NAV-GOTO-'].bind('<Return>', '_Enter')
+            self.windowMain['-INP-EDIT-DEPTH-'].bind('<Return>', '_Enter')
+            self.windowMain['-INP-EDIT-DEPTHS-'].bind('<Return>', '_Enter')
+            self.windowMain['-INP-IMU-OFFSET-'].bind('<Return>', '_Enter')
+            time.sleep(0.5)
+
+        # Set element states.
+        self.updateMenus()
 
     def onGraphFrameClicked(self, point):
         """
@@ -284,12 +320,7 @@ class DataCaptureDisplay:
 
     def selectRecordingForEdit(self, videoDirectory: str):
         """
-        Update main window to allow editing of the selected recording. This creates the recordingDetails object and
-        sets the elements to the correct states. The first frame from the recording is shown in the display and
-        the details of the recording are displayed.
-
-        Args:
-            videoDirectory (str): Directory name where the recording is stored.
+        Update main window to allow editing of the selected recording.
         """
         print(f'Create editing data for: {videoDirectory}')
         self.recording = Recording.Recording(self.videosPath, videoDirectory)
@@ -450,48 +481,6 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
-    def toggleEditing(self):
-        """
-        Toggle the state of self.enableEditing. When in editing state (True), the Signal Source and IMU menu items
-        are disabled. The FrameGrabber object and IMU are disconnected and the plot is cleared. Some buttons are
-        disabled and some are reset to default values. The display and plot are enabled for consistency.
-        """
-        self.enableEditing = not self.enableEditing
-        self.windowMain.close()
-        self.windowMain = sg.Window('Ultrasound Data Capture',
-                                    self.layout.getEditingLayout() if self.enableEditing else
-                                    self.layout.getInitialLayout(),
-                                    return_keyboard_events=True if self.enableEditing else False, finalize=True)
-        # Disable frame scrolling.
-        self.enableFrameScroll = False
-
-        # Enable/Disable plotting for consistency, clear plot.
-        self.enablePlotting = False if self.enableEditing else True
-        self.createPlot(limits=(0, 150) if self.enableEditing else (-5, 5),
-                        size=(5, 5) if self.enableEditing else (3.5, 3.5))
-
-        # Enable the frame display for consistency.
-        self.enableDisplay = True
-        self.recording = None
-        print(f'Entering editing mode: {self.enableEditing}')
-        # Editing has been enabled.
-        if self.enableEditing:
-            if self.frameGrabber.isConnected:
-                self.frameGrabber.disconnect()
-            if self.imu.isConnected:
-                self.imu.disconnect()
-
-            self.windowMain['-COMBO-RECORDINGS-'].update(values=ut.getRecordingDirs(self.videosPath))
-            # Enter key bindings for input elements.
-            self.windowMain['-INP-NAV-GOTO-'].bind('<Return>', '_Enter')
-            self.windowMain['-INP-EDIT-DEPTH-'].bind('<Return>', '_Enter')
-            self.windowMain['-INP-EDIT-DEPTHS-'].bind('<Return>', '_Enter')
-            self.windowMain['-INP-IMU-OFFSET-'].bind('<Return>', '_Enter')
-            time.sleep(0.5)
-
-        # Set element states.
-        self.updateMenus()
-
     def getFramesThread(self):
         """
         Thread for acquiring frames from FrameGrabber object. As soon as a frame is acquired from the FrameGrabber
@@ -570,7 +559,7 @@ class DataCaptureDisplay:
             if self.saveFrame:
                 self.saveFrame = False
                 frameName = f'{self.frameGrabCounter}-{int(time.time() * 1000)}'
-                self.record(frameName, self.frameRaw, self.acceleration, self.quaternion)
+                self.recordFrame(frameName, self.frameRaw, self.acceleration, self.quaternion)
                 self.frameGrabCounter += 1
                 self.windowMain.write_event_value(key='-THD-FRAMES-SAVED-', value=self.frameGrabCounter)
             else:
@@ -662,7 +651,7 @@ class DataCaptureDisplay:
         self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
-    def record(self, frameName, frame, acceleration, quaternion):
+    def recordFrame(self, frameName, frame, acceleration, quaternion):
         """
         Save a frame as part of a series of frames to be stitched together at a later stage. The frame is saved as a
         .png in the currentRecordingPath and the currentDataFile is updated with the relevant IMU data. The dimensions
@@ -697,9 +686,6 @@ class DataCaptureDisplay:
     def setSignalSourceAndConnect(self, signalSource):
         """
         Set the source of the video signal then attempt to connect to the new source.
-
-        Args:
-            signalSource (int): Location of the video signal source as an integer, representing a USB port or webcam.
         """
         # Set source.
         self.frameGrabber.signalSource = signalSource
@@ -717,7 +703,7 @@ class DataCaptureDisplay:
         self.windowMain['-TXT-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frameGrabber.width, self.frameGrabber.height)}.')
 
-    def updateTimes(self):
+    def updateDisplayedTimes(self):
         """
         Update the displayed times related to a recording that is currently taking place.
         """
@@ -756,9 +742,9 @@ class DataCaptureDisplay:
         update displayed acceleration values.
         """
         self.windowMain['-TXT-IMU-ACC-'].update(
-            f'Ax: {self.imu.acceleration[0]:.3f}\t'
-            f'Ay: {self.imu.acceleration[1]:.3f}\t'
-            f'Az: {self.imu.acceleration[2]:.3f}')
+            f'Ax: {self.imu.acceleration[0]:.2f}\t'
+            f'Ay: {self.imu.acceleration[1]:.2f}\t'
+            f'Az: {self.imu.acceleration[2]:.2f}')
 
     def updateGraphFrame(self, data):
         """
@@ -786,8 +772,7 @@ class DataCaptureDisplay:
 
         self.ax = ut.initialiseAxis(self.ax, c.AZIMUTH, limits)
 
-        if not self.enableEditing:
-            self.ax.disable_mouse_rotation()
+        self.ax.disable_mouse_rotation()
 
         self.fig_agg = ut.drawFigure(fig, self.windowMain['-CANVAS-PLOT-'].TKCanvas)
 
