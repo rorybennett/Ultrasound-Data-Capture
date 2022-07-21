@@ -685,7 +685,7 @@ class DataCaptureDisplay:
         Update Graph element with given data.
         """
         self.windowMain['-TXT-ANGLES-'].update(
-            f'Yaw: {self.recording.getFrameAngles()[0]:0.2f}\tPitch: {self.recording.getFrameAngles()[1]:0.2f} \tRoll:'
+            f' Yaw: {self.recording.getFrameAngles()[0]:0.2f}\tPitch: {self.recording.getFrameAngles()[1]:0.2f} \tRoll:'
             f' {self.recording.getFrameAngles()[2]:0.2f}')
         self.windowMain['-GRAPH-FRAME-'].draw_image(data=data, location=(0, c.DISPLAY_DIMENSIONS[1]))
 
@@ -710,11 +710,6 @@ class DataCaptureDisplay:
         """
         Instantiate the initial plotting variables: The Figure and the axis, and the 2 plot parameters that store the
         line and point data.
-
-        Args:
-            limits (tuple): Lower and upper limits applied to all axes.
-            size (tuple): Width and height of figure.
-
         """
         fig = Figure(figsize=size, dpi=100)
         self.ax = fig.add_subplot(111, projection='3d')
@@ -735,9 +730,6 @@ class DataCaptureDisplay:
     def setAzimuth(self, azimuth):
         """
         Set the azimuth of the plot to the slider value.
-
-        Args:
-            azimuth (int): Azimuth to set the displayed plot to.
         """
         # Clear axis.
         self.ax.cla()
@@ -761,9 +753,6 @@ class DataCaptureDisplay:
         """
         Attempt to change the signal dimensions from the menu click. After attempting to change the dimensions update
         the GUI with the actual dimensions. If the selected dimensions cannot be used, some default value will be used.
-
-        Args:
-            dimensions: Selected from the menu.
         """
         self.frameGrabber.setGrabberProperties(width=int(dimensions[0]), height=int(dimensions[1]),
                                                fps=c.DEFAULT_FRAME_RATE)
