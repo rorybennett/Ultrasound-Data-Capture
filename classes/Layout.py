@@ -265,10 +265,10 @@ class Layout:
                            orientation='h', enable_events=True, pad=((0, 0), (0, 15)))],
                 [sg.Button(k='-BTN-PLOT-TOGGLE-', button_text='Disable Plotting', size=(15, 1),
                            font=st.FONT_BTN,
-                           border_width=3, pad=((0, 0), (0, 5)), button_color=st.COLOUR_BTN_ACTIVE)],
+                           border_width=3, pad=((0, 0), (0, 5)), button_color=st.COL_BTN_ACTIVE)],
                 [sg.Button(k='-BTN-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
                            font=st.FONT_BTN,
-                           border_width=3, pad=((0, 0), (5, 0)), button_color=st.COLOUR_BTN_ACTIVE)]
+                           border_width=3, pad=((0, 0), (5, 0)), button_color=st.COL_BTN_ACTIVE)]
             ]
 
         layout = [

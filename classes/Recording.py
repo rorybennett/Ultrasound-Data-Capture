@@ -18,6 +18,11 @@ BULLET_LENGTH = '-BULLET-LENGTH-'
 BULLET_WIDTH = '-BULLET-WIDTH-'
 BULLET_HEIGHT = 'BULLET-HEIGHT-'
 
+OFFSET_TOP = '-OFFSET-TOP-'
+OFFSET_BOTTOM = '-OFFSET-BOTTOM-'
+OFFSET_LEFT = '-OFFSET-LEFT-'
+OFFSET_RIGHT = '-OFFSET-RIGHT-'
+
 
 class Recording:
     def __init__(self, videosPath: Path, recordingDirectory: str):
@@ -109,7 +114,14 @@ class Recording:
         sequentially, where points 1 and 2 are across from each other, 3 and 4 the same, and 5 and 6 on a different
         frame to points 1 to 4.
         """
-        bulletDataConverted = []
+        bulletDataConverted = [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0]
+        ]
 
         length = 0
         width = 0
@@ -123,12 +135,12 @@ class Recording:
                 (self.offsetBottom - self.offsetTop))
             wRL = self.depths[positionL] / (
                 (self.offsetRight - self.offsetLeft))
-            bulletDataConverted.append([
+            bulletDataConverted[0] = [
                 (self.bulletData[0][1] - self.offsetLeft) * wRL - self.depths[positionL] / 2,
-                (self.bulletData[0][2] - self.offsetTop) * dRL + self.imuOffset, 0])
-            bulletDataConverted.append([
+                (self.bulletData[0][2] - self.offsetTop) * dRL + self.imuOffset, 0]
+            bulletDataConverted[1] = [
                 (self.bulletData[1][1] - self.offsetLeft) * wRL - self.depths[positionL] / 2,
-                (self.bulletData[1][2] - self.offsetTop) * dRL + self.imuOffset, 0])
+                (self.bulletData[1][2] - self.offsetTop) * dRL + self.imuOffset, 0]
             length = ut.distanceBetweenPoints(bulletDataConverted[0], bulletDataConverted[1])
         except Exception as e:
             print(f'Length data not available: {e}')
@@ -140,12 +152,12 @@ class Recording:
                 (self.offsetBottom - self.offsetTop))
             wRW = self.depths[positionW] / (
                 (self.offsetRight - self.offsetLeft))
-            bulletDataConverted.append([
+            bulletDataConverted[2] = [
                 (self.bulletData[2][1] - self.offsetLeft) * wRW - self.depths[positionW] / 2,
-                (self.bulletData[2][2] - self.offsetTop) * dRW + self.imuOffset, 0])
-            bulletDataConverted.append([
+                (self.bulletData[2][2] - self.offsetTop) * dRW + self.imuOffset, 0]
+            bulletDataConverted[3] = [
                 (self.bulletData[3][1] - self.offsetLeft) * wRW - self.depths[positionW] / 2,
-                (self.bulletData[3][2] - self.offsetTop) * dRW + self.imuOffset, 0])
+                (self.bulletData[3][2] - self.offsetTop) * dRW + self.imuOffset, 0]
             width = ut.distanceBetweenPoints(bulletDataConverted[2], bulletDataConverted[3])
         except Exception as e:
             print(f'Width data not available: {e}')
@@ -157,12 +169,12 @@ class Recording:
                 (self.offsetBottom - self.offsetTop))
             wRH = self.depths[positionH] / (
                 (self.offsetRight - self.offsetLeft))
-            bulletDataConverted.append([
+            bulletDataConverted[4] = [
                 (self.bulletData[4][1] - self.offsetLeft) * wRH - self.depths[positionH] / 2,
-                (self.bulletData[4][2] - self.offsetTop) * dRH + self.imuOffset, 0])
-            bulletDataConverted.append([
+                (self.bulletData[4][2] - self.offsetTop) * dRH + self.imuOffset, 0]
+            bulletDataConverted[5] = [
                 (self.bulletData[5][1] - self.offsetLeft) * wRH - self.depths[positionH] / 2,
-                (self.bulletData[5][2] - self.offsetTop) * dRH + self.imuOffset, 0])
+                (self.bulletData[5][2] - self.offsetTop) * dRH + self.imuOffset, 0]
             height = ut.distanceBetweenPoints(bulletDataConverted[4], bulletDataConverted[5])
         except Exception as e:
             print(f'Height data not available: {e}')
@@ -173,10 +185,10 @@ class Recording:
               f'====================================\n'
               f'=      Bullet Equation Values      =\n'
               f'====================================\n'
-              f'     Length: {length:.4f} mm\n'
-              f'     Width: {width:.4f} mm\n'
-              f'     Height: {height:.4f} mm\n'
-              f'     Volume: {volume: .4f} mm\n'
+              f'     Length:\t{length:.4f} mm\n'
+              f'     Width: \t{width:.4f} mm\n'
+              f'     Height:\t{height:.4f} mm\n'
+              f'     Volume:\t{volume:.4f} mm\n'
               f'====================================\n')
 
     def addBulletPoint(self, bulletDimension, position, point):
@@ -252,7 +264,14 @@ class Recording:
         """
         Clear all bullet points from recording.
         """
-        self.bulletData = []
+        self.bulletData = [
+            ['', 0, 0],
+            ['', 0, 0],
+            ['', 0, 0],
+            ['', 0, 0],
+            ['', 0, 0],
+            ['', 0, 0]
+        ]
 
         self.__saveDetailsToFile()
 

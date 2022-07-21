@@ -17,4 +17,4 @@ FONT_BTN = 'Helvetica 14 bold'
 # Font used on smaller buttons.
 FONT_BTN_SMALL = 'Helvetica 10 bold'
 # Button colour when active
-COLOUR_BTN_ACTIVE = '#cc493f'
+COL_BTN_ACTIVE = '#cc493f'

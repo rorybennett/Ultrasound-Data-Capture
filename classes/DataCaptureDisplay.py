@@ -73,17 +73,15 @@ class DataCaptureDisplay:
         # Do Graph clicks add data points?
         self.enableDataPoints = False
         # Should a Graph click change the offset?
-        self.enableOffsetChangeTop = False
-        self.enableOffsetChangeBottom = False
-        self.enableOffsetChangeLeft = False
-        self.enableOffsetChangeRight = False
+        self.enableOffsetTop = False
+        self.enableOffsetBottom = False
+        self.enableOffsetLeft = False
+        self.enableOffsetRight = False
         # Bullet equation variables.
         self.enableBulletL = False
-        self.bulletLCounter = 0
         self.enableBulletW = False
-        self.bulletWCounter = 0
         self.enableBulletH = False
-        self.bulletHCounter = 0
+        self.bulletCounter = 0
         # Enable scrolling through frames.
         self.enableFrameScroll = False
 
@@ -184,13 +182,13 @@ class DataCaptureDisplay:
             elif event == 'MouseWheel:Down' and self.enableFrameScroll:
                 self.navigateFrames(Layout.NAV_KEYS[3].split('-')[-2])
             elif event == '-BTN-OFFSET-TOP-':
-                self.toggleChangingOffsetTop()
+                self.toggleChangingOffset(Recording.OFFSET_TOP)
             elif event == '-BTN-OFFSET-BOTTOM-':
-                self.toggleChangingOffsetBottom()
+                self.toggleChangingOffset(Recording.OFFSET_BOTTOM)
             elif event == '-BTN-OFFSET-LEFT-':
-                self.toggleChangingOffsetLeft()
+                self.toggleChangingOffset(Recording.OFFSET_LEFT)
             elif event == '-BTN-OFFSET-RIGHT-':
-                self.toggleChangingOffsetRight()
+                self.toggleChangingOffset(Recording.OFFSET_RIGHT)
             elif event == '-INP-EDIT-DEPTH-' + '_Enter':
                 self.recording.changeScanDepth(values['-INP-EDIT-DEPTH-'])
             elif event == '-INP-EDIT-DEPTHS-' + '_Enter':
@@ -204,11 +202,11 @@ class DataCaptureDisplay:
             elif event == '-BTN-CLEAR-ALL-':
                 self.clearFramePoints(Recording.CLEAR_ALL)
             elif event == '-BTN-BULLET-L-':
-                self.bulletLClick()
+                self.bulletButtons(Recording.BULLET_LENGTH)
             elif event == '-BTN-BULLET-W-':
-                self.bulletWClick()
+                self.bulletButtons(Recording.BULLET_WIDTH)
             elif event == '-BTN-BULLET-H-':
-                self.bulletHClick()
+                self.bulletButtons(Recording.BULLET_HEIGHT)
             elif event == '-BTN-BULLET-CLEAR-':
                 self.clearFramePoints(Recording.CLEAR_BULLET)
             elif event == '-BTN-BULLET-PRINT-':
@@ -281,41 +279,41 @@ class DataCaptureDisplay:
             self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
             self.windowMain.write_event_value('-THD-PLOT-', None)
             self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
-        elif self.enableOffsetChangeTop:
+        elif self.enableOffsetTop:
             self.recording.changeOffsetTop((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeBottom:
+        elif self.enableOffsetBottom:
             self.recording.changeOffsetBottom((c.DISPLAY_DIMENSIONS[1] - point[1]) / c.DISPLAY_DIMENSIONS[1])
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeLeft:
+        elif self.enableOffsetLeft:
             self.recording.changeOffsetLeft(point[0] / c.DISPLAY_DIMENSIONS[0])
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableOffsetChangeRight:
+        elif self.enableOffsetRight:
             self.recording.changeOffsetRight(point[0] / c.DISPLAY_DIMENSIONS[0])
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-        elif self.enableBulletL and self.bulletLCounter < 2:
-            self.recording.addBulletPoint(Recording.BULLET_LENGTH, self.bulletLCounter, point)
-            self.bulletLCounter += 1
+        elif self.enableBulletL and self.bulletCounter < 2:
+            self.recording.addBulletPoint(Recording.BULLET_LENGTH, self.bulletCounter, point)
+            self.bulletCounter += 1
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-            if self.bulletLCounter >= 2:
+            if self.bulletCounter >= 2:
                 self.enableBulletL = False
-                self.bulletLCounter = 0
+                self.bulletCounter = 0
                 self.windowMain['-BTN-BULLET-L-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        elif self.enableBulletW and self.bulletWCounter < 2:
-            self.recording.addBulletPoint(Recording.BULLET_WIDTH, self.bulletWCounter, point)
-            self.bulletWCounter += 1
+        elif self.enableBulletW and self.bulletCounter < 2:
+            self.recording.addBulletPoint(Recording.BULLET_WIDTH, self.bulletCounter, point)
+            self.bulletCounter += 1
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-            if self.bulletWCounter >= 2:
+            if self.bulletCounter >= 2:
                 self.enableBulletW = False
-                self.bulletWCounter = 0
+                self.bulletCounter = 0
                 self.windowMain['-BTN-BULLET-W-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        elif self.enableBulletH and self.bulletHCounter < 2:
-            self.recording.addBulletPoint(Recording.BULLET_HEIGHT, self.bulletHCounter, point)
-            self.bulletHCounter += 1
+        elif self.enableBulletH and self.bulletCounter < 2:
+            self.recording.addBulletPoint(Recording.BULLET_HEIGHT, self.bulletCounter, point)
+            self.bulletCounter += 1
             self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
-            if self.bulletHCounter >= 2:
+            if self.bulletCounter >= 2:
                 self.enableBulletH = False
-                self.bulletHCounter = 0
+                self.bulletCounter = 0
                 self.windowMain['-BTN-BULLET-H-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def selectRecordingForEdit(self, videoDirectory: str):
@@ -324,8 +322,8 @@ class DataCaptureDisplay:
         """
         print(f'Create editing data for: {videoDirectory}')
         self.recording = Recording.Recording(self.videosPath, videoDirectory)
-        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
-        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
+        self.enableOffsetTop, self.enableOffsetBottom = False, False
+        self.enableOffsetLeft, self.enableOffsetRight = False, False
         self.enableDataPoints = False
         self.enableFrameScroll = True
 
@@ -366,32 +364,20 @@ class DataCaptureDisplay:
 
         self.windowMain.write_event_value('-UPDT-GRAPH-FRAME-', value=self.recording.getCurrentFrameAsBytes())
 
-    def bulletHClick(self):
+    def bulletButtons(self, bulletDimension):
         """
-        Start process for Height bullet points.
+        Start process for adding a bullet dimension.
         """
-        self.enableBulletH = True
-        self.bulletHCounter = 0
-
-        self.windowMain['-BTN-BULLET-H-'].update(button_color=st.COLOUR_BTN_ACTIVE)
-
-    def bulletWClick(self):
-        """
-        Start process for Width bullet points.
-        """
-        self.enableBulletW = True
-        self.bulletWCounter = 0
-
-        self.windowMain['-BTN-BULLET-W-'].update(button_color=st.COLOUR_BTN_ACTIVE)
-
-    def bulletLClick(self):
-        """
-        Start process for Length bullet points.
-        """
-        self.enableBulletL = True
-        self.bulletLCounter = 0
-
-        self.windowMain['-BTN-BULLET-L-'].update(button_color=st.COLOUR_BTN_ACTIVE)
+        self.bulletCounter = 0
+        if bulletDimension == Recording.BULLET_LENGTH:
+            self.enableBulletL = True
+            self.windowMain['-BTN-BULLET-L-'].update(button_color=st.COL_BTN_ACTIVE)
+        if bulletDimension == Recording.BULLET_WIDTH:
+            self.enableBulletW = True
+            self.windowMain['-BTN-BULLET-W-'].update(button_color=st.COL_BTN_ACTIVE)
+        if bulletDimension == Recording.BULLET_HEIGHT:
+            self.enableBulletH = True
+            self.windowMain['-BTN-BULLET-H-'].update(button_color=st.COL_BTN_ACTIVE)
 
     def changeImuOffset(self, newImuOffset):
         """
@@ -469,13 +455,13 @@ class DataCaptureDisplay:
         Toggle the state of self.enableDataPoints to enable or disable adding data points to a frame.
         """
         self.enableDataPoints = not self.enableDataPoints
-        self.enableOffsetChangeTop = False
-        self.enableOffsetChangeBottom = False
-        self.enableOffsetChangeLeft = False
-        self.enableOffsetChangeRight = False
+        self.enableOffsetTop = False
+        self.enableOffsetBottom = False
+        self.enableOffsetLeft = False
+        self.enableOffsetRight = False
         # Set element states.
         self.windowMain['-BTN-POINTS-'].update(
-            button_color=st.COLOUR_BTN_ACTIVE if self.enableDataPoints else sg.DEFAULT_BUTTON_COLOR)
+            button_color=st.COL_BTN_ACTIVE if self.enableDataPoints else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
@@ -590,65 +576,34 @@ class DataCaptureDisplay:
         print('-------------------------------------------\nThread closing down: '
               'plottingThread.\n-------------------------------------------')
 
-    def toggleChangingOffsetTop(self):
+    def toggleChangingOffset(self, offsetType):
         """
-        Toggle the state of self.enableOffsetChangeTop to enable or disable changing of the top frame offset value.
+        Toggle changing an offset (Top, Bottom, Left, or Right).
         """
-        self.enableOffsetChangeTop = not self.enableOffsetChangeTop
-        self.enableDataPoints, self.enableOffsetChangeBottom = False, False
-        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
+
+        if offsetType == Recording.OFFSET_TOP:
+            self.enableOffsetTop = not self.enableOffsetTop
+            self.enableOffsetBottom, self.enableOffsetLeft, self.enableOffsetRight = False, False, False
+        elif offsetType == Recording.OFFSET_BOTTOM:
+            self.enableOffsetBottom = not self.enableOffsetBottom
+            self.enableOffsetTop, self.enableOffsetLeft, self.enableOffsetRight = False, False, False
+        elif offsetType == Recording.OFFSET_LEFT:
+            self.enableOffsetLeft = not self.enableOffsetLeft
+            self.enableOffsetBottom, self.enableOffsetTop, self.enableOffsetRight = False, False, False
+        elif offsetType == Recording.OFFSET_RIGHT:
+            self.enableOffsetRight = not self.enableOffsetRight
+            self.enableOffsetBottom, self.enableOffsetLeft, self.enableOffsetTop = False, False, False
+
         # Set element states.
         self.windowMain['-BTN-OFFSET-TOP-'].update(
-            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeTop else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-
-    def toggleChangingOffsetBottom(self):
-        """
-        Toggle the state of self.enableOffsetChangeBottom to enable or disable changing of the bottom frame offset
-        value.
-        """
-        self.enableOffsetChangeBottom = not self.enableOffsetChangeBottom
-        self.enableOffsetChangeTop, self.enableDataPoints = False, False
-        self.enableOffsetChangeLeft, self.enableOffsetChangeRight = False, False
-        # Set element states.
+            button_color=st.COL_BTN_ACTIVE if self.enableOffsetTop else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-BOTTOM-'].update(
-            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeBottom else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-
-    def toggleChangingOffsetLeft(self):
-        """
-        Toggle the state of self.enableOffsetChangeLeft to enable or disable changing of the left frame offset value.
-        """
-        self.enableOffsetChangeLeft = not self.enableOffsetChangeLeft
-        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
-        self.enableDataPoints, self.enableOffsetChangeRight = False, False
-        # Set element states.
+            button_color=st.COL_BTN_ACTIVE if self.enableOffsetBottom else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-LEFT-'].update(
-            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeLeft else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-RIGHT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-
-    def toggleChangingOffsetRight(self):
-        """
-        Toggle the state of self.enableOffsetChangeRight to enable or disable changing of the right frame offset value.
-        """
-        self.enableOffsetChangeRight = not self.enableOffsetChangeRight
-        self.enableOffsetChangeTop, self.enableOffsetChangeBottom = False, False
-        self.enableOffsetChangeLeft, self.enableDataPoints = False, False
-        # Set element states.
+            button_color=st.COL_BTN_ACTIVE if self.enableOffsetLeft else sg.DEFAULT_BUTTON_COLOR)
         self.windowMain['-BTN-OFFSET-RIGHT-'].update(
-            button_color=st.COLOUR_BTN_ACTIVE if self.enableOffsetChangeRight else sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-TOP-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-BOTTOM-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
-        self.windowMain['-BTN-OFFSET-LEFT-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
+            button_color=st.COL_BTN_ACTIVE if self.enableOffsetRight else sg.DEFAULT_BUTTON_COLOR)
+        self.enableDataPoints = False
         self.windowMain['-BTN-POINTS-'].update(button_color=sg.DEFAULT_BUTTON_COLOR)
 
     def recordFrame(self, frameName, frame, acceleration, quaternion):
@@ -681,7 +636,7 @@ class DataCaptureDisplay:
         self.enableDisplay = not self.enableDisplay
         self.windowMain['-BTN-DISPLAY-TOGGLE-'].update(
             text='Disable Display' if self.enableDisplay else 'Enable Display',
-            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enableDisplay else st.COLOUR_BTN_ACTIVE)
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enableDisplay else st.COL_BTN_ACTIVE)
 
     def setSignalSourceAndConnect(self, signalSource):
         """
@@ -733,7 +688,7 @@ class DataCaptureDisplay:
 
         # Set element states.
         self.windowMain['-BTN-RECORD-TOGGLE-'].update(
-            button_color=st.COLOUR_BTN_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
+            button_color=st.COL_BTN_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enableRecording else 'Start Recording')
         self.windowMain['-BTN-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
@@ -804,7 +759,7 @@ class DataCaptureDisplay:
         self.enablePlotting = not self.enablePlotting
         self.windowMain['-BTN-PLOT-TOGGLE-'].update(
             text='Disable Plotting' if self.enablePlotting else 'Enable Plotting',
-            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else st.COLOUR_BTN_ACTIVE)
+            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else st.COL_BTN_ACTIVE)
 
     def changeSignalDimensions(self, dimensions):
         """
