@@ -268,8 +268,7 @@ class DataCaptureDisplay:
 
     def onGraphFrameClicked(self, point):
         """
-        Click handler function for when the Graph frame element is clicked. Handles when offsets are changed and points
-        are altered.
+        Click handler function for when the Graph frame element is clicked.
         """
         if self.enableDataPoints:
             self.recording.addRemovePointData(point)
@@ -366,7 +365,7 @@ class DataCaptureDisplay:
 
     def bulletButtons(self, bulletDimension):
         """
-        Start process for adding a bullet dimension.
+        Start process for adding a bullet equation dimension.
         """
         self.bulletCounter = 0
         if bulletDimension == Recording.BULLET_LENGTH:
@@ -406,31 +405,12 @@ class DataCaptureDisplay:
         self.windowMain.write_event_value('-THD-PLOT-', None)
         self.windowMain['-TXT-TOTAL-POINTS-'].update(f'Total Points: {len(self.recording.pointData)}')
 
-    def recreateEditingAxis(self):
-        """
-        Recreate the axis for editing purposes.
-        """
-        # Clear axis.
-        self.ax.cla()
-        # Reinitialise axis.
-        self.ax = ut.initialiseEditingAxis(self.ax, c.AZIMUTH,
-                                           self.recording.depths[self.recording.currentFrame - 1])
-        # Redraw new axis.
-        self.fig_agg.draw()
-        # Re-save background for blit.
-        self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
-        if self.recording:
-            self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
-        self.windowMain.write_event_value('-THD-PLOT-', None)
-
     def changeAllScanDepths(self, newScanDepth: str):
         """
         Call the changeAllScanDepths of the RecordingDetails object.
         """
         self.recording.changeAllScanDepths(newScanDepth)
-
         self.recreateEditingAxis()
-
         # Set element states.
         self.windowMain['-INP-EDIT-DEPTH-'].update(
             f'{self.recording.depths[self.recording.currentFrame - 1]}')
@@ -441,7 +421,6 @@ class DataCaptureDisplay:
         Call the navigateFrames function of the RecordingDetails object.
         """
         self.recording.navigateFrames(navCommand)
-
         # Set element states.
         self.windowMain['-TXT-NAV-CURRENT-'].update(
             f'{self.recording.currentFrame}/{self.recording.frameCount}')
@@ -709,6 +688,23 @@ class DataCaptureDisplay:
             f'Yaw: {self.recording.getFrameAngles()[0]:0.2f}\tPitch: {self.recording.getFrameAngles()[1]:0.2f} \tRoll:'
             f' {self.recording.getFrameAngles()[2]:0.2f}')
         self.windowMain['-GRAPH-FRAME-'].draw_image(data=data, location=(0, c.DISPLAY_DIMENSIONS[1]))
+
+    def recreateEditingAxis(self):
+        """
+        Recreate the axis for editing purposes.
+        """
+        # Clear axis.
+        self.ax.cla()
+        # Reinitialise axis.
+        self.ax = ut.initialiseEditingAxis(self.ax, c.AZIMUTH,
+                                           self.recording.depths[self.recording.currentFrame - 1])
+        # Redraw new axis.
+        self.fig_agg.draw()
+        # Re-save background for blit.
+        self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
+        if self.recording:
+            self.ax = self.recording.plotDataPointsOnAxis(self.ax, self.pointPlot)
+        self.windowMain.write_event_value('-THD-PLOT-', None)
 
     def createPlot(self, limits=(-5, 5), size=(3.5, 3.5)):
         """
