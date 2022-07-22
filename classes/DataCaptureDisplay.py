@@ -86,7 +86,8 @@ class DataCaptureDisplay:
         # IMU connect window
         self.windowImuConnect = None
 
-        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(), finalize=True)
+        self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(),
+                                    return_keyboard_events=True, finalize=True, use_default_focus=False)
 
         # Create the initial plot.
         self.createPlot()
@@ -147,6 +148,8 @@ class DataCaptureDisplay:
             elif event == '-BTN-SNAPSHOT-':
                 ut.saveSingleFrame(self.frameRaw, f'{self.singleFramesPath}\\{int(time.time() * 1000)}.png')
             elif event == '-BTN-RECORD-TOGGLE-':
+                self.toggleRecording()
+            elif (len(event) == 1 and ord(event) == 32) and self.frameGrabber.isConnected:
                 self.toggleRecording()
 
             # IMU Display Events.
@@ -215,8 +218,6 @@ class DataCaptureDisplay:
                 print('Fit 3D ellipse clicked.')
             elif event == '-GRAPH-FRAME-':
                 self.onGraphFrameClicked(values[event])
-
-            print(event)
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
