@@ -82,8 +82,6 @@ class DataCaptureDisplay:
         self.enableBulletW = False
         self.enableBulletH = False
         self.bulletCounter = 0
-        # Enable scrolling through frames.
-        self.enableFrameScroll = False
 
         # IMU connect window
         self.windowImuConnect = None
@@ -177,9 +175,9 @@ class DataCaptureDisplay:
                 self.navigateFrames(event.split('-')[-2])
             elif event == '-INP-NAV-GOTO-' + '_Enter':
                 self.navigateFrames(values['-INP-NAV-GOTO-'])
-            elif event == 'MouseWheel:Up' and self.enableFrameScroll:
+            elif event == 'MouseWheel:Up' and self.recording:
                 self.navigateFrames(Layout.NAV_KEYS[2].split('-')[-2])
-            elif event == 'MouseWheel:Down' and self.enableFrameScroll:
+            elif event == 'MouseWheel:Down' and self.recording:
                 self.navigateFrames(Layout.NAV_KEYS[3].split('-')[-2])
             elif event == '-BTN-OFFSET-TOP-':
                 self.toggleChangingOffset(Recording.OFFSET_TOP)
@@ -218,6 +216,8 @@ class DataCaptureDisplay:
             elif event == '-GRAPH-FRAME-':
                 self.onGraphFrameClicked(values[event])
 
+            print(event)
+
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
@@ -236,8 +236,6 @@ class DataCaptureDisplay:
                                     self.layout.getEditingLayout() if self.enableEditing else
                                     self.layout.getInitialLayout(),
                                     return_keyboard_events=True if self.enableEditing else False, finalize=True)
-        # Disable frame scrolling.
-        self.enableFrameScroll = False
 
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
@@ -324,7 +322,6 @@ class DataCaptureDisplay:
         self.enableOffsetTop, self.enableOffsetBottom = False, False
         self.enableOffsetLeft, self.enableOffsetRight = False, False
         self.enableDataPoints = False
-        self.enableFrameScroll = True
 
         self.recreateEditingAxis()
 
