@@ -236,7 +236,9 @@ class DataCaptureDisplay:
         self.windowMain = sg.Window('Ultrasound Data Capture',
                                     self.layout.getEditingLayout() if self.enableEditing else
                                     self.layout.getInitialLayout(),
-                                    return_keyboard_events=True if self.enableEditing else False, finalize=True)
+                                    return_keyboard_events=True,
+                                    use_default_focus=False if not self.enableEditing else True,
+                                    finalize=True)
 
         # Enable/Disable plotting for consistency, clear plot.
         self.enablePlotting = False if self.enableEditing else True
