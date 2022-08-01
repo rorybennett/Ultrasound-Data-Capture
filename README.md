@@ -6,21 +6,21 @@ ultrasound images and orientation data. This project is designed to run on a Win
 
 ## Hardware Considerations
 
-This project was designed with specific hardware in mind, but it is not entirely limited to the hardware
+This project was compiled with specific hardware in mind, but it is not entirely limited to the hardware
 used. There are 2 devices (beyond the computer used to run the software) that are needed:
 
-    1. A video signal source.
-    2. A bluetooth IMU device.
+1. A video signal source.
+2. A bluetooth IMU device.
 
-### Video Signal Source
+### 1. Video Signal Source
 
 The format of the video signal should not matter, as long as it is converted to a USB signal
 (e.g. HDMI/DVI/VGA-to-USB). If the program is run on a system with a webcam, the webcam can be used
-as a video signal.
+as a video signal source.
 
-During testing a Canon Aplio i700's HDMI output was used as the video signal.
+During testing a Canon Aplio i700's HDMI output was used as the video signal source.
 
-### Bluetooth IMU
+### 2. Bluetooth IMU
 
 This project makes the assumption that a WITMOTION IMU is available, and is set up to connect to,
 and communicate with, such an IMU.
@@ -67,20 +67,20 @@ Once connected, the return rate of the IMU can be set and the accelerometer can 
 Frames from the video/input signal (USB-port) are synced with data streamed from an IMU device (bluetooth)
 and the results stored as:
 
-- A series of .png files, each .png corresponding to a frame from the input signal. The name of the 
-.png files start with the recorded frame number, followed by a timestamp based on the system time that
-they were read from the input signal.
-- A data.txt file containing the IMU data for each frame, following a csv format. Each row 
-corresponds to a .png frame, with the first value of the row matching the name of a .png frame. 
-- The data.txt file lines follow the following format:
-  - [frame_name,acceleration_data,quaternion_data,signal_dimensions,depth] - where:
-    - frame_name          -       Corresponds to the .png image saved.
-    - acceleration_data   -       Acceleration data of frame.
-    - quaternion_data     -       Quaternion data of frame.
-    - signal_dimensions   -       Dimensions of saved frame.
-    - depth               -       Default scan depth (depth of ultrasound image).
+- A series of .png files, each .png corresponding to a frame from the input signal. The name of the
+  .png files start with the recorded frame number, followed by a timestamp based on the system time that
+  they were read from the input signal.
+- A data.txt file containing the IMU data for each frame, following a csv format. Each row
+  corresponds to a .png frame, with the first value of the row matching the name of a .png frame.
+- The data.txt file lines follow the following
+  format: [frame_name,acceleration_data,quaternion_data,signal_dimensions,depth]
+    - frame_name: Corresponds to the .png image saved.
+    - acceleration_data: Acceleration data of frame.
+    - quaternion_data: Quaternion data of frame.
+    - signal_dimensions: Dimensions of saved frame.
+    - depth: Default scan depth (depth of ultrasound image).
 
-The default scan depth is stored for later editing, as the depth could potentially change on a 
+The default scan depth is stored for later editing, as the depth could potentially change on a
 per-frame basis.
 
 To save a single frame click the 'Save Frame' button. No IMU data is recorded with this, more of a
@@ -93,18 +93,21 @@ assumed to be zero.
 ## WITMOTION IMU Settings
 
 The IMU sensor must be connected to the laptop/computer via bluetooth so that the COM ports are assigned.
-Using WITMOTION's own software, acceleration data and quaternion data must be enabled. This is the only
-data of interest in this project. More sensor readings are available and their acquisition is fairly
+I am pretty sure that if the IMU is connected via a USB port it should still work, but I have not tested
+this much. Using WITMOTION's own software, acceleration data and quaternion data must be enabled.
+This is the only data of interest in this project. More sensor readings are available and their acquisition is fairly
 straightforward should you want to change the code a little.
 
-# !!!NB!!!
+# NB
 
 - WITMOTION does not have any official Python support. The following library was used to enable
-communication with the IMU: [https://pypi.org/project/witmotion/](https://pypi.org/project/witmotion/).
-- Opening a menu while a signal source is connected causes a delay in the signal display. I cannot 
-solve this at the moment. Just wait until the display signal catches up, it can take a little while.
+  communication with the IMU: [https://pypi.org/project/witmotion/](https://pypi.org/project/witmotion/).
+- Opening a menu while a signal source is connected causes a delay in the signal display. I cannot
+  solve this at the moment. Just wait until the display signal catches up, it can take a little while.
 - As of 01/Aug/2022 the plotting should be disabled when recording a signal. This increases the recorded
-frame rate and reduces the lag. The plotting will be moved to a separate process some time in the future.
+  frame rate and reduces the lag. The plotting will be moved to a separate process some time in the future.
 - During testing a recording frame rate of roughly 25FPS was achieved on a FHD signal with plotting
-disabled. This was above the 17FPS of the ultrasound probe, and as such duplicate frames were present that
-can be deleted.
+  disabled. This was above the 17FPS of the ultrasound probe, and as such duplicate frames were present that
+  can be deleted.
+- This project/program is run directly from PyCharm, and if any other libraries are required an error
+  message will be shown.
