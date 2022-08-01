@@ -9,14 +9,12 @@ class Menu:
         # Set initial values
         self.frameGrabberConnected = False
         self.imuConnected = False
-        self.editingEnabled = False
         self.signalMenu = None
         self.imuImenu = None
-        self.editMenu = None
         # Initial creation of menus.
         self.__generateMenus()
 
-    def getMenu(self, frameGrabberConnected=False, imuConnected=False, editingEnabled=False):
+    def getMenu(self, frameGrabberConnected=False, imuConnected=False):
         """
         Return the current menu bar based on the parameter values given. The local parameter values are updated based on
         the given parameters and the menus are generated. The generated menus are combined into a single menu bar layout
@@ -25,19 +23,19 @@ class Menu:
         Args:
             frameGrabberConnected (bool): True if FrameGrabber object is connected, else False.
             imuConnected (bool): True if IMU object is connected, else False.
-            editingEnabled (bool): True if editing is enabled, else False.
 
         Returns:
-
+            menuFinal (list): Final menu layout.
         """
         # Local variable update.
         self.frameGrabberConnected = frameGrabberConnected
         self.imuConnected = imuConnected
-        self.editingEnabled = editingEnabled
         # Generate menus.
         self.__generateMenus()
+
+        menuFinal = [self.signalMenu, self.imuImenu]
         # Return menu bar layout.
-        return [self.signalMenu, self.imuImenu, self.editMenu]
+        return menuFinal
 
     def __generateSignalMenu(self):
         """
@@ -49,7 +47,6 @@ class Menu:
         True (post connection):     Menu to show when the signal source is connected. Now that the source is connected,
                                     the source signal can be changed, it can be disconnected, and properties can be
                                     changed.
-        If self.editingEnabled is True the menu is disabled.
         """
         if not self.frameGrabberConnected:
             self.signalMenu = ['Signal Source', ['Connect to Source',
@@ -67,8 +64,6 @@ class Menu:
                                                   c.COMMON_SIGNAL_DIMENSIONS]
                                                  ]
                                ]
-        if self.editingEnabled:
-            self.signalMenu = ['!Signal Source']
 
     def __generateImuMenu(self):
         """
@@ -80,7 +75,6 @@ class Menu:
                                     options are disabled.
         True (post connection):     Menu to show when the IMU has been connected, enabling return rate and acceleration
                                     calibration.
-        If self.editingEnabled is True the menu is disabled.
         """
         if not self.imuConnected:
             self.imuImenu = ['IMU', ['Connect::-MENU-IMU-CONNECT-',
@@ -94,20 +88,6 @@ class Menu:
                                      'Set Return Rate', [f'{i}::-MENU-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
                                      'Calibrate Acceleration::-MENU-IMU-CALIBRATE-']
                              ]
-        if self.editingEnabled:
-            self.imuImenu = ['!IMU']
-
-    def __generateEditMenu(self):
-        """
-        Function for creating editing menu, based on self.editingEnabled. If self.editingEnabled:
-
-        False (initial state):      The option to start editing is displayed.
-        True (in edit state):       The option to end editing is displayed.
-        """
-        if self.editingEnabled:
-            self.editMenu = ['Edit', ['Stop Editing::-MENU-EDIT-TOGGLE-']]
-        else:
-            self.editMenu = ['Edit', ['Start Editing::-MENU-EDIT-TOGGLE-']]
 
     def __generateMenus(self):
         """
@@ -118,5 +98,3 @@ class Menu:
         self.__generateSignalMenu()
         # IMU Menu.
         self.__generateImuMenu()
-        # Editing Menu
-        self.__generateEditMenu()
