@@ -89,7 +89,7 @@ class DataCaptureDisplay:
             if self.imu.isConnected and self.imu.acceleration:
                 self.updateAccelerations()
 
-            event, values = self.windowMain.read(timeout=100)
+            event, values = self.windowMain.read(timeout=0)
 
             if event in [sg.WIN_CLOSED, 'None']:
                 # On window close clicked.
