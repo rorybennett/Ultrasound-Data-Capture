@@ -1,0 +1,118 @@
+"""
+Class for handling plotting the orientation of the probe.
+
+Plotting is removed from the main process as it slows the main process down significantly.
+"""
+import numpy as np
+from pyquaternion import Quaternion
+
+from classes import Layout
+import PySimpleGUI as sg
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import multiprocessing
+from queue import LifoQueue
+from multiprocessing.managers import BaseManager
+import constants as c
+
+
+def rotatePoints(points: list, quaternion: list) -> np.array:
+    rotated_points = []
+    myQuaternion = Quaternion(quaternion)
+    for point in points:
+        rotated_points.append(myQuaternion.rotate(point))
+
+    return np.array(rotated_points)
+
+
+class MyManager(BaseManager):
+    """
+    Custom class used to register LifoQueue to the multiprocessing manager class.
+    """
+    pass
+
+
+MyManager.register('LifoQueue', LifoQueue)
+
+
+class PlottingProcess:
+    def __init__(self):
+        self.plottingAsyncProcess = None
+        self.manager = MyManager()
+        self.manager.start()
+        self.plottingQueue = None
+        self.pool = None
+
+    def startPlotting(self):
+        self.plottingQueue = self.manager.LifoQueue()
+        self.pool = multiprocessing.Pool(1)
+        self.plottingAsyncProcess = self.pool.apply_async(plottingProcess, (self.plottingQueue,))
+
+    def plotOrientation(self, quaternion):
+        self.plottingQueue.put(quaternion)
+
+    def endPlotting(self):
+        self.plottingQueue.put('-END-PROCESS-')
+        del self.plottingQueue
+        self.pool.close()
+        self.pool.join()
+
+
+def plottingProcess(lifoQueue):
+    """
+    Method to be run in a thread pool for plotting orientation of a probe using a quaternion that is sent using
+    the Last In First Out queue approach.
+
+    Args:
+        lifoQueue (LifoQueue): MyManager queue object operating with LIFO principle.
+    """
+    print('Starting plotting process...')
+    plottingWindow = sg.Window('Orientation Plot', Layout.getPlottingWindowLayout(), element_justification='c',
+                               finalize=True, location=(0, 0))
+
+    fig = Figure(figsize=(5, 5), dpi=100)
+    ax = fig.add_subplot(111, projection='3d')
+    fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
+
+    ax.set_position((0, 0, 1, 1))
+    ax.set_xlim([-5, 5])
+    ax.set_ylim([-5, 5])
+    ax.set_zlim([-5, 5])
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_zticklabels([])
+    ax.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
+    ax.azim = 40
+
+    figure_canvas_agg = FigureCanvasTkAgg(fig, plottingWindow['-CANVAS-PLOT-'].TKCanvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+
+    while True:
+        try:
+            newQuaternion = lifoQueue.get(False)
+            if newQuaternion == '-END-PROCESS-':
+                break
+            elif len(newQuaternion) == 4:
+                rpp = rotatePoints(c.PROBE_POINTS, newQuaternion)
+                ax.cla()
+                ax.set_xlim([-5, 5])
+                ax.set_ylim([-5, 5])
+                ax.set_zlim([-5, 5])
+                ax.set_xticklabels([])
+                ax.set_yticklabels([])
+                ax.set_zticklabels([])
+                ax.plot_trisurf(rpp[:, 0], rpp[:, 1], rpp[:, 2], color='blue')
+                ax.scatter(rpp[:, 0], rpp[:, 1], rpp[:, 2], c='red')
+                figure_canvas_agg.draw()
+        except:
+            pass
+
+        event, values = plottingWindow.read(timeout=10)
+
+        if event in [sg.WIN_CLOSED, 'None']:
+            # On window close.
+            break
+
+    plottingWindow.close()
+    print('Ending plotting process...')

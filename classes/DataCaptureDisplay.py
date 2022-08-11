@@ -12,7 +12,7 @@ from classes import Layout
 
 import PySimpleGUI as sg
 import time
-from matplotlib.figure import Figure
+from classes import PlottingProcess
 from concurrent.futures import ThreadPoolExecutor
 
 
@@ -41,17 +41,11 @@ class DataCaptureDisplay:
         # Display FrameGrabber results.
         self.enableDisplay = True
         # Enable plot updates
-        self.enablePlotting = True
+        self.enablePlotting = False
         # FrameGrabber object instantiated with default values.
         self.frameGrabber = FrameGrabber.FrameGrabber()
         # Initial search for system COM ports.
         self.availableComPorts = IMU.availableComPorts()
-        # Plotting variables: axis, points, lines, fig_agg, and bg set to None until initialised.
-        self.ax = None
-        self.pointPlot = None
-        self.linePlot = None
-        self.fig_agg = None
-        self.bg = None
         # Threading executor.
         self.threadExecutor = ThreadPoolExecutor()
         # Recording variables for storing (signal and IMU).
@@ -64,15 +58,14 @@ class DataCaptureDisplay:
         self.saveFrame = False
         # Time a recording was started.
         self.recordStartTime = None
+        # Plotting process
+        self.plottingProcess = PlottingProcess.PlottingProcess()
 
         # IMU connect window
         self.windowImuConnect = None
 
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(),
                                     return_keyboard_events=True, finalize=True, use_default_focus=False)
-
-        # Create the initial plot.
-        self.createPlot()
 
         self.run()
 
@@ -88,6 +81,9 @@ class DataCaptureDisplay:
             # Update IMU values if present.
             if self.imu.isConnected and self.imu.acceleration:
                 self.updateAccelerations()
+            # Send orientation to plotting process.
+            if self.enablePlotting:
+                self.plottingProcess.plotOrientation(self.imu.quaternion)
 
             event, values = self.windowMain.read(timeout=0)
 
@@ -129,9 +125,7 @@ class DataCaptureDisplay:
                 self.toggleRecording()
 
             # IMU Display Events.
-            if event == '-SLIDER-AZIMUTH-':
-                self.setAzimuth(int(values['-SLIDER-AZIMUTH-']))
-            elif event == '-BTN-PLOT-TOGGLE-':
+            if event == '-BTN-PLOT-TOGGLE-':
                 self.togglePlotting()
 
             # Thread events.
@@ -141,9 +135,6 @@ class DataCaptureDisplay:
                 self.windowMain['-TXT-RESIZE-RATE-'].update(f'{values[event]}')
             elif event == '-THD-FRAMES-SAVED-':
                 self.windowMain['-TXT-FRAMES-SAVED-'].update(f'{values[event]}')
-            elif event == '-THD-PLOT-':
-                self.fig_agg.blit(self.ax.bbox)
-                self.fig_agg.flush_events()
 
             # GUI frame rate estimate.
             guiDt = time.time() - guiFps1
@@ -238,27 +229,6 @@ class DataCaptureDisplay:
 
         print('-------------------------------------------\nThread closing down: '
               'saveFramesThread.\n-------------------------------------------')
-
-    def plottingThread(self):
-        """
-        Thread for plotting the orientation of the IMU. This thread will be limited to a fairly low frame rate and
-        will call an event in the main window when the plot is ready.
-
-        NB: When the main menu is open the system freezes. This delays the video signal for some reason. If the
-        menu is open for 5 seconds, then the video signal will be delayed for 5 seconds. Once a delay is introduced
-        you need to disable plotting.
-        """
-        print('Thread starting up: plottingThread.\n')
-        while self.imu.isConnected:
-            # Only plot if plotting is enabled, the IMU is connected, and a quaternion value is available.
-            if self.enablePlotting and self.imu.quaternion:
-                self.fig_agg.restore_region(self.bg)
-                self.ax = ut.plotOrientationOnAxis(self.ax, self.imu.quaternion, self.pointPlot, self.linePlot)
-                self.windowMain.write_event_value('-THD-PLOT-', None)
-
-            time.sleep(0.1)
-        print('-------------------------------------------\nThread closing down: '
-              'plottingThread.\n-------------------------------------------')
 
     def recordFrame(self, frameName, frame, acceleration, quaternion):
         """
@@ -355,48 +325,20 @@ class DataCaptureDisplay:
             f'Ay: {self.imu.acceleration[1]:.2f}\t'
             f'Az: {self.imu.acceleration[2]:.2f}')
 
-    def createPlot(self, limits=(-5, 5), size=(3.5, 3.5)):
-        """
-        Instantiate the initial plotting variables: The Figure and the axis, and the 2 plot parameters that store the
-        line and point data.
-        """
-        fig = Figure(figsize=size, dpi=100)
-        self.ax = fig.add_subplot(111, projection='3d')
-        fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
-        self.ax.set_position((0, 0, 1, 1))
-
-        self.ax = ut.initialiseAxis(self.ax, c.AZIMUTH, limits)
-
-        self.ax.disable_mouse_rotation()
-
-        self.fig_agg = ut.drawFigure(fig, self.windowMain['-CANVAS-PLOT-'].TKCanvas)
-
-        self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
-
-        self.pointPlot = self.ax.plot([], [], [], color="red", linestyle="none", marker="o", animated=True)[0]
-        self.linePlot = self.ax.plot([], [], [], color="red", animated=True)[0]
-
-    def setAzimuth(self, azimuth):
-        """
-        Set the azimuth of the plot to the slider value.
-        """
-        # Clear axis.
-        self.ax.cla()
-        # Reinitialise axis.
-        self.ax = ut.initialiseAxis(self.ax, azimuth)
-        # Redraw new axis.
-        self.fig_agg.draw()
-        # Re-save background for blit.
-        self.bg = self.fig_agg.copy_from_bbox(self.ax.bbox)
-
     def togglePlotting(self):
         """
-        Toggle self.enablePlotting. Disabling plotting can give a slight frame rate boost.
+        Toggle self.enablePlotting.
         """
         self.enablePlotting = not self.enablePlotting
+
+        if self.enablePlotting:
+            self.plottingProcess.startPlotting()
+        else:
+            self.plottingProcess.endPlotting()
+
         self.windowMain['-BTN-PLOT-TOGGLE-'].update(
             text='Disable Plotting' if self.enablePlotting else 'Enable Plotting',
-            button_color=sg.DEFAULT_BUTTON_COLOR if not self.enablePlotting else st.COL_BTN_ACTIVE)
+            button_color=st.COL_BTN_ACTIVE if self.enablePlotting else sg.DEFAULT_BUTTON_COLOR)
 
     def changeSignalDimensions(self, dimensions):
         """
@@ -455,7 +397,6 @@ class DataCaptureDisplay:
                 # On connect button clicked.
                 self.imu.connect()
                 if self.imu.isConnected:
-                    self.threadExecutor.submit(self.plottingThread)
                     break
 
         self.updateMenus()
