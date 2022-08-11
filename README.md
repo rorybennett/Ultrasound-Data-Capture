@@ -18,7 +18,8 @@ The format of the video signal should not matter, as long as it is converted to 
 (e.g. HDMI/DVI/VGA-to-USB). If the program is run on a system with a webcam, the webcam can be used
 as a video signal source.
 
-During testing a Canon Aplio i700's HDMI output was used as the video signal source.
+During testing a Canon Aplio i700's HDMI output was used as the video signal source, as well as various
+easily available video sources (laptops, computers, etc.).
 
 ### 2. Bluetooth IMU
 
@@ -104,10 +105,8 @@ straightforward should you want to change the code a little.
   communication with the IMU: [https://pypi.org/project/witmotion/](https://pypi.org/project/witmotion/).
 - Opening a menu while a signal source is connected causes a delay in the signal display. I cannot
   solve this at the moment. Just wait until the display signal catches up, it can take a little while.
-- As of 01/Aug/2022 the plotting should be disabled when recording a signal. This increases the recorded
-  frame rate and reduces the lag. The plotting will be moved to a separate process some time in the future.
-- During testing a recording frame rate of roughly 25FPS was achieved on a FHD signal with plotting
-  disabled. This was above the 17FPS of the ultrasound probe, and as such duplicate frames were present that
-  can be deleted.
+- ~~As of 01/Aug/2022 the plotting should be disabled when recording a signal.~~ This has been fixed. The plotting
+  is now initially disabled and takes place on a separate process to the main process. The orientation plot is displayed 
+  in a new window when enabled. This has removed the need for blit and should no longer slow the frame grabbing down.
 - This project/program is run directly from PyCharm, and if any other libraries are required an error
   message will be shown.
