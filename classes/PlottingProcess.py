@@ -50,7 +50,14 @@ MyManager.register('LifoQueue', LifoQueue)
 
 
 class PlottingProcess:
-    def __init__(self):
+    def __init__(self, window):
+        """
+        Initialise a plottingProcess object.
+
+        Args:
+            window (sg.Window): PySimpleGUI object that is needed to acquire screen dimensions.
+        """
+        self.screenDimensions = window.get_screen_dimensions()
         self.plottingAsyncProcess = None
         self.manager = MyManager()
         self.manager.start()
@@ -60,12 +67,10 @@ class PlottingProcess:
     def startPlotting(self):
         """
         Create the queue object, processing pool, and start the plottingProcess running in the process pool.
-        Returns:
-
         """
         self.plottingQueue = self.manager.LifoQueue()
         self.pool = multiprocessing.Pool(1)
-        self.plottingAsyncProcess = self.pool.apply_async(plottingProcess, (self.plottingQueue,))
+        self.plottingAsyncProcess = self.pool.apply_async(plottingProcess, (self.plottingQueue, self.screenDimensions,))
 
     def plotOrientation(self, quaternion):
         """
@@ -87,7 +92,7 @@ class PlottingProcess:
         self.pool.join()
 
 
-def plottingProcess(lifoQueue):
+def plottingProcess(lifoQueue, screenDimensions):
     """
     Method to be run in an async_process pool for plotting orientation of a probe using a quaternion that is sent using
     the Last In First Out queue approach. The probe points in the constants file are rotated by the quaternion
@@ -95,10 +100,11 @@ def plottingProcess(lifoQueue):
 
     Args:
         lifoQueue (LifoQueue): MyManager queue object operating with LIFO principle.
+        screenDimensions (list): Width and height of screen for placing plotting window.
     """
     print('Starting plotting process...')
     plottingWindow = sg.Window('Orientation Plot', Layout.getPlottingWindowLayout(), element_justification='c',
-                               finalize=True, location=(0, 0))
+                               finalize=True, location=(screenDimensions[0] - 600, 50))
 
     fig = Figure(figsize=(5, 5), dpi=100)
     ax = fig.add_subplot(111, projection='3d')

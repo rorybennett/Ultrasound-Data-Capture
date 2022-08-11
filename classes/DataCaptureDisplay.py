@@ -58,14 +58,16 @@ class DataCaptureDisplay:
         self.saveFrame = False
         # Time a recording was started.
         self.recordStartTime = None
-        # Plotting process
-        self.plottingProcess = PlottingProcess.PlottingProcess()
 
         # IMU connect window
         self.windowImuConnect = None
 
         self.windowMain = sg.Window('Ultrasound Data Capture', self.layout.getInitialLayout(),
-                                    return_keyboard_events=True, finalize=True, use_default_focus=False)
+                                    return_keyboard_events=True, finalize=True, use_default_focus=False,
+                                    location=(20, 50))
+
+        # Plotting process
+        self.plottingProcess = PlottingProcess.PlottingProcess(self.windowMain)
 
         self.run()
 
@@ -82,7 +84,7 @@ class DataCaptureDisplay:
             if self.imu.isConnected and self.imu.acceleration:
                 self.updateAccelerations()
             # Send orientation to plotting process.
-            if self.enablePlotting:
+            if self.enablePlotting and self.imu.quaternion:
                 self.plottingProcess.plotOrientation(self.imu.quaternion)
 
             event, values = self.windowMain.read(timeout=0)
