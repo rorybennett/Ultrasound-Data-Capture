@@ -2,10 +2,12 @@
 Class for handling plotting the orientation of the probe.
 
 Plotting is removed from the main process as it slows the main process down significantly.
+
+A custom multiprocessing.manager class is created to enable a LIFO queue approach.
 """
+import queue
 import numpy as np
 from pyquaternion import Quaternion
-
 from classes import Layout
 import PySimpleGUI as sg
 from matplotlib.figure import Figure
@@ -17,12 +19,24 @@ import constants as c
 
 
 def rotatePoints(points: list, quaternion: list) -> np.array:
-    rotated_points = []
+    """
+    Rotate the list of points by the given quaternion.
+
+    Args:
+        points (list): List of (x, y, z) coordinates to be rotated.
+        quaternion (list): List of quaternion values.
+
+    Returns:
+        rotatedPoints (np.array): List of rotated points as a numpy array.
+    """
+    rotatedPoints = []
     myQuaternion = Quaternion(quaternion)
     for point in points:
-        rotated_points.append(myQuaternion.rotate(point))
+        rotatedPoints.append(myQuaternion.rotate(point))
 
-    return np.array(rotated_points)
+    rotatedPoints = np.array(rotatedPoints)
+
+    return rotatedPoints
 
 
 class MyManager(BaseManager):
@@ -44,14 +58,29 @@ class PlottingProcess:
         self.pool = None
 
     def startPlotting(self):
+        """
+        Create the queue object, processing pool, and start the plottingProcess running in the process pool.
+        Returns:
+
+        """
         self.plottingQueue = self.manager.LifoQueue()
         self.pool = multiprocessing.Pool(1)
         self.plottingAsyncProcess = self.pool.apply_async(plottingProcess, (self.plottingQueue,))
 
     def plotOrientation(self, quaternion):
+        """
+        Add a quaternion to the queue to be plotted when the plotting process is ready.
+
+        Args:
+            quaternion (list): Quaternion constants received from the IMU.
+        """
         self.plottingQueue.put(quaternion)
 
     def endPlotting(self):
+        """
+        Close and join the plottingProcess. First the while loop in the plottingProcess method is broken, then the
+        plottingQueue is deleted (helps with memory release), and the process pool is closed and joined.
+        """
         self.plottingQueue.put('-END-PROCESS-')
         del self.plottingQueue
         self.pool.close()
@@ -60,8 +89,9 @@ class PlottingProcess:
 
 def plottingProcess(lifoQueue):
     """
-    Method to be run in a thread pool for plotting orientation of a probe using a quaternion that is sent using
-    the Last In First Out queue approach.
+    Method to be run in an async_process pool for plotting orientation of a probe using a quaternion that is sent using
+    the Last In First Out queue approach. The probe points in the constants file are rotated by the quaternion
+    value and plot as red dots. A surface is fit to the dots using trisurf.
 
     Args:
         lifoQueue (LifoQueue): MyManager queue object operating with LIFO principle.
@@ -105,7 +135,7 @@ def plottingProcess(lifoQueue):
                 ax.plot_trisurf(rpp[:, 0], rpp[:, 1], rpp[:, 2], color='blue')
                 ax.scatter(rpp[:, 0], rpp[:, 1], rpp[:, 2], c='red')
                 figure_canvas_agg.draw()
-        except:
+        except queue.Empty:
             pass
 
         event, values = plottingWindow.read(timeout=10)
