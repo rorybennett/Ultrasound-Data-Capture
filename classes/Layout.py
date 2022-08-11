@@ -79,7 +79,8 @@ class Layout:
 
         imuColumn = [
             [sg.Text('IMU Accelerations', font=st.FONT_DESCR, pad=((5, 0), (10, 0)))],
-            [sg.Text(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True)],
+            [sg.Text(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
+                     size=(25, 1))],
             [sg.Button(k='-BTN-PLOT-TOGGLE-', button_text='Enable Plotting', size=(15, 1),
                        font=st.FONT_BTN, border_width=3, pad=((0, 0), (0, 5)))],
             [sg.Button(k='-BTN-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
