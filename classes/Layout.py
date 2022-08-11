@@ -10,6 +10,20 @@ import styling as st
 import PySimpleGUI as sg
 
 
+def getPlottingWindowLayout() -> list:
+    """
+    Create the plotting window layout and return it.
+
+    Returns:
+        layout (list): Layout in list form.
+    """
+    layout = [
+        [sg.Canvas(k='-CANVAS-PLOT-', size=(500, 500))]
+    ]
+
+    return layout
+
+
 class Layout:
     def __init__(self, menu):
         self.menu = menu
