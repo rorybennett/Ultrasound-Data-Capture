@@ -168,6 +168,18 @@ class IMU:
             5: BandwidthSelect.bandwidth_5_Hz}[bandwidth]
         self.imu.send_config_command(wm.protocol.ConfigCommand(register=RegisterExtra.bandwidth, data=sel.value))
 
+    def setAlgorithm(self, algorithmType):
+        """
+        Set the algorithm of the IMU. It can either be 6-axis (without the use of a magnetometer), or 9-axis (with a
+        magnetometer). Using the 6-axis algorithm can reduce transient settling of the orientation angles. Using the
+        9-axis algorithm uses north as the reference angle.
+
+        Args:
+            algorithmType (int): Either 6 or 9.
+        """
+        print(f'Setting the algorithm of the IMU: {algorithmType}-axis.')
+        self.imu.set_algorithm_dof(algorithmType)
+
     def calibrateAcceleration(self):
         """
         Tell the IMU to calibrate its accelerometer. The IMU should be placed flat on a horizontal service for 5 seconds

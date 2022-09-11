@@ -115,6 +115,8 @@ class DataCaptureDisplay:
                 self.imu.setReturnRate(float(event.split('Hz')[0]))
             elif event.endswith('::-MENU-IMU-BANDWIDTH-'):
                 self.imu.setBandwidth(int(event.split('Hz')[0]))
+            elif event.endswith('::-MENU-IMU-ALGORITHM-'):
+                self.imu.setAlgorithm(int(event.split('-')[0]))
             elif event.endswith('::-MENU-IMU-CALIBRATE-'):
                 self.imu.calibrateAcceleration()
 

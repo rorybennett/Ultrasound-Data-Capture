@@ -55,6 +55,12 @@ IMU_BANDWIDTH_OPTIONS = [
     "5Hz"
 ]
 
+# Available algorithms for the IMU, either 6-axis (without magnetometer) or 9-axis.
+IMU_ALGORITHM_OPTIONS = [
+    '6-Axis (without magnetometer)',
+    '9-Axis (with magnetometer)'
+]
+
 # Number of available video sources. It is highly unlikely that more than 5 sources will be present, but if there are
 # more this value can be increased. The values will range from 0 (inclusive) to VIDEO_SOURCES (inclusive)
 SIGNAL_SOURCES = 5
