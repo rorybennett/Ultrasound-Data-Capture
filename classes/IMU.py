@@ -1,7 +1,11 @@
 """
 IMU class for handling the IMU connection and messages. The Witmotion Python module is maintained by some rando and not
 by the company. It is also not complete, as some quite basic functionality is missing. It does enough for now.
+
+The extra classes at the bottom are used to expand on the Witmotion library capabilities.
 """
+from enum import Enum
+
 import witmotion as wm
 import time
 import serial.tools.list_ports
@@ -142,6 +146,28 @@ class IMU:
         print(f'Setting return rate of IMU: {rate}Hz')
         self.imu.set_update_rate(rate)
 
+    def setBandwidth(self, bandwidth):
+        """
+        Set the bandwidth of the IMU in Hz. If a high return rate of 200Hz is required, the bandwidth must be set
+        to a higher rate (256Hz), if it is not increased the IMU will return repeat values.
+
+        The Witmotion library does not have the capability to change the bandwidth, so it is mostly done here
+        using lower level functions.
+
+        Args:
+            bandwidth (int): Requested bandwidth as int. One of the values in the constants.py file.
+        """
+        print(f'Setting bandwidth of IMU: {bandwidth}Hz')
+        sel = {
+            256: BandwidthSelect.bandwidth_256_Hz,
+            184: BandwidthSelect.bandwidth_188_Hz,
+            94: BandwidthSelect.bandwidth_98_Hz,
+            42: BandwidthSelect.bandwidth_42_Hz,
+            21: BandwidthSelect.bandwidth_20_Hz,
+            10: BandwidthSelect.bandwidth_10_Hz,
+            5: BandwidthSelect.bandwidth_5_Hz}[bandwidth]
+        self.imu.send_config_command(wm.protocol.ConfigCommand(register=RegisterExtra.bandwidth, data=sel.value))
+
     def calibrateAcceleration(self):
         """
         Tell the IMU to calibrate its accelerometer. The IMU should be placed flat on a horizontal service for 5 seconds
@@ -154,3 +180,23 @@ class IMU:
         todo Print message stating that IMU will be calibrated
         """
         self.imu.send_config_command(wm.protocol.ConfigCommand(register=wm.protocol.Register.calsw, data=0x01))
+
+
+class BandwidthSelect(Enum):
+    """
+    Supplementary class to set the bandwidth of the IMU.
+    """
+    bandwidth_256_Hz = 0x00
+    bandwidth_188_Hz = 0x01
+    bandwidth_98_Hz = 0x02
+    bandwidth_42_Hz = 0x03
+    bandwidth_20_Hz = 0x04
+    bandwidth_10_Hz = 0x05
+    bandwidth_5_Hz = 0x06
+
+
+class RegisterExtra(Enum):
+    """
+    Supplementary class for registry editing.
+    """
+    bandwidth = 0x1f

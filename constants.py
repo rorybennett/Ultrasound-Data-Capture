@@ -44,6 +44,17 @@ IMU_RATE_OPTIONS = [
     "200Hz"
 ]
 
+# Available bandwidths for the IMU. Higher bandwidths should be used with higher return rates.
+IMU_BANDWIDTH_OPTIONS = [
+    "256Hz",
+    "188Hz",
+    "98Hz",
+    "42Hz",
+    "20Hz",
+    "10Hz",
+    "5Hz"
+]
+
 # Number of available video sources. It is highly unlikely that more than 5 sources will be present, but if there are
 # more this value can be increased. The values will range from 0 (inclusive) to VIDEO_SOURCES (inclusive)
 SIGNAL_SOURCES = 5
