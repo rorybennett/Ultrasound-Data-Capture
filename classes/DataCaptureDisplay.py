@@ -146,6 +146,7 @@ class DataCaptureDisplay:
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
+
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}')
 
     def getFramesThread(self):

@@ -70,7 +70,8 @@ class PlottingProcess:
         """
         self.plottingQueue = self.manager.LifoQueue()
         self.pool = multiprocessing.Pool(1)
-        self.plottingAsyncProcess = self.pool.apply_async(plottingProcess, (self.plottingQueue, self.screenDimensions,))
+        self.plottingAsyncProcess = self.pool.apply_async(plottingProcess,
+                                                          args=(self.plottingQueue, self.screenDimensions))
 
     def plotOrientation(self, quaternion):
         """
@@ -104,7 +105,7 @@ def plottingProcess(lifoQueue, screenDimensions):
     """
     print('Starting plotting process...')
     plottingWindow = sg.Window('Orientation Plot', Layout.getPlottingWindowLayout(), element_justification='c',
-                               finalize=True, location=(screenDimensions[0] - 600, 50))
+                               finalize=True, location=(screenDimensions[0] - 600, 50), disable_close=True)
 
     fig = Figure(figsize=(5, 5), dpi=100)
     ax = fig.add_subplot(111, projection='3d')
@@ -143,12 +144,8 @@ def plottingProcess(lifoQueue, screenDimensions):
                 figure_canvas_agg.draw()
         except queue.Empty:
             pass
-
-        event, values = plottingWindow.read(timeout=10)
-
-        if event in [sg.WIN_CLOSED, 'None']:
-            # On window close.
-            break
+        # Enable read of window at 10fps.
+        plottingWindow.read(timeout=10)
 
     plottingWindow.close()
     print('Ending plotting process...')
