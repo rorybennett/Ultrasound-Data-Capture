@@ -165,6 +165,7 @@ class DataCaptureDisplay:
             self.framesToRecord = []
             self.accelerationsToRecord = []
             self.quaternionsToRecord = []
+            self.frameRecordTimes = []
             self.frameGrabCounter = 1
             self.recordStartTime = time.time()
             self.windowMain['-TXT-RECORD-START-'].update(time.strftime('%H:%M:%S'))
@@ -172,7 +173,7 @@ class DataCaptureDisplay:
         else:
             self.enableRecording = False
             time.sleep(0.03)
-            print(f'Frames to saved: {len(self.framesToRecord)}, Timestamps: {len(self.frameRecordTimes)}.')
+            print(f'Frames to save: {len(self.framesToRecord)}, Timestamps: {len(self.frameRecordTimes)}.')
             for index, frameData in enumerate(self.framesToRecord):
                 frameName = f'{index + 1}-{self.frameRecordTimes[index]}'
                 self.recordFrame(frameName, frameData, self.accelerationsToRecord[index],
