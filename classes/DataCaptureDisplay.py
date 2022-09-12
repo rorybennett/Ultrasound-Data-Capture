@@ -50,8 +50,12 @@ class DataCaptureDisplay:
         self.threadExecutor = ThreadPoolExecutor()
         # Recording variables for storing (signal and IMU).
         self.frameRaw = None
+        self.framesToRecord = []
         self.acceleration = None
+        self.accelerationsToRecord = []
         self.quaternion = None
+        self.quaternionsToRecord = []
+        self.frameRecordTimes = []
         # Is frame available for resize?
         self.resizeFrame = False
         # Must the frame be saved?
@@ -146,8 +150,41 @@ class DataCaptureDisplay:
             guiDt = time.time() - guiFps1
             guiFps = int(1 / guiDt) if guiDt > 0.00999 else '100+'
 
-
             self.windowMain['-TXT-GUI-RATE-'].update(f'{guiFps}')
+
+    def toggleRecording(self):
+        """
+        Toggle self.enableRecording. If recording is disabled, the data stored in memory is saved to disk.
+        """
+        print(f'Enable Recording: {not self.enableRecording}')
+
+        # Create video directory for saving frames.
+        if not self.enableRecording:
+            self.currentRecordingPath, self.currentDataFilePath = ut.createRecordingDirectory(self.videosPath)
+            self.currentDataFile = open(self.currentDataFilePath, 'w')
+            self.framesToRecord = []
+            self.accelerationsToRecord = []
+            self.quaternionsToRecord = []
+            self.frameGrabCounter = 1
+            self.recordStartTime = time.time()
+            self.windowMain['-TXT-RECORD-START-'].update(time.strftime('%H:%M:%S'))
+            self.enableRecording = True
+        else:
+            self.enableRecording = False
+            time.sleep(0.03)
+            print(f'Frames to saved: {len(self.framesToRecord)}, Timestamps: {len(self.frameRecordTimes)}.')
+            for index, frameData in enumerate(self.framesToRecord):
+                frameName = f'{index + 1}-{self.frameRecordTimes[index]}'
+                self.recordFrame(frameName, frameData, self.accelerationsToRecord[index],
+                                 self.quaternionsToRecord[index])
+            print('In memory frames have been recorded to disk.')
+            self.currentDataFile.close()
+
+        # Set element states.
+        self.windowMain['-BTN-RECORD-TOGGLE-'].update(
+            button_color=st.COL_BTN_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
+            text='Stop Recording' if self.enableRecording else 'Start Recording')
+        self.windowMain['-BTN-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
     def getFramesThread(self):
         """
@@ -173,9 +210,14 @@ class DataCaptureDisplay:
                 signalDt = time.time() - signalFps1
                 signalFps = int(1 / signalDt) if signalDt != 0 else 100
                 self.windowMain.write_event_value(key='-THD-SIGNAL-RATE-', value=signalFps)
-                # Record frames?
+                # Is recording enabled?
                 if self.enableRecording:
-                    self.saveFrame = True
+                    self.framesToRecord.append(self.frameRaw)
+                    self.accelerationsToRecord.append(self.acceleration)
+                    self.quaternionsToRecord.append(self.quaternion)
+                    self.frameRecordTimes.append(int(time.time() * 1000))
+                    self.frameGrabCounter += 1
+                    self.windowMain.write_event_value(key='-THD-FRAMES-SAVED-', value=self.frameGrabCounter)
 
                 # Display enabled?
                 if self.enableDisplay:
@@ -214,28 +256,6 @@ class DataCaptureDisplay:
         print('-------------------------------------------\nThread closing down: '
               'resizeFramesThread.\n-------------------------------------------')
         self.windowMain.write_event_value(key='-THD-RESIZE-RATE-', value=0)
-
-    def saveFramesThread(self):
-        """
-        Thread for recording frames and IMU data as a series of frames. The getFramesThread checks if recording is
-        enabled, if it is then the getFramesThread sets the self.saveFrame variable to True. When the self.saveFrame
-        variable is True in the saveFramesThread the frame and IMU data is recorded. The IMU data will most
-        likely be out of sync with the frames, but only marginally.
-        """
-        print('Thread starting up: saveFramesThread.\n')
-        while self.frameGrabber.isConnected:
-            if self.saveFrame:
-                self.saveFrame = False
-                frameName = f'{self.frameGrabCounter}-{int(time.time() * 1000)}'
-                self.recordFrame(frameName, self.frameRaw, self.acceleration, self.quaternion)
-                self.frameGrabCounter += 1
-                self.windowMain.write_event_value(key='-THD-FRAMES-SAVED-', value=self.frameGrabCounter)
-            else:
-                # When not recording the empty while loop causes issues for the controlling process.
-                time.sleep(0.001)
-
-        print('-------------------------------------------\nThread closing down: '
-              'saveFramesThread.\n-------------------------------------------')
 
     def recordFrame(self, frameName, frame, acceleration, quaternion):
         """
@@ -280,7 +300,6 @@ class DataCaptureDisplay:
         # Start frame threads.
         self.threadExecutor.submit(self.getFramesThread)
         self.threadExecutor.submit(self.resizeFramesThread)
-        self.threadExecutor.submit(self.saveFramesThread)
         # Update menus.
         self.updateMenus()
         # Set element states.
@@ -298,30 +317,6 @@ class DataCaptureDisplay:
         # Set element states.
         self.windowMain['-TXT-RECORD-END-'].update(time.strftime('%H:%M:%S', time.localtime(endTime)))
         self.windowMain['-TXT-RECORD-ELAPSED-'].update(time.strftime('%H:%M:%S', time.localtime(elapsedTime)))
-
-    def toggleRecording(self):
-        """
-        Toggle self.enableRecording. When in the recording state various elements are disabled.
-        """
-        self.enableRecording = not self.enableRecording
-        print(f'Enable Recording: {self.enableRecording}')
-
-        # Create video directory for saving frames.
-        if self.enableRecording:
-            self.currentRecordingPath, self.currentDataFilePath = ut.createRecordingDirectory(self.videosPath)
-            self.currentDataFile = open(self.currentDataFilePath, 'w')
-            self.frameGrabCounter = 1
-            self.recordStartTime = time.time()
-            self.windowMain['-TXT-RECORD-START-'].update(time.strftime('%H:%M:%S'))
-        else:
-            print(f'Closing data file {self.currentDataFilePath}...\n')
-            self.currentDataFile.close()
-
-        # Set element states.
-        self.windowMain['-BTN-RECORD-TOGGLE-'].update(
-            button_color=st.COL_BTN_ACTIVE if self.enableRecording else sg.DEFAULT_BUTTON_COLOR,
-            text='Stop Recording' if self.enableRecording else 'Start Recording')
-        self.windowMain['-BTN-SNAPSHOT-'].update(disabled=True if self.enableRecording else False)
 
     def updateAccelerations(self):
         """
