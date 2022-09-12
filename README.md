@@ -65,7 +65,7 @@ Once connected, the return rate of the IMU can be set and the accelerometer can 
 
 ### Basic Operation: Saving data
 
-Frames from the video/input signal (USB-port) are synced with data streamed from an IMU device (bluetooth)
+Frames from the video/input signal (USB-port) are stored with data streamed from an IMU device (bluetooth)
 and the results stored as:
 
 - A series of .png files, each .png corresponding to a frame from the input signal. The name of the
@@ -91,6 +91,7 @@ To start a recording click the 'Start Recording' button. This will start saving 
 and IMU data in the data.txt file. If no IMU is connected, the images are still saved and the IMU data is
 assumed to be zero.
 
+
 ## WITMOTION IMU Settings
 
 The IMU sensor must be connected to the laptop/computer via bluetooth so that the COM ports are assigned.
@@ -110,3 +111,8 @@ straightforward should you want to change the code a little.
   in a new window when enabled. This has removed the need for blit and should no longer slow the frame grabbing down.
 - This project/program is run directly from PyCharm, and if any other libraries are required an error
   message will be shown.
+- The program now stored the frames and IMU data in memory while recording, and when the recording is finished
+  all the in-memory data is saved to disk. This was done to increase the speed at which frames could
+  be grabbed (write operations tend to be quite slow) but it also results in a much higher memory usage.
+  Do not run a recording for too long, otherwise the system will run out of available RAM. Try and keep
+  recordings below 1 to 2 minutes.
