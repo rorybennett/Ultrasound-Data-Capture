@@ -175,9 +175,13 @@ class DataCaptureDisplay:
             time.sleep(0.03)
             print(f'Frames to save: {len(self.framesToRecord)}, Timestamps: {len(self.frameRecordTimes)}.')
             for index, frameData in enumerate(self.framesToRecord):
+                sg.PopupAnimated(image_source=sg.DEFAULT_BASE64_LOADING_GIF, message='Saving to disk...',
+                                 keep_on_top=True, time_between_frames=100, text_color='black',
+                                 background_color=sg.DEFAULT_BACKGROUND_COLOR)
                 frameName = f'{index + 1}-{self.frameRecordTimes[index]}'
                 self.recordFrame(frameName, frameData, self.accelerationsToRecord[index],
                                  self.quaternionsToRecord[index])
+            sg.PopupAnimated(None)
             print('In memory frames have been recorded to disk.')
             self.currentDataFile.close()
 
