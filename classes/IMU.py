@@ -189,8 +189,8 @@ class IMU:
         Take note that the orientation of the IMU affects the calibration. If after calibration the IMU is rolled by
         180 degrees and the z-acceleration is not roughly -9.8m/s^2 it means the IMU was "upside-down" during
         calibration.
-        todo Print message stating that IMU will be calibrated
         """
+        print('Calibrating accelerometer. Do not move the device for 5 seconds...')
         self.imu.send_config_command(wm.protocol.ConfigCommand(register=wm.protocol.Register.calsw, data=0x01))
 
 

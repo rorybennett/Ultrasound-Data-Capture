@@ -3,8 +3,6 @@ This file contains constant values used by the program.
 """
 
 # List of commonly used baud rates, add more if required.
-import numpy as np
-
 COMMON_BAUD_RATES = [
     2400,
     4800,
@@ -21,11 +19,17 @@ COMMON_BAUD_RATES = [
 # Points used for visual representation of the ultrasound probe in a 3D space. Order matters.
 PROBE_POINTS = [
     [0, 0, 0],
-    [-1, -.3, 0],
+    [-.5, -.06, 0],
+    [-1, -.2, 0],
+    [-1.5, -.5, 0],
     [-2, -.8, 0],
-    [0, -6, 0],
+    [-.8, -6, 0],
+    [.8, -6, 0],
     [2, -.8, 0],
-    [1, -.3, 0]]
+    [1.5, -.5, 0],
+    [1, -.2, 0],
+    [.5, -.06, 0]
+]
 
 # Default azimuth value used for the 3D plot.
 AZIMUTH = 30
@@ -87,6 +91,3 @@ DEFAULT_SCAN_DEPTH = 150
 # If a point is added within this radius, the nearest point is removed instead (as a fraction).
 DEFAULT_POINT_RADIUS = 0.01
 
-# Constant used in the bullet equation.
-BULLET_CONSTANT = 5 * np.pi / 24
-# BULLET_CONSTANT = 0.65

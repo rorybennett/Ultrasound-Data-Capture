@@ -2,7 +2,7 @@
 Class for handling all layouts used in DataCaptureDisplay. This class is intended to clean up the DataCaptureDisplay
 class to make the code more readable. Future layout updates should be easier with the separation.
 
-There is one primary layout:
+There is one primary layout, a layout for plotting the probe orientation, and an IMU connection layout.
 
 """
 import constants as c
@@ -19,6 +19,33 @@ def getPlottingWindowLayout() -> list:
     """
     layout = [
         [sg.Canvas(k='-CANVAS-PLOT-', size=(500, 500))]
+    ]
+
+    return layout
+
+
+def getImuWindowLayout(availableComPorts, comPort, baudRate) -> list:
+    """
+    Create the layout for the IMU connection window.
+
+    Args:
+        availableComPorts (list): A list of available COM ports.
+        comPort (string): Default COM port to show in COMBO box.
+        baudRate (int): Default baud rate to show in COMBO box.
+
+    Returns:
+        layout (list): Layout in the form of a list.
+    """
+    layout = [
+        [sg.Button(k='-BTN-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+                   image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
+         sg.Combo(k='-COMBO-COM-PORT-', values=availableComPorts, size=7, font=st.FONT_COMBO,
+                  enable_events=True, readonly=True, default_value=comPort, pad=((0, 0), (20, 0))),
+         sg.Text('Baud Rate:', justification='right', font=st.FONT_DESCR, pad=((20, 0), (20, 0))),
+         sg.Combo(k='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.FONT_COMBO,
+                  enable_events=True, readonly=True, default_value=baudRate, pad=((0, 0), (20, 0)))],
+        [sg.HSeparator(pad=((10, 10), (20, 20)))],
+        [sg.Button(k='-BTN-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
     ]
 
     return layout
@@ -159,32 +186,6 @@ class Layout:
 
         layout = [
             [frameRateDetails]
-        ]
-
-        return layout
-
-    def getImuWindowLayout(self, availableComPorts, comPort, baudRate) -> list:
-        """
-        Create the layout for the IMU connection window.
-
-        Args:
-            availableComPorts (list): A list of available COM ports.
-            comPort (string): Default COM port to show in COMBO box.
-            baudRate (int): Default baud rate to show in COMBO box.
-
-        Returns:
-            layout (list): Layout in the form of a list.
-        """
-        layout = [
-            [sg.Button(k='-BTN-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-                       image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
-             sg.Combo(k='-COMBO-COM-PORT-', values=availableComPorts, size=7, font=st.FONT_COMBO,
-                      enable_events=True, readonly=True, default_value=comPort, pad=((0, 0), (20, 0))),
-             sg.Text('Baud Rate:', justification='right', font=st.FONT_DESCR, pad=((20, 0), (20, 0))),
-             sg.Combo(k='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.FONT_COMBO,
-                      enable_events=True, readonly=True, default_value=baudRate, pad=((0, 0), (20, 0)))],
-            [sg.HSeparator(pad=((10, 10), (20, 20)))],
-            [sg.Button(k='-BTN-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
         ]
 
         return layout

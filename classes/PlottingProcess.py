@@ -97,7 +97,8 @@ def plottingProcess(lifoQueue, screenDimensions):
     """
     Method to be run in an async_process pool for plotting orientation of a probe using a quaternion that is sent using
     the Last In First Out queue approach. The probe points in the constants file are rotated by the quaternion
-    value and plot as red dots. A surface is fit to the dots using trisurf.
+    value and plot as red dots. A surface is fit to the dots using trisurf. The 'close' button of the window is
+    disabled, so the window can only be closed by the main window button.
 
     Args:
         lifoQueue (LifoQueue): MyManager queue object operating with LIFO principle.
@@ -106,7 +107,7 @@ def plottingProcess(lifoQueue, screenDimensions):
     print('Starting plotting process...')
     plottingWindow = sg.Window('Orientation Plot', Layout.getPlottingWindowLayout(), element_justification='c',
                                finalize=True, location=(screenDimensions[0] - 600, 50), disable_close=True)
-
+    # Plot variables.
     fig = Figure(figsize=(5, 5), dpi=100)
     ax = fig.add_subplot(111, projection='3d')
     fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
@@ -131,6 +132,7 @@ def plottingProcess(lifoQueue, screenDimensions):
             if newQuaternion == '-END-PROCESS-':
                 break
             elif len(newQuaternion) == 4:
+                # Rotate the probe points using the given quaternion.
                 rpp = rotatePoints(c.PROBE_POINTS, newQuaternion)
                 ax.cla()
                 ax.set_xlim([-5, 5])
@@ -145,7 +147,7 @@ def plottingProcess(lifoQueue, screenDimensions):
         except queue.Empty:
             pass
         # Enable read of window at 10fps.
-        plottingWindow.read(timeout=10)
+        plottingWindow.read(timeout=100)
 
     plottingWindow.close()
     print('Ending plotting process...')

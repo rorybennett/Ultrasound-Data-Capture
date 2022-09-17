@@ -30,8 +30,7 @@ class FrameGrabber:
             height (int, optional): Requested pixel height of video signal. Defaults to 480.
             fps (int, optional): Requested frame rate of video signal. Defaults to 100.
         """
-
-        self.fps = fps
+        self.fps = fps  # Frame rate of the signal, not really used
         self.signalSource = signalSource  # Source of video signal
         self.width = width  # Pixel width of signal
         self.height = height  # Pixel height of signal
