@@ -106,9 +106,9 @@ def plottingProcess(lifoQueue, screenDimensions):
     """
     print('Starting plotting process...')
     plottingWindow = sg.Window('Orientation Plot', Layout.getPlottingWindowLayout(), element_justification='c',
-                               finalize=True, location=(screenDimensions[0] - 600, 50), disable_close=True)
+                               finalize=True, location=(screenDimensions[0] - 450, 50), disable_close=True)
     # Plot variables.
-    fig = Figure(figsize=(5, 5), dpi=100)
+    fig = Figure(figsize=(3.5, 3.5), dpi=100)
     ax = fig.add_subplot(111, projection='3d')
     fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
 
@@ -146,8 +146,8 @@ def plottingProcess(lifoQueue, screenDimensions):
                 figure_canvas_agg.draw()
         except queue.Empty:
             pass
-        # Enable read of window at 10fps.
-        plottingWindow.read(timeout=100)
+        # Enable read of window at 50fps.
+        plottingWindow.read(timeout=20)
 
     plottingWindow.close()
     print('Ending plotting process...')

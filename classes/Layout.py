@@ -18,7 +18,7 @@ def getPlottingWindowLayout() -> list:
         layout (list): Layout in list form.
     """
     layout = [
-        [sg.Canvas(k='-CANVAS-PLOT-', size=(500, 500))]
+        [sg.Canvas(k='-CANVAS-PLOT-', size=(350, 350))]
     ]
 
     return layout
