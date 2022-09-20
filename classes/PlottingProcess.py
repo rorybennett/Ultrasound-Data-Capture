@@ -132,6 +132,13 @@ def plottingProcess(lifoQueue, screenDimensions):
             if newQuaternion == '-END-PROCESS-':
                 break
             elif len(newQuaternion) == 4:
+                # Empty the queue of older variables.
+                while not lifoQueue.empty():
+                    try:
+                        lifoQueue.get(False)
+                    except queue.Empty:
+                        continue
+                    lifoQueue.task_done()
                 # Rotate the probe points using the given quaternion.
                 rpp = rotatePoints(c.PROBE_POINTS, newQuaternion)
                 ax.cla()
