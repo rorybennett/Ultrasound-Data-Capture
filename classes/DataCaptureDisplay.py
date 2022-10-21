@@ -381,8 +381,8 @@ class DataCaptureDisplay:
         are being updated in the main GUI.
         """
         self.windowImuConnect = sg.Window('Connect to IMU',
-                                          self.layout.getImuWindowLayout(self.availableComPorts, self.imu.comPort,
-                                                                         self.imu.baudRate),
+                                          Layout.getImuWindowLayout(self.availableComPorts, self.imu.comPort,
+                                                                    self.imu.baudRate),
                                           element_justification='center', modal=True)
 
         while True:
