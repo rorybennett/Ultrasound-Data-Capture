@@ -37,15 +37,15 @@ def getImuWindowLayout(availableComPorts, comPort, baudRate) -> list:
         layout (list): Layout in the form of a list.
     """
     layout = [
-        [sg.Button(k='-BTN-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-                   image_subsample=4, border_width=3, pad=((0, 10), (20, 0))),
+        [sg.B(k='-BTN-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+                   image_subsample=4, border_width=3, p=((0, 10), (20, 0))),
          sg.Combo(k='-COMBO-COM-PORT-', values=availableComPorts, size=7, font=st.FONT_COMBO,
-                  enable_events=True, readonly=True, default_value=comPort, pad=((0, 0), (20, 0))),
-         sg.Text('Baud Rate:', justification='right', font=st.FONT_DESCR, pad=((20, 0), (20, 0))),
+                  enable_events=True, readonly=True, default_value=comPort, p=((0, 0), (20, 0))),
+         sg.T('Baud Rate:', justification='right', font=st.FONT_DESCR, p=((20, 0), (20, 0))),
          sg.Combo(k='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.FONT_COMBO,
-                  enable_events=True, readonly=True, default_value=baudRate, pad=((0, 0), (20, 0)))],
-        [sg.HSeparator(pad=((10, 10), (20, 20)))],
-        [sg.Button(k='-BTN-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
+                  enable_events=True, readonly=True, default_value=baudRate, p=((0, 0), (20, 0)))],
+        [sg.HSeparator(p=((10, 10), (20, 20)))],
+        [sg.B(k='-BTN-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
     ]
 
     return layout
@@ -77,9 +77,9 @@ class Layout:
         layout = [
             [sg.Menu(k='-MENU-', menu_definition=self.menu.getMenu())],
             [displayRow],
-            [sg.HSep(pad=((0, 0), (0, 10)))],
+            [sg.HSep(p=((0, 0), (0, 10)))],
             [recordRow],
-            [sg.HSep(pad=((0, 0), (0, 10)))],
+            [sg.HSep(p=((0, 0), (0, 10)))],
             [miscellaneousRow]
         ]
 
@@ -96,23 +96,23 @@ class Layout:
         """
         displayColumn = [
             [sg.Image(k='-IMAGE-FRAME-', size=c.DISPLAY_DIMENSIONS, background_color='#000000',
-                      pad=(0, 0))],
-            [sg.Text(k='-TXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
-                     justification='left', pad=(0, 0)),
-             sg.Text(text=' Signal FPS: ', justification='right', font=st.FONT_INFO, pad=(0, 0)),
-             sg.Text(k='-TXT-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, size=(3, 1),
-                     pad=(0, 0))]
+                      p=(0, 0))],
+            [sg.T(k='-TXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
+                     justification='left', p=(0, 0)),
+             sg.T(text=' Signal FPS: ', justification='right', font=st.FONT_INFO, p=(0, 0)),
+             sg.T(k='-TXT-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, size=(3, 1),
+                     p=(0, 0))]
         ]
 
         imuColumn = [
-            [sg.Text('IMU Accelerations', font=st.FONT_DESCR, pad=((5, 0), (10, 0)))],
-            [sg.Text(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
+            [sg.T('IMU Accelerations', font=st.FONT_DESCR, p=((5, 0), (10, 0)))],
+            [sg.T(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
                      size=(25, 1))],
-            [sg.Button(k='-BTN-PLOT-TOGGLE-', button_text='Enable Orientation', size=(15, 1),
-                       font=st.FONT_BTN, border_width=3, pad=((0, 0), (0, 5)))],
-            [sg.Button(k='-BTN-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
+            [sg.B(k='-BTN-PLOT-TOGGLE-', button_text='Enable Orientation', size=(15, 1),
+                       font=st.FONT_BTN, border_width=3, p=((0, 0), (0, 5)))],
+            [sg.B(k='-BTN-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
                        font=st.FONT_BTN,
-                       border_width=3, pad=((0, 0), (5, 0)), button_color=st.COL_BTN_ACTIVE)]
+                       border_width=3, p=((0, 0), (5, 0)), button_color=st.COL_BTN_ACTIVE)]
         ]
 
         layout = [
@@ -131,36 +131,36 @@ class Layout:
             layout (list): Layout in the form of a list.
         """
         recordStartColumn = [
-            [sg.Text(text='Record Start', font=st.FONT_DESCR)],
-            [sg.Text(k='-TXT-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
+            [sg.T(text='Record Start', font=st.FONT_DESCR)],
+            [sg.T(k='-TXT-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
                      justification='center')]
         ]
 
         recordEndColumn = [
-            [sg.Text(text='Record End', font=st.FONT_DESCR)],
-            [sg.Text(k='-TXT-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1), justification='center')]
+            [sg.T(text='Record End', font=st.FONT_DESCR)],
+            [sg.T(k='-TXT-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1), justification='center')]
         ]
 
         recordElapsedColumn = [
-            [sg.Text(text='Elapsed Time', font=st.FONT_DESCR)],
-            [sg.Text(k='-TXT-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
+            [sg.T(text='Elapsed Time', font=st.FONT_DESCR)],
+            [sg.T(k='-TXT-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
                      justification='center')]
         ]
 
         recordFramesColumn = [
-            [sg.Text(text='Frames saved', font=st.FONT_DESCR)],
-            [sg.Text(k='-TXT-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, size=(12, 1), justification='center')]
+            [sg.T(text='Frames saved', font=st.FONT_DESCR)],
+            [sg.T(k='-TXT-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, size=(12, 1), justification='center')]
         ]
 
         layout = [
-            [sg.Button(k='-BTN-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.FONT_BTN,
-                       border_width=3, pad=((0, 20), (0, 0)), disabled=True),
-             sg.Button(k='-BTN-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.FONT_BTN,
-                       border_width=3, pad=((0, 0), (0, 0)), disabled=True),
-             sg.Column(recordStartColumn, element_justification='center', pad=(0, 0)),
-             sg.Column(recordEndColumn, element_justification='center', pad=(0, 0)),
-             sg.Column(recordElapsedColumn, element_justification='center', pad=(0, 0)),
-             sg.Column(recordFramesColumn, element_justification='center', pad=(0, 0))]
+            [sg.B(k='-BTN-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.FONT_BTN,
+                       border_width=3, p=((0, 20), (0, 0)), disabled=True),
+             sg.B(k='-BTN-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.FONT_BTN,
+                       border_width=3, p=((0, 0), (0, 0)), disabled=True),
+             sg.Column(recordStartColumn, element_justification='center', p=(0, 0)),
+             sg.Column(recordEndColumn, element_justification='center', p=(0, 0)),
+             sg.Column(recordElapsedColumn, element_justification='center', p=(0, 0)),
+             sg.Column(recordFramesColumn, element_justification='center', p=(0, 0))]
         ]
 
         return layout
@@ -174,14 +174,14 @@ class Layout:
             layout (list): Layout in the form of a list.
         """
         frameRateDetails = [
-            [sg.Text(text='GUI: ', justification='right', font=st.FONT_INFO, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
+            [sg.T(text='GUI: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=sg.RELIEF_SUNKEN,
                      border_width=2),
-             sg.Text(k='-TXT-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
-                     size=(4, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2),
-             sg.Text(text=' Resize: ', justification='right', font=st.FONT_INFO, pad=(0, 0), relief=sg.RELIEF_SUNKEN,
+             sg.T(k='-TXT-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
+                     size=(4, 1), p=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2),
+             sg.T(text=' Resize: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=sg.RELIEF_SUNKEN,
                      border_width=2),
-             sg.Text(k='-TXT-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
-                     size=(3, 1), pad=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
+             sg.T(k='-TXT-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
+                     size=(3, 1), p=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
         ]
 
         layout = [
