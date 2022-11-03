@@ -28,7 +28,7 @@ def create_initial_directories() -> (Path, Path):
         single_frames_path (Path): Path of the SingleFrames directory.
         videos_path (Path): Path of the Videos directory.
     """
-    current_working_directory = Path.cwd()
+    current_working_directory = Path.cwd().parent
 
     single_frames_path = Path(current_working_directory, 'Generated/SingleFrames')
     single_frames_path.mkdir(parents=True, exist_ok=True)

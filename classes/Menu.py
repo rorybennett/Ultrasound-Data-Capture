@@ -50,17 +50,17 @@ class Menu:
         """
         if not self.frameGrabberConnected:
             self.signalMenu = ['Signal Source', ['Connect to Source',
-                                                 [f'{i}::-MENU-SIGNAL-CONNECT-' for i in
+                                                 [f'{i}::-M-SIGNAL-CONNECT-' for i in
                                                   range(0, c.SIGNAL_SOURCES + 1)],
                                                  '---',
                                                  '!Change Signal Dimensions',
                                                  ]
                                ]
         if self.frameGrabberConnected:
-            self.signalMenu = ['Signal Source', ['Disconnect from Source::-MENU-SIGNAL-DISCONNECT-',
+            self.signalMenu = ['Signal Source', ['Disconnect from Source::-M-SIGNAL-DISCONNECT-',
                                                  '---',
                                                  'Change Signal Dimensions',
-                                                 [f'{i[0]}::-MENU-SIGNAL-DIMENSIONS-' for i in
+                                                 [f'{i[0]}::-M-SIGNAL-DIMENSIONS-' for i in
                                                   c.COMMON_SIGNAL_DIMENSIONS]
                                                  ]
                                ]
@@ -77,20 +77,20 @@ class Menu:
                                     calibration.
         """
         if not self.imuConnected:
-            self.imuImenu = ['IMU', ['Connect::-MENU-IMU-CONNECT-',
+            self.imuImenu = ['IMU', ['Connect::-M-IMU-CONNECT-',
                                      '---',
                                      '!Set Return Rate',
                                      '!Set Bandwidth',
                                      '!Set Algorithm',
-                                     '!Calibrate Acceleration::-MENU-IMU-CALIBRATE-']
+                                     '!Calibrate Acceleration::-M-IMU-CALIBRATE-']
                              ]
         if self.imuConnected:
-            self.imuImenu = ['IMU', ['Disconnect::-MENU-IMU-DISCONNECT-',
+            self.imuImenu = ['IMU', ['Disconnect::-M-IMU-DISCONNECT-',
                                      '---',
-                                     'Set Return Rate', [f'{i}::-MENU-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
-                                     'Set Bandwidth', [f'{i}::-MENU-IMU-BANDWIDTH-' for i in c.IMU_BANDWIDTH_OPTIONS],
-                                     'Set Algorithm', [f'{i}::-MENU-IMU-ALGORITHM-' for i in c.IMU_ALGORITHM_OPTIONS],
-                                     'Calibrate Acceleration::-MENU-IMU-CALIBRATE-']
+                                     'Set Return Rate', [f'{i}::-M-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
+                                     'Set Bandwidth', [f'{i}::-M-IMU-BANDWIDTH-' for i in c.IMU_BANDWIDTH_OPTIONS],
+                                     'Set Algorithm', [f'{i}::-M-IMU-ALGORITHM-' for i in c.IMU_ALGORITHM_OPTIONS],
+                                     'Calibrate Acceleration::-M-IMU-CALIBRATE-']
                              ]
 
     def __generate_menus(self):

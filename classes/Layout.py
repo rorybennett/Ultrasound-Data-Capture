@@ -5,6 +5,8 @@ class to make the code more readable. Future layout updates should be easier wit
 There is one primary layout, a layout for plotting the probe orientation, and an IMU connection layout.
 
 """
+from pathlib import Path
+
 import PySimpleGUI as Psg
 
 import constants as c
@@ -38,8 +40,8 @@ def imu_layout(com_ports, com_port, baud_rate) -> list:
         layout (list): Layout in the form of a list.
     """
     layout = [
-        [Psg.B(k='-B-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-               image_subsample=4, border_width=3, p=((0, 10), (20, 0))),
+        [Psg.B(k='-B-COM-REFRESH-', button_text='', border_width=3, p=((0, 10), (20, 0)),
+               image_source=str(Path().absolute().parent) + '\\icons\\refresh_icon.png', image_subsample=4),
          Psg.Combo(k='-COMBO-COM-PORT-', values=com_ports, s=7, font=st.FONT_COMBO,
                    enable_events=True, readonly=True, default_value=com_port, p=((0, 0), (20, 0))),
          Psg.T('Baud Rate:', justification='right', font=st.FONT_DESCR, p=((20, 0), (20, 0))),
@@ -76,7 +78,7 @@ class Layout:
         miscellaneous_row = self.__create_miscellaneous_row()
 
         layout = [
-            [Psg.Menu(k='-MENU-', menu_definition=self.menu.get_menu())],
+            [Psg.Menu(k='-M-', menu_definition=self.menu.get_menu())],
             [display_row],
             [Psg.HSep(p=((0, 0), (0, 10)))],
             [record_row],
@@ -98,16 +100,16 @@ class Layout:
         display_column = [
             [Psg.Image(k='-IMAGE-FRAME-', s=c.DISPLAY_DIMENSIONS, background_color='#000000',
                        p=(0, 0))],
-            [Psg.T(k='-TXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
+            [Psg.T(k='-T-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
                    justification='left', p=(0, 0)),
              Psg.T(text=' Signal FPS: ', justification='right', font=st.FONT_INFO, p=(0, 0)),
-             Psg.T(k='-TXT-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, s=(3, 1),
+             Psg.T(k='-T-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, s=(3, 1),
                    p=(0, 0))]
         ]
 
         imu_column = [
             [Psg.T('IMU Accelerations', font=st.FONT_DESCR, p=((5, 0), (10, 0)))],
-            [Psg.T(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
+            [Psg.T(k='-T-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
                    s=(25, 1))],
             [Psg.B(k='-B-PLOT-TOGGLE-', button_text='Enable Orientation', s=(15, 1),
                    font=st.FONT_BTN, border_width=3, p=((0, 0), (0, 5)))],
@@ -133,24 +135,24 @@ class Layout:
         """
         record_start_column = [
             [Psg.T(text='Record Start', font=st.FONT_DESCR)],
-            [Psg.T(k='-TXT-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
+            [Psg.T(k='-T-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
                    justification='center')]
         ]
 
         record_end_column = [
             [Psg.T(text='Record End', font=st.FONT_DESCR)],
-            [Psg.T(k='-TXT-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1), justification='center')]
+            [Psg.T(k='-T-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1), justification='center')]
         ]
 
         record_elapsed_column = [
             [Psg.T(text='Elapsed Time', font=st.FONT_DESCR)],
-            [Psg.T(k='-TXT-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
+            [Psg.T(k='-T-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
                    justification='center')]
         ]
 
         record_frames_column = [
             [Psg.T(text='Frames saved', font=st.FONT_DESCR)],
-            [Psg.T(k='-TXT-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, s=(12, 1), justification='center')]
+            [Psg.T(k='-T-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, s=(12, 1), justification='center')]
         ]
 
         layout = [
@@ -177,11 +179,11 @@ class Layout:
         frame_rate_details = [
             [Psg.T(text='GUI: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
                    border_width=2),
-             Psg.T(k='-TXT-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
+             Psg.T(k='-T-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
                    s=(4, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2),
              Psg.T(text=' Resize: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
                    border_width=2),
-             Psg.T(k='-TXT-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
+             Psg.T(k='-T-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
                    s=(3, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2)]
         ]
 
