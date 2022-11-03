@@ -12,32 +12,32 @@ class Menu:
         self.signalMenu = None
         self.imuImenu = None
         # Initial creation of menus.
-        self.__generateMenus()
+        self.__generate_menus()
 
-    def getMenu(self, frameGrabberConnected=False, imuConnected=False):
+    def get_menu(self, frame_grabber_connected=False, imu_connected=False):
         """
         Return the current menu bar based on the parameter values given. The local parameter values are updated based on
         the given parameters and the menus are generated. The generated menus are combined into a single menu bar layout
         and returned.
 
         Args:
-            frameGrabberConnected (bool): True if FrameGrabber object is connected, else False.
-            imuConnected (bool): True if IMU object is connected, else False.
+            frame_grabber_connected (bool): True if FrameGrabber object is connected, else False.
+            imu_connected (bool): True if IMU object is connected, else False.
 
         Returns:
-            menuFinal (list): Final menu layout.
+            menu_final (list): Final menu layout.
         """
         # Local variable update.
-        self.frameGrabberConnected = frameGrabberConnected
-        self.imuConnected = imuConnected
+        self.frameGrabberConnected = frame_grabber_connected
+        self.imuConnected = imu_connected
         # Generate menus.
-        self.__generateMenus()
+        self.__generate_menus()
 
-        menuFinal = [self.signalMenu, self.imuImenu]
+        menu_final = [self.signalMenu, self.imuImenu]
         # Return menu bar layout.
-        return menuFinal
+        return menu_final
 
-    def __generateSignalMenu(self):
+    def __generate_signal_menu(self):
         """
         Function for creating signal source menus based on the connection status of the FrameGrabber object. For
         selecting the video source and changing its properties. If self.frameGrabberConnected:
@@ -65,7 +65,7 @@ class Menu:
                                                  ]
                                ]
 
-    def __generateImuMenu(self):
+    def __generate_imu_menu(self):
         """
         Function for creating imu menus based on the connection status of the IMU object. For controlling the
         connection to the IMU. if self.imuConnected:
@@ -93,12 +93,12 @@ class Menu:
                                      'Calibrate Acceleration::-MENU-IMU-CALIBRATE-']
                              ]
 
-    def __generateMenus(self):
+    def __generate_menus(self):
         """
         Function to call individual menu generating functions. More menus can be added, which now only require a single
-        function to create the menu and a single call to this __generateMenus function.
+        function to create the menu and a single call to this __generate_menus function.
         """
         # Signal Menu.
-        self.__generateSignalMenu()
+        self.__generate_signal_menu()
         # IMU Menu.
-        self.__generateImuMenu()
+        self.__generate_imu_menu()

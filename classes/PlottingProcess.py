@@ -5,20 +5,22 @@ Plotting is removed from the main process as it slows the main process down sign
 
 A custom multiprocessing.manager class is created to enable a LIFO queue approach.
 """
-import queue
-import numpy as np
-from pyquaternion import Quaternion
-from classes import Layout
-import PySimpleGUI as sg
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import multiprocessing
-from queue import LifoQueue
+import queue
 from multiprocessing.managers import BaseManager
+from queue import LifoQueue
+
+import PySimpleGUI as Psg
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from pyquaternion import Quaternion
+
 import constants as c
+from classes import Layout
 
 
-def rotatePoints(points: list, quaternion: list) -> np.array:
+def rotate_points(points: list, quaternion: list) -> np.array:
     """
     Rotate the list of points by the given quaternion.
 
@@ -27,16 +29,16 @@ def rotatePoints(points: list, quaternion: list) -> np.array:
         quaternion (list): List of quaternion values.
 
     Returns:
-        rotatedPoints (np.array): List of rotated points as a numpy array.
+        rotated_points (np.array): List of rotated points as a numpy array.
     """
-    rotatedPoints = []
-    myQuaternion = Quaternion(quaternion)
+    rotated_points = []
+    my_quaternion = Quaternion(quaternion)
     for point in points:
-        rotatedPoints.append(myQuaternion.rotate(point))
+        rotated_points.append(my_quaternion.rotate(point))
 
-    rotatedPoints = np.array(rotatedPoints)
+    rotated_points = np.array(rotated_points)
 
-    return rotatedPoints
+    return rotated_points
 
 
 class MyManager(BaseManager):
@@ -52,7 +54,7 @@ MyManager.register('LifoQueue', LifoQueue)
 class PlottingProcess:
     def __init__(self, window):
         """
-        Initialise a plottingProcess object.
+        Initialise a plotting_process object.
 
         Args:
             window (sg.Window): PySimpleGUI object that is needed to acquire screen dimensions.
@@ -64,16 +66,16 @@ class PlottingProcess:
         self.plottingQueue = None
         self.pool = None
 
-    def startPlotting(self):
+    def start_plotting(self):
         """
-        Create the queue object, processing pool, and start the plottingProcess running in the process pool.
+        Create the queue object, processing pool, and start the plotting_process running in the process pool.
         """
         self.plottingQueue = self.manager.LifoQueue()
         self.pool = multiprocessing.Pool(1)
-        self.plottingAsyncProcess = self.pool.apply_async(plottingProcess,
+        self.plottingAsyncProcess = self.pool.apply_async(plotting_process,
                                                           args=(self.plottingQueue, self.screenDimensions))
 
-    def plotOrientation(self, quaternion):
+    def plot_orientation(self, quaternion):
         """
         Add a quaternion to the queue to be plotted when the plotting process is ready.
 
@@ -82,9 +84,9 @@ class PlottingProcess:
         """
         self.plottingQueue.put(quaternion)
 
-    def endPlotting(self):
+    def end_plotting(self):
         """
-        Close and join the plottingProcess. First the while loop in the plottingProcess method is broken, then the
+        Close and join the plotting_process. First the while loop in the plotting_process method is broken, then the
         plottingQueue is deleted (helps with memory release), and the process pool is closed and joined.
         """
         self.plottingQueue.put('-END-PROCESS-')
@@ -93,7 +95,7 @@ class PlottingProcess:
         self.pool.join()
 
 
-def plottingProcess(lifoQueue, screenDimensions):
+def plotting_process(lifo_queue, screen_dimensions):
     """
     Method to be run in an async_process pool for plotting orientation of a probe using a quaternion that is sent using
     the Last In First Out queue approach. The probe points in the constants file are rotated by the quaternion
@@ -101,16 +103,16 @@ def plottingProcess(lifoQueue, screenDimensions):
     disabled, so the window can only be closed by the main window button.
 
     Args:
-        lifoQueue (LifoQueue): MyManager queue object operating with LIFO principle.
-        screenDimensions (list): Width and height of screen for placing plotting window.
+        lifo_queue (LifoQueue): MyManager queue object operating with LIFO principle.
+        screen_dimensions (list): Width and height of screen for placing plotting window.
     """
     print('Starting plotting process...')
-    plottingWindow = sg.Window('Orientation Plot', Layout.getPlottingWindowLayout(), element_justification='c',
-                               finalize=True, location=(screenDimensions[0] - 450, 50), disable_close=True)
+    window = Psg.Window('Orientation Plot', Layout.plotting_layout(), element_justification='c',
+                        finalize=True, location=(screen_dimensions[0] - 450, 50), disable_close=True)
     # Plot variables.
     fig = Figure(figsize=(3.5, 3.5), dpi=100)
     ax = fig.add_subplot(111, projection='3d')
-    fig.patch.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
+    fig.patch.set_facecolor(Psg.DEFAULT_BACKGROUND_COLOR)
 
     ax.set_position((0, 0, 1, 1))
     ax.set_xlim([-5, 5])
@@ -119,28 +121,28 @@ def plottingProcess(lifoQueue, screenDimensions):
     ax.set_xticklabels([])
     ax.set_yticklabels([])
     ax.set_zticklabels([])
-    ax.set_facecolor(sg.DEFAULT_BACKGROUND_COLOR)
+    ax.set_facecolor(Psg.DEFAULT_BACKGROUND_COLOR)
     ax.azim = 40
 
-    figure_canvas_agg = FigureCanvasTkAgg(fig, plottingWindow['-CANVAS-PLOT-'].TKCanvas)
+    figure_canvas_agg = FigureCanvasTkAgg(fig, window['-CANVAS-PLOT-'].TKCanvas)
     figure_canvas_agg.draw()
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
 
     while True:
         try:
-            newQuaternion = lifoQueue.get(False)
-            if newQuaternion == '-END-PROCESS-':
+            new_quaternion = lifo_queue.get(False)
+            if new_quaternion == '-END-PROCESS-':
                 break
-            elif len(newQuaternion) == 4:
+            elif len(new_quaternion) == 4:
                 # Empty the queue of older variables.
-                while not lifoQueue.empty():
+                while not lifo_queue.empty():
                     try:
-                        lifoQueue.get(False)
+                        lifo_queue.get(False)
                     except queue.Empty:
                         continue
-                    lifoQueue.task_done()
+                    lifo_queue.task_done()
                 # Rotate the probe points using the given quaternion.
-                rpp = rotatePoints(c.PROBE_POINTS, newQuaternion)
+                rpp = rotate_points(c.PROBE_POINTS, new_quaternion)
                 ax.cla()
                 ax.set_xlim([-5, 5])
                 ax.set_ylim([-5, 5])
@@ -154,7 +156,7 @@ def plottingProcess(lifoQueue, screenDimensions):
         except queue.Empty:
             pass
         # Enable read of window at 50fps.
-        plottingWindow.read(timeout=20)
+        window.read(timeout=20)
 
-    plottingWindow.close()
+    window.close()
     print('Ending plotting process...')

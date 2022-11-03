@@ -18,20 +18,20 @@ class FrameGrabber:
     the current signal be released, and a new call to connect() be made.
     """
 
-    def __init__(self, signalSource=0, width=c.DEFAULT_SIGNAL_DIMENSIONS[0], height=c.DEFAULT_SIGNAL_DIMENSIONS[1],
+    def __init__(self, signal_source=0, width=c.DEFAULT_SIGNAL_DIMENSIONS[0], height=c.DEFAULT_SIGNAL_DIMENSIONS[1],
                  fps=c.DEFAULT_FRAME_RATE):
         """
         Initialising of a SignalGrabber object. Connection is not made until connect() method is
         explicitly called. Initial parameter instantiation.
 
         Args:
-            signalSource (int, optional): Integer source of video signal. Defaults to 0.
+            signal_source (int, optional): Integer source of video signal. Defaults to 0.
             width (int, optional): Requested pixel width of video signal. Defaults to 640.
             height (int, optional): Requested pixel height of video signal. Defaults to 480.
             fps (int, optional): Requested frame rate of video signal. Defaults to 100.
         """
         self.fps = fps  # Frame rate of the signal, not really used
-        self.signalSource = signalSource  # Source of video signal
+        self.signalSource = signal_source  # Source of video signal
         self.width = width  # Pixel width of signal
         self.height = height  # Pixel height of signal
         self.sourceFps = fps  # Frame rate of signal
@@ -70,7 +70,7 @@ class FrameGrabber:
             self.isConnected = True
 
             # Set the signal properties
-            self.setGrabberProperties(self.width, self.height, self.fps)
+            self.set_grabber_properties(self.width, self.height, self.fps)
         except Exception as e:
             print(f'Error connecting to source: {e}')
 
@@ -86,7 +86,7 @@ class FrameGrabber:
             self.isConnected = False
             print(f'Source {self.signalSource} has been released.')
 
-    def setGrabberProperties(self, width, height, fps=100) -> bool:
+    def set_grabber_properties(self, width, height, fps=100) -> bool:
         """
         Set the properties of the FrameGrabber object. If the object is connected attempt to change the signal
         dimensions, else just change the instance variables. The setting of the frame rate (fps) is not monitored as
@@ -98,9 +98,9 @@ class FrameGrabber:
             fps (int, optional): Requested frame rate of video signal. Defaults to 100.
 
         Returns:
-            successFlag (bool): True if the width and height were set to the requested values, else False.
+            success_flag (bool): True if the width and height were set to the requested values, else False.
         """
-        successFlag = False
+        success_flag = False
 
         self.width = width
         self.height = height
@@ -126,33 +126,33 @@ class FrameGrabber:
             self.vid.set(cv.CAP_PROP_FOURCC, fourcc)
             if self.width == width or self.height == height:
                 print(f'Dimensions correctly set to {self.width}x{self.height}.\n')
-                successFlag = True
+                success_flag = True
             else:
                 print(f'An error occurred setting dimensions. Default dimensions of '
                       f'{self.width}x{self.height}  were used.')
         else:
             print('FrameGrabber is not connected.')
 
-        return successFlag
+        return success_flag
 
-    def getFrame(self) -> (bool, any):
+    def get_frame(self) -> (bool, any):
         """
         Attempt to read the next available frame from the video source. As soon as the frame is read by OpenCv it
         is returned, along with a Boolean success flag to indicate whether the read was successful or not. The returned
         frame is converted from BGR to GRAY before being returned.
 
         Returns:
-            successFlag (bool): Read successFlag. True if frame read, else False.
+            success_flag (bool): Read success_flag. True if frame read, else False.
             frame (image): Returned image id read was successful.
         """
         if self.isConnected:
-            successFlag, frame = self.vid.read()
+            success_flag, frame = self.vid.read()
             # Return boolean success flag and current frame
-            if successFlag:
-                return successFlag, cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+            if success_flag:
+                return success_flag, cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             else:
                 self.isConnected = False
-                return successFlag, None
+                return success_flag, None
         else:
-            print('FrameGrabber is not connected. Call connect() before getFrame().')
+            print('FrameGrabber is not connected. Call connect() before get_frame().')
             return False, None

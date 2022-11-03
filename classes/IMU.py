@@ -5,32 +5,31 @@ by the company. It is also not complete, as some quite basic functionality is mi
 The extra classes at the bottom are used to expand on the Witmotion library capabilities.
 """
 from enum import Enum
-
 import witmotion as wm
 import time
 import serial.tools.list_ports
 
 
-def availableComPorts():
+def available_com_ports():
     """
     Query all available COM ports. This will return sorted COM ports that are active/inactive AND ports that are not
     being used by a Witmotion IMU. If no data is returned from a connected COM port then it may not be the correct COM
     port. The COM ports can represent a USB or bluetooth connection.
 
     Returns:
-        allComPorts (list[str]): A list of available COM ports. Only the port number is returned, e.g. 'COM7'.
+        all_com_ports (list[str]): A list of available COM ports. Only the port number is returned, e.g. 'COM7'.
     """
-    portInfo = serial.tools.list_ports.comports()
+    port_info = serial.tools.list_ports.comports()
 
-    allComPorts = []
+    all_com_ports = []
 
-    for port, description, hid in sorted(portInfo):
-        allComPorts.append(port)
+    for port, description, hid in sorted(port_info):
+        all_com_ports.append(port)
 
-    if not allComPorts:
-        allComPorts = ['None']
+    if not all_com_ports:
+        all_com_ports = ['None']
 
-    return allComPorts
+    return all_com_ports
 
 
 class IMU:
@@ -41,24 +40,24 @@ class IMU:
     can cause errors during closing of the main program, but it does not seem to be anything worth worrying about.
 
     The default values made available are acceleration, angle, and quaternion values, if other fields are
-    required then the __imuCallback() method must be updated.
+    required then the __imu_callback() method must be updated.
     """
 
-    def __init__(self, comPort='COM3', baudRate=115200):
+    def __init__(self, com_port='COM3', baud_rate=115200):
         """
         Initialises an IMU object. No connection is made, only default variables
         are set.
 
         Args :
-            comPort (String, optional): Comport the IMU is connected to. Defaults to 'COM3'.
-            baudRate (int, optional): Operational baud rate of the IMU. Defaults to 115200.
+            com_port (String, optional): Comport the IMU is connected to. Defaults to 'COM3'.
+            baud_rate (int, optional): Operational baud rate of the IMU. Defaults to 115200.
         """
         self.startTime = time.time()
-        self.callbackCounter = None
+        self.callback_counter = None
         self.imu = None  # Witmotion IMU object
         self.isConnected = False  # Has an IMU object been successfully connected (does not account for callback).
-        self.comPort = comPort  # IMU object's COM port
-        self.baudRate = baudRate  # IMU object's baudRate
+        self.com_port = com_port  # IMU object's COM port
+        self.baudRate = baud_rate  # IMU object's baudRate
         self.acceleration = []  # Acceleration returned by IMU
         self.angle = []  # Euler angles returned by IMU
         self.quaternion = []  # Quaternion returned by IMU
@@ -70,7 +69,7 @@ class IMU:
         self.disconnect()
         self.imu = None
 
-    def __imuCallback(self, msg):
+    def __imu_callback(self, msg):
         """
         Callback subscribed to the IMU object. Called whenever a new dataset is ready to be read. This callback is
         activated for every value sent by the IMU (Acceleration, Quaternion, Angle, ..etc) and not just for each serial
@@ -85,7 +84,7 @@ class IMU:
             self.acceleration = self.imu.get_acceleration()
         elif msg_type is wm.protocol.QuaternionMessage:
             self.quaternion = self.imu.get_quaternion()
-            self.callbackCounter += 1
+            self.callback_counter += 1
         elif msg_type is wm.protocol.AngleMessage:
             self.angle = self.imu.get_angle
 
@@ -94,30 +93,30 @@ class IMU:
         Attempt to connect to the IMU. If the COM port and baud rate were not explicitly set, the default values will
         be used. The callbackCounter and startTime are reset on a successful connection. self.isConnected is set to
         True if a successful IMU object is created, and does not account for the state of the callback subscription.
-        If subscription fails the self.isConnected state can still be True but the successFlag will be False.
+        If subscription fails the self.isConnected state can still be True but the success_flag will be False.
 
         Returns:
-            successFlag (bool): True if the IMU connects, else False.
+            success_flag (bool): True if the IMU connects, else False.
         """
-        successFlag = False
+        success_flag = False
         try:
             print(
-                f'Attempting to connect to {self.comPort} at {self.baudRate}...')
-            self.imu = wm.IMU(path=self.comPort, baudrate=self.baudRate)
+                f'Attempting to connect to {self.com_port} at {self.baudRate}...')
+            self.imu = wm.IMU(path=self.com_port, baudrate=self.baudRate)
             self.isConnected = True
 
             print('IMU serial connection created. Subscribing callback...')
-            self.imu.subscribe(self.__imuCallback)
+            self.imu.subscribe(self.__imu_callback)
 
-            print(f'Callback subscribed. IMU connected on {self.comPort}!')
-            self.callbackCounter = 0
+            print(f'Callback subscribed. IMU connected on {self.com_port}!')
+            self.callback_counter = 0
             self.startTime = time.time()
-            successFlag = True
+            success_flag = True
         except Exception as e:
             print(f'Error initialising IMU class object: {e}')
             if self.isConnected:
                 self.disconnect()
-        return successFlag
+        return success_flag
 
     def disconnect(self):
         """
@@ -126,7 +125,7 @@ class IMU:
         """
         try:
             if self.imu:
-                print(f'Attempting to disconnect from IMU ({self.comPort})...')
+                print(f'Attempting to disconnect from IMU ({self.com_port})...')
                 self.imu.close()
                 self.imu.ser.close()
                 print('Disconnected from IMU!')
@@ -134,7 +133,7 @@ class IMU:
         except Exception as e:
             print(f'Error disconnecting from IMU: {e}')
 
-    def setReturnRate(self, rate):
+    def set_return_rate(self, rate):
         """
         Set the return rate of the IMU in Hz. Not all IMUs have the same return rate capabilities and at the moment
         there is no way to test if the command was received correctly by the IMU. The return rate just needs to be
@@ -146,7 +145,7 @@ class IMU:
         print(f'Setting return rate of IMU: {rate}Hz')
         self.imu.set_update_rate(rate)
 
-    def setBandwidth(self, bandwidth):
+    def set_bandwidth(self, bandwidth):
         """
         Set the bandwidth of the IMU in Hz. If a high return rate of 200Hz is required, the bandwidth must be set
         to a higher rate (256Hz), if it is not increased the IMU will return repeat values.
@@ -168,19 +167,19 @@ class IMU:
             5: BandwidthSelect.bandwidth_5_Hz}[bandwidth]
         self.imu.send_config_command(wm.protocol.ConfigCommand(register=RegisterExtra.bandwidth, data=sel.value))
 
-    def setAlgorithm(self, algorithmType):
+    def set_algorithm(self, algorithm_type):
         """
         Set the algorithm of the IMU. It can either be 6-axis (without the use of a magnetometer), or 9-axis (with a
         magnetometer). Using the 6-axis algorithm can reduce transient settling of the orientation angles. Using the
         9-axis algorithm uses north as the reference angle.
 
         Args:
-            algorithmType (int): Either 6 or 9.
+            algorithm_type (int): Either 6 or 9.
         """
-        print(f'Setting the algorithm of the IMU: {algorithmType}-axis.')
-        self.imu.set_algorithm_dof(algorithmType)
+        print(f'Setting the algorithm of the IMU: {algorithm_type}-axis.')
+        self.imu.set_algorithm_dof(algorithm_type)
 
-    def calibrateAcceleration(self):
+    def calibrate_acceleration(self):
         """
         Tell the IMU to calibrate its accelerometer. The IMU should be placed flat on a horizontal service for 5 seconds
         while the calibration continues. Nothing is returned after the calibration, but you will see the acceleration

@@ -5,12 +5,13 @@ class to make the code more readable. Future layout updates should be easier wit
 There is one primary layout, a layout for plotting the probe orientation, and an IMU connection layout.
 
 """
+import PySimpleGUI as Psg
+
 import constants as c
 import styling as st
-import PySimpleGUI as sg
 
 
-def getPlottingWindowLayout() -> list:
+def plotting_layout() -> list:
     """
     Create the plotting window layout and return it.
 
@@ -18,34 +19,34 @@ def getPlottingWindowLayout() -> list:
         layout (list): Layout in list form.
     """
     layout = [
-        [sg.Canvas(k='-CANVAS-PLOT-', size=(350, 350))]
+        [Psg.Canvas(k='-CANVAS-PLOT-', s=(350, 350))]
     ]
 
     return layout
 
 
-def getImuWindowLayout(availableComPorts, comPort, baudRate) -> list:
+def imu_layout(com_ports, com_port, baud_rate) -> list:
     """
     Create the layout for the IMU connection window.
 
     Args:
-        availableComPorts (list): A list of available COM ports.
-        comPort (string): Default COM port to show in COMBO box.
-        baudRate (int): Default baud rate to show in COMBO box.
+        com_ports (list): A list of available COM ports.
+        com_port (string): Default COM port to show in COMBO box.
+        baud_rate (int): Default baud rate to show in COMBO box.
 
     Returns:
         layout (list): Layout in the form of a list.
     """
     layout = [
-        [sg.B(k='-BTN-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
-                   image_subsample=4, border_width=3, p=((0, 10), (20, 0))),
-         sg.Combo(k='-COMBO-COM-PORT-', values=availableComPorts, size=7, font=st.FONT_COMBO,
-                  enable_events=True, readonly=True, default_value=comPort, p=((0, 0), (20, 0))),
-         sg.T('Baud Rate:', justification='right', font=st.FONT_DESCR, p=((20, 0), (20, 0))),
-         sg.Combo(k='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, size=7, font=st.FONT_COMBO,
-                  enable_events=True, readonly=True, default_value=baudRate, p=((0, 0), (20, 0)))],
-        [sg.HSeparator(p=((10, 10), (20, 20)))],
-        [sg.B(k='-BTN-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
+        [Psg.B(k='-B-COM-REFRESH-', button_text='', image_source='icons/refresh_icon.png',
+               image_subsample=4, border_width=3, p=((0, 10), (20, 0))),
+         Psg.Combo(k='-COMBO-COM-PORT-', values=com_ports, s=7, font=st.FONT_COMBO,
+                   enable_events=True, readonly=True, default_value=com_port, p=((0, 0), (20, 0))),
+         Psg.T('Baud Rate:', justification='right', font=st.FONT_DESCR, p=((20, 0), (20, 0))),
+         Psg.Combo(k='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, s=7, font=st.FONT_COMBO,
+                   enable_events=True, readonly=True, default_value=baud_rate, p=((0, 0), (20, 0)))],
+        [Psg.HSep(p=((10, 10), (20, 20)))],
+        [Psg.B(k='-B-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
     ]
 
     return layout
@@ -55,7 +56,7 @@ class Layout:
     def __init__(self, menu):
         self.menu = menu
 
-    def getInitialLayout(self) -> list:
+    def get_initial_layout(self) -> list:
         """
         Create the initial layout. Editing is disabled in this layout. There are three primary sections to this layout:
 
@@ -68,24 +69,24 @@ class Layout:
         Returns:
             layout (list): Layout in the form of a list.
         """
-        displayRow = self.__createDisplayRow()
+        display_row = self.__create_display_row()
 
-        recordRow = self.__createRecordRow()
+        record_row = self.__create_record_row()
 
-        miscellaneousRow = self.__createMiscellaneousRow()
+        miscellaneous_row = self.__create_miscellaneous_row()
 
         layout = [
-            [sg.Menu(k='-MENU-', menu_definition=self.menu.getMenu())],
-            [displayRow],
-            [sg.HSep(p=((0, 0), (0, 10)))],
-            [recordRow],
-            [sg.HSep(p=((0, 0), (0, 10)))],
-            [miscellaneousRow]
+            [Psg.Menu(k='-MENU-', menu_definition=self.menu.get_menu())],
+            [display_row],
+            [Psg.HSep(p=((0, 0), (0, 10)))],
+            [record_row],
+            [Psg.HSep(p=((0, 0), (0, 10)))],
+            [miscellaneous_row]
         ]
 
         return layout
 
-    def __createDisplayRow(self) -> list:
+    def __create_display_row(self) -> list:
         """
         Create the display row of the main window. This contains the image that displays frames and the plot that
         shows the orientation of the IMU, along with some buttons and text information. The frame is displayed
@@ -94,35 +95,35 @@ class Layout:
         Returns:
             layout (list): Layout in the form of a list.
         """
-        displayColumn = [
-            [sg.Image(k='-IMAGE-FRAME-', size=c.DISPLAY_DIMENSIONS, background_color='#000000',
-                      p=(0, 0))],
-            [sg.T(k='-TXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
-                     justification='left', p=(0, 0)),
-             sg.T(text=' Signal FPS: ', justification='right', font=st.FONT_INFO, p=(0, 0)),
-             sg.T(k='-TXT-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, size=(3, 1),
-                     p=(0, 0))]
+        display_column = [
+            [Psg.Image(k='-IMAGE-FRAME-', s=c.DISPLAY_DIMENSIONS, background_color='#000000',
+                       p=(0, 0))],
+            [Psg.T(k='-TXT-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
+                   justification='left', p=(0, 0)),
+             Psg.T(text=' Signal FPS: ', justification='right', font=st.FONT_INFO, p=(0, 0)),
+             Psg.T(k='-TXT-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, s=(3, 1),
+                   p=(0, 0))]
         ]
 
-        imuColumn = [
-            [sg.T('IMU Accelerations', font=st.FONT_DESCR, p=((5, 0), (10, 0)))],
-            [sg.T(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
-                     size=(25, 1))],
-            [sg.B(k='-BTN-PLOT-TOGGLE-', button_text='Enable Orientation', size=(15, 1),
-                       font=st.FONT_BTN, border_width=3, p=((0, 0), (0, 5)))],
-            [sg.B(k='-BTN-DISPLAY-TOGGLE-', button_text='Disable Display', size=(15, 1),
-                       font=st.FONT_BTN,
-                       border_width=3, p=((0, 0), (5, 0)), button_color=st.COL_BTN_ACTIVE)]
+        imu_column = [
+            [Psg.T('IMU Accelerations', font=st.FONT_DESCR, p=((5, 0), (10, 0)))],
+            [Psg.T(k='-TXT-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
+                   s=(25, 1))],
+            [Psg.B(k='-B-PLOT-TOGGLE-', button_text='Enable Orientation', s=(15, 1),
+                   font=st.FONT_BTN, border_width=3, p=((0, 0), (0, 5)))],
+            [Psg.B(k='-B-DISPLAY-TOGGLE-', button_text='Disable Display', s=(15, 1),
+                   font=st.FONT_BTN,
+                   border_width=3, p=((0, 0), (5, 0)), button_color=st.COL_BTN_ACTIVE)]
         ]
 
         layout = [
-            [sg.pin(sg.Column(k='-COL-EDIT-FALSE-', layout=displayColumn, vertical_alignment='top')),
-             sg.Column(imuColumn, vertical_alignment='top', element_justification='center')]
+            [Psg.pin(Psg.Column(k='-COL-EDIT-FALSE-', layout=display_column, vertical_alignment='top')),
+             Psg.Column(imu_column, vertical_alignment='top', element_justification='center')]
         ]
 
         return layout
 
-    def __createRecordRow(self) -> list:
+    def __create_record_row(self) -> list:
         """
         Create the record row of the main window. This contains the recording buttons and details about the current
         recording session.
@@ -130,42 +131,42 @@ class Layout:
         Returns:
             layout (list): Layout in the form of a list.
         """
-        recordStartColumn = [
-            [sg.T(text='Record Start', font=st.FONT_DESCR)],
-            [sg.T(k='-TXT-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
-                     justification='center')]
+        record_start_column = [
+            [Psg.T(text='Record Start', font=st.FONT_DESCR)],
+            [Psg.T(k='-TXT-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
+                   justification='center')]
         ]
 
-        recordEndColumn = [
-            [sg.T(text='Record End', font=st.FONT_DESCR)],
-            [sg.T(k='-TXT-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1), justification='center')]
+        record_end_column = [
+            [Psg.T(text='Record End', font=st.FONT_DESCR)],
+            [Psg.T(k='-TXT-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1), justification='center')]
         ]
 
-        recordElapsedColumn = [
-            [sg.T(text='Elapsed Time', font=st.FONT_DESCR)],
-            [sg.T(k='-TXT-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, size=(12, 1),
-                     justification='center')]
+        record_elapsed_column = [
+            [Psg.T(text='Elapsed Time', font=st.FONT_DESCR)],
+            [Psg.T(k='-TXT-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
+                   justification='center')]
         ]
 
-        recordFramesColumn = [
-            [sg.T(text='Frames saved', font=st.FONT_DESCR)],
-            [sg.T(k='-TXT-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, size=(12, 1), justification='center')]
+        record_frames_column = [
+            [Psg.T(text='Frames saved', font=st.FONT_DESCR)],
+            [Psg.T(k='-TXT-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, s=(12, 1), justification='center')]
         ]
 
         layout = [
-            [sg.B(k='-BTN-SNAPSHOT-', button_text='Save Frame', size=(15, 1), font=st.FONT_BTN,
-                       border_width=3, p=((0, 20), (0, 0)), disabled=True),
-             sg.B(k='-BTN-RECORD-TOGGLE-', button_text='Start Recording', size=(15, 1), font=st.FONT_BTN,
-                       border_width=3, p=((0, 0), (0, 0)), disabled=True),
-             sg.Column(recordStartColumn, element_justification='center', p=(0, 0)),
-             sg.Column(recordEndColumn, element_justification='center', p=(0, 0)),
-             sg.Column(recordElapsedColumn, element_justification='center', p=(0, 0)),
-             sg.Column(recordFramesColumn, element_justification='center', p=(0, 0))]
+            [Psg.B(k='-B-SNAPSHOT-', button_text='Save Frame', s=(15, 1), font=st.FONT_BTN,
+                   border_width=3, p=((0, 20), (0, 0)), disabled=True),
+             Psg.B(k='-B-RECORD-TOGGLE-', button_text='Start Recording', s=(15, 1), font=st.FONT_BTN,
+                   border_width=3, p=((0, 0), (0, 0)), disabled=True),
+             Psg.Column(record_start_column, element_justification='center', p=(0, 0)),
+             Psg.Column(record_end_column, element_justification='center', p=(0, 0)),
+             Psg.Column(record_elapsed_column, element_justification='center', p=(0, 0)),
+             Psg.Column(record_frames_column, element_justification='center', p=(0, 0))]
         ]
 
         return layout
 
-    def __createMiscellaneousRow(self) -> list:
+    def __create_miscellaneous_row(self) -> list:
         """
         Create the bottom row of the main window. This shows extra information about what is happening during the
         running of the program.
@@ -173,19 +174,19 @@ class Layout:
         Returns:
             layout (list): Layout in the form of a list.
         """
-        frameRateDetails = [
-            [sg.T(text='GUI: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=sg.RELIEF_SUNKEN,
-                     border_width=2),
-             sg.T(k='-TXT-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
-                     size=(4, 1), p=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2),
-             sg.T(text=' Resize: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=sg.RELIEF_SUNKEN,
-                     border_width=2),
-             sg.T(k='-TXT-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
-                     size=(3, 1), p=(0, 0), relief=sg.RELIEF_SUNKEN, border_width=2)]
+        frame_rate_details = [
+            [Psg.T(text='GUI: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
+                   border_width=2),
+             Psg.T(k='-TXT-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
+                   s=(4, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2),
+             Psg.T(text=' Resize: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
+                   border_width=2),
+             Psg.T(k='-TXT-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
+                   s=(3, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2)]
         ]
 
         layout = [
-            [frameRateDetails]
+            [frame_rate_details]
         ]
 
         return layout
