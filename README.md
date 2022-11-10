@@ -96,9 +96,9 @@ assumed to be zero.
 
 The IMU sensor must be connected to the laptop/computer via bluetooth so that the COM ports are assigned.
 I am pretty sure that if the IMU is connected via a USB port it should still work, but I have not tested
-this much. Using WITMOTION's own software, acceleration data and quaternion data must be enabled.
-This is the only data of interest in this project. More sensor readings are available and their acquisition is fairly
-straightforward should you want to change the code a little.
+this much. Using WITMOTION's own software, acceleration data, quaternion data, and time data must be 
+enabled. This is the only data of interest in this project. More sensor readings are available and 
+their acquisition is fairly straightforward should you want to change the code a little.
 
 # NB
 
@@ -111,7 +111,9 @@ straightforward should you want to change the code a little.
   in a new window when enabled. This has removed the need for blit and should no longer slow the frame grabbing down.
 - This project/program is run directly from PyCharm, and if any other libraries are required an error
   message will be shown.
-- The program now stored the frames and IMU data in memory while recording, and when the recording is finished
+- IMU data is stored ina variable during recording, and once the recording is stopped, timestamps are
+  compared to match the IMU data with the frame.
+- The program now stores the frames and IMU data in memory while recording, and when the recording is finished
   all the in-memory data is saved to disk. This was done to increase the speed at which frames could
   be grabbed (write operations tend to be quite slow) but it also results in a much higher memory usage.
   Do not run a recording for too long, otherwise the system will run out of available RAM. Try and keep
