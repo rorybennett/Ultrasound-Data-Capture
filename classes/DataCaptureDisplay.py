@@ -6,6 +6,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import PySimpleGUI as Psg
+import numpy as np
 
 import constants as c
 import styling as st
@@ -52,10 +53,6 @@ class DataCaptureDisplay:
         # Recording variables for storing (signal and IMU).
         self.frame_raw = None
         self.frames_to_record = []
-        self.acceleration = None
-        self.accelerations_to_record = []
-        self.quaternion = None
-        self.quaternions_to_record = []
         self.frame_record_times = []
         # Is frame available for resize?
         self.enable_frame_resize = False
@@ -86,7 +83,7 @@ class DataCaptureDisplay:
             if self.enable_recording:
                 self.update_times()
             # Update IMU values if present.
-            if self.imu.isConnected and self.imu.acceleration:
+            if self.imu.is_connected and self.imu.acceleration:
                 self.update_accelerations()
             # Send orientation to plotting process.
             if self.enable_plotting and self.imu.quaternion:
@@ -132,7 +129,7 @@ class DataCaptureDisplay:
                 ut.save_single_frame(self.frame_raw, f'{self.single_frames_path}\\{int(time.time() * 1000)}.png')
             elif event == '-B-RECORD-TOGGLE-':
                 self.toggle_recording()
-            elif (len(event) == 1 and ord(event) == 32) and self.frame_grabber.isConnected:
+            elif (len(event) == 1 and ord(event) == 32) and self.frame_grabber.is_connected:
                 self.toggle_recording()
 
             # IMU Display Events.
@@ -153,38 +150,59 @@ class DataCaptureDisplay:
 
             self.window['-T-GUI-RATE-'].update(f'{gui_fps}')
 
+    def save_recording(self):
+        """
+        Save data at the end of a recording.
+        """
+        print(f'Frames: {len(self.frames_to_record)}, Timestamps: {len(self.frame_record_times)}, '
+              f'Accelerations: {len(self.imu.accelerations)}, Quaternions: {len(self.imu.quaternions)}.')
+        self.current_data_file = open(self.current_data_file_path, 'w')
+
+        accelerations = np.array(self.imu.accelerations)
+        accelerations[:, 0] = accelerations[:, 0] * 1000
+        quaternions = np.array(self.imu.quaternions)
+        quaternions[:, 0] = quaternions[:, 0] * 1000
+
+        for index, frameData in enumerate(self.frames_to_record):
+            Psg.PopupAnimated(image_source=Psg.DEFAULT_BASE64_LOADING_GIF, message='Saving to disk...',
+                              keep_on_top=True, time_between_frames=50, text_color='black',
+                              background_color=Psg.DEFAULT_BACKGROUND_COLOR)
+
+            frame_time = self.frame_record_times[index]
+
+            acc_index = (np.abs(accelerations[:, 0] - frame_time)).argmin()
+            acceleration = accelerations[acc_index, 1:]
+            q_index = (np.abs(quaternions[:, 0] - frame_time)).argmin()
+            quaternion = quaternions[q_index, 1:]
+
+            frame_name = f'{index + 1}-{self.frame_record_times[index]}'
+            self.record_frame(frame_name, frameData, acceleration, quaternion)
+
+        self.frames_to_record = []
+        self.imu.clear_data()
+        Psg.PopupAnimated(None)
+        print('In memory frames have been recorded to disk.')
+        self.current_data_file.close()
+
     def toggle_recording(self):
         """
         Toggle self.enableRecording. If recording is disabled, the data stored in memory is saved to disk.
         """
-        print(f'Enable Recording: {not self.enable_recording}')
-
         # Create video directory for saving frames.
         if not self.enable_recording:
             self.current_recording_path, self.current_data_file_path = ut.create_recording_directory(self.video_path)
-            self.current_data_file = open(self.current_data_file_path, 'w')
             self.frames_to_record = []
-            self.accelerations_to_record = []
-            self.quaternions_to_record = []
             self.frame_record_times = []
             self.frame_grab_counter = 1
             self.recording_start = time.time()
             self.window['-T-RECORD-START-'].update(time.strftime('%H:%M:%S'))
             self.enable_recording = True
+            self.imu.start_recording()
         else:
             self.enable_recording = False
+            self.imu.stop_recording()
             time.sleep(0.03)
-            print(f'Frames to save: {len(self.frames_to_record)}, Timestamps: {len(self.frame_record_times)}.')
-            for index, frameData in enumerate(self.frames_to_record):
-                Psg.PopupAnimated(image_source=Psg.DEFAULT_BASE64_LOADING_GIF, message='Saving to disk...',
-                                  keep_on_top=True, time_between_frames=100, text_color='black',
-                                  background_color=Psg.DEFAULT_BACKGROUND_COLOR)
-                frame_name = f'{index + 1}-{self.frame_record_times[index]}'
-                self.record_frame(frame_name, frameData, self.accelerations_to_record[index],
-                                  self.quaternions_to_record[index])
-            Psg.PopupAnimated(None)
-            print('In memory frames have been recorded to disk.')
-            self.current_data_file.close()
+            self.save_recording()
 
         # Set element states.
         self.window['-B-RECORD-TOGGLE-'].update(
@@ -194,33 +212,18 @@ class DataCaptureDisplay:
 
     def thread_get_frames(self):
         """
-        Thread for acquiring frames from FrameGrabber object. As soon as a frame is acquired from the FrameGrabber
-        object the currently stored IMU values are copied to local variables. This may result in a slight time delay
-        between the frame and its associated IMU values.
-
-        if self.enableRecording is True, the current frame will be saved with the IMU data available.
-
-        If self.enableDisplay is True, the new frame will be resized and displayed in the main GUI.
+        Thread for acquiring frames from FrameGrabber object.
         """
         print('Thread starting up: thread_get_frames.')
-        while self.frame_grabber.isConnected:
+        while self.frame_grabber.is_connected:
             signal_fps_1 = time.time()
             # Grab frame.
             res, self.frame_raw = self.frame_grabber.get_frame()
             # Successful frame read?
             if res:
-                # Update data from IMU object.
-                self.acceleration = self.imu.acceleration if self.imu.isConnected else [0, 0, 0]
-                self.quaternion = self.imu.quaternion if self.imu.isConnected else [0, 0, 0, 0]
-                # Signal frame rate estimate.
-                signal_dt = time.time() - signal_fps_1
-                signal_fps = int(1 / signal_dt) if signal_dt != 0 else 100
-                self.window.write_event_value(key='-THD-SIGNAL-RATE-', value=signal_fps)
                 # Is recording enabled?
                 if self.enable_recording:
                     self.frames_to_record.append(self.frame_raw)
-                    self.accelerations_to_record.append(self.acceleration)
-                    self.quaternions_to_record.append(self.quaternion)
                     self.frame_record_times.append(int(time.time() * 1000))
                     self.frame_grab_counter += 1
                     self.window.write_event_value(key='-THD-FRAMES-SAVED-', value=self.frame_grab_counter)
@@ -229,20 +232,21 @@ class DataCaptureDisplay:
                 if self.enable_display:
                     self.enable_frame_resize = True
 
+                # Signal frame rate estimate.
+                signal_dt = time.time() - signal_fps_1
+                signal_fps = int(1 / signal_dt) if signal_dt != 0 else 100
+                self.window.write_event_value(key='-THD-SIGNAL-RATE-', value=signal_fps)
+
         print('-------------------------------------------\nThread closing down: '
               'thread_get_frames.\n-------------------------------------------')
         self.window.write_event_value(key='-THD-SIGNAL-RATE-', value=0)
 
     def thread_resize_frames(self):
         """
-        Thread for resizing a frame to be displayed in the GUI window. Removed from main thread to prevent blocking when
-        resizing the frame. This is quite CPU heavy and affects all return rates. This thread is limited in its
-        speed by the sleep call in the while loop. Currently, this thread is capped at 1/0.033=30Hz, any frames
-        that are received during this threads sleep time are skipped over and not displayed to the user. This
-        does not affect the saving of frames.
+        Thread for resizing a frame to be displayed in the GUI window.
         """
         print('Thread starting up: thread_resize_frames.')
-        while self.frame_grabber.isConnected:
+        while self.frame_grabber.is_connected:
             if self.enable_frame_resize:
                 self.enable_frame_resize = False
                 resize_fps_1 = time.time()
@@ -265,15 +269,7 @@ class DataCaptureDisplay:
 
     def record_frame(self, frame_name, frame, acceleration, quaternion):
         """
-        Save a frame as part of a series of frames to be stitched together at a later stage. The frame is saved as a
-        .png in the currentRecordingPath and the currentDataFile is updated with the relevant IMU data. The dimensions
-        come from the frameGrabber signal and the depth is 150 as default.
-
-        Args:
-            frame_name (str): Name of the frame, without extension. Based on time.
-            frame (Image): CV2 image.
-            acceleration (list): Acceleration returned by the imu object.
-            quaternion (list): Quaternion returned by the imu object.
+        Save a frame and its related IMU data to disk.
         """
         try:
             self.current_data_file.write(f'{frame_name},:'
@@ -305,12 +301,13 @@ class DataCaptureDisplay:
         self.frame_grabber.connect()
         # Start frame threads.
         self.thread_executor.submit(self.thread_get_frames)
+        time.sleep(0.01)
         self.thread_executor.submit(self.thread_resize_frames)
         # Update menus.
         self.update_menus()
         # Set element states.
-        self.window['-B-SNAPSHOT-'].update(disabled=False if self.frame_grabber.isConnected else True)
-        self.window['-B-RECORD-TOGGLE-'].update(disabled=False if self.frame_grabber.isConnected else True)
+        self.window['-B-SNAPSHOT-'].update(disabled=False if self.frame_grabber.is_connected else True)
+        self.window['-B-RECORD-TOGGLE-'].update(disabled=False if self.frame_grabber.is_connected else True)
         self.window['-T-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frame_grabber.width, self.frame_grabber.height)}.')
 
@@ -321,17 +318,15 @@ class DataCaptureDisplay:
         end_time = time.time()
         elapsed_time = end_time - self.recording_start
         # Set element states.
-        self.window['-T-RECORD-END-'].update(time.strftime('%H:%M:%S', time.localtime(end_time)))
         self.window['-T-RECORD-ELAPSED-'].update(time.strftime('%H:%M:%S', time.localtime(elapsed_time)))
 
     def update_accelerations(self):
         """
         update displayed acceleration values.
         """
-        self.window['-T-IMU-ACC-'].update(
-            f'Ax: {self.imu.acceleration[0]:.2f}\t'
-            f'Ay: {self.imu.acceleration[1]:.2f}\t'
-            f'Az: {self.imu.acceleration[2]:.2f}')
+        self.window['-T-IMU-ACC-'].update(f'Ax: {self.imu.acceleration[0]:.2f}\t'
+                                          f'Ay: {self.imu.acceleration[1]:.2f}\t'
+                                          f'Az: {self.imu.acceleration[2]:.2f}')
 
     def toggle_plotting(self):
         """
@@ -350,40 +345,19 @@ class DataCaptureDisplay:
 
     def change_signal_dimensions(self, dimensions):
         """
-        Attempt to change the signal dimensions from the menu click. After attempting to change the dimensions update
-        the GUI with the actual dimensions. If the selected dimensions cannot be used, some default value will be used.
+        Attempt to change the signal dimensions from the menu click.
         """
         self.frame_grabber.set_grabber_properties(width=int(dimensions[0]), height=int(dimensions[1]),
                                                   fps=c.DEFAULT_FRAME_RATE)
         self.window['-T-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frame_grabber.width, self.frame_grabber.height)}.')
 
-    def refresh_com_ports(self):
-        """
-        Refresh the available COM ports displayed in windowImuConnect. The variable list of available COM ports is
-        updated as well as the drop-down menu/list.
-        """
-        self.com_ports = IMU.available_com_ports()
-        # Set elements
-        self.window_imu['-COMBO-COM-PORT-'].update(values=self.com_ports)
-
     def show_imu_window(self):
         """
-        Show a window for the user to connect to an IMU based on COM port and baud rate selection. The user
-        can refresh available COM ports, select a COM port, and select a baud rate from this window. When the CONNECT
-        button is clicked an attempt is made to open the requested COM port at the specified baud rate.
-
-        When the COM port and baud rate are changed from the combo boxes, the self.imu variable has its properties
-        modified immediately (self.imu.comPort, self.imu.baudrate). If CONNECT is clicked while the COM port box is
-        empty (post refresh), the currently stored self.imu.comPort will be used.
-
-        The window will close if there is a successful connection to the COM port. There is no test to see if the
-        port belongs to an IMU or not, just if the connection is made. The user will need to see if acceleration values
-        are being updated in the main GUI.
+        Show a window for the user to connect to an IMU based on COM port and baud rate selection.
         """
-        self.window_imu = Psg.Window('Connect to IMU',
-                                     Layout.imu_layout(self.com_ports, self.imu.com_port,
-                                                       self.imu.baudRate),
+        self.window_imu = Psg.Window('Connect to IMU', Layout.imu_layout(self.com_ports, self.imu.com_port,
+                                                                         self.imu.baudRate),
                                      element_justification='center', modal=True)
 
         while True:
@@ -394,17 +368,15 @@ class DataCaptureDisplay:
                 break
             elif event == '-B-COM-REFRESH-':
                 # On refresh available COM ports clicked.
-                self.refresh_com_ports()
-            elif event == '-COMBO-COM-PORT-':
-                # On COM port changed.
-                self.imu.com_port = values['-COMBO-COM-PORT-']
-            elif event == '-COMBO-BAUD-RATE-':
-                # On baud rate changed.
-                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
+                self.com_ports = IMU.available_com_ports()
+                # Set elements
+                self.window_imu['-COMBO-COM-PORT-'].update(values=self.com_ports)
             elif event == '-B-IMU-CONNECT-':
                 # On connect button clicked.
+                self.imu.com_port = str(values['-COMBO-COM-PORT-']).split(' - ')[0]
+                self.imu.baudRate = int(values['-COMBO-BAUD-RATE-'])
                 self.imu.connect()
-                if self.imu.isConnected:
+                if self.imu.is_connected:
                     break
 
         self.update_menus()
@@ -412,24 +384,22 @@ class DataCaptureDisplay:
 
     def update_menus(self):
         """
-        Helper function that updates the main window's menu based on the current states of the self.frameGrabber and
-        self.imu objects.
+        Helper function that updates the main window's menu.
         """
         # Set elements.
         self.window['-M-'].update(
-            menu_definition=self.menu.get_menu(self.frame_grabber.isConnected, self.imu.isConnected))
+            menu_definition=self.menu.get_menu(self.frame_grabber.is_connected, self.imu.is_connected,
+                                               self.imu.com_port))
 
     def close(self):
         """
-        Delete references to IMU object for garbage collection. This ensures the resources are freed
-        up for future use. Only called as the program is shutting down. The FrameGrabber object is disconnected, the
-        release takes place in the FrameGrabber __del__ method.
+        Delete references to IMU object for garbage collection.
         """
-        if self.imu.isConnected:
+        if self.imu.is_connected:
             self.imu.disconnect()
             del self.imu
 
-        if self.frame_grabber.isConnected:
+        if self.frame_grabber.is_connected:
             self.frame_grabber.disconnect()
 
 

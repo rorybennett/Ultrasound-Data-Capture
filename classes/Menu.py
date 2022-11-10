@@ -11,10 +11,11 @@ class Menu:
         self.imuConnected = False
         self.signalMenu = None
         self.imuImenu = None
+        self.imu_com_port = ''
         # Initial creation of menus.
         self.__generate_menus()
 
-    def get_menu(self, frame_grabber_connected=False, imu_connected=False):
+    def get_menu(self, frame_grabber_connected=False, imu_connected=False, imu_com_port=''):
         """
         Return the current menu bar based on the parameter values given. The local parameter values are updated based on
         the given parameters and the menus are generated. The generated menus are combined into a single menu bar layout
@@ -30,6 +31,7 @@ class Menu:
         # Local variable update.
         self.frameGrabberConnected = frame_grabber_connected
         self.imuConnected = imu_connected
+        self.imu_com_port = imu_com_port
         # Generate menus.
         self.__generate_menus()
 
@@ -85,12 +87,15 @@ class Menu:
                                      '!Calibrate Acceleration::-M-IMU-CALIBRATE-']
                              ]
         if self.imuConnected:
-            self.imuImenu = ['IMU', ['Disconnect::-M-IMU-DISCONNECT-',
-                                     '---',
-                                     'Set Return Rate', [f'{i}::-M-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
-                                     'Set Bandwidth', [f'{i}::-M-IMU-BANDWIDTH-' for i in c.IMU_BANDWIDTH_OPTIONS],
-                                     'Set Algorithm', [f'{i}::-M-IMU-ALGORITHM-' for i in c.IMU_ALGORITHM_OPTIONS],
-                                     'Calibrate Acceleration::-M-IMU-CALIBRATE-']
+            self.imuImenu = [f'IMU - {self.imu_com_port}', ['Disconnect::-M-IMU-DISCONNECT-',
+                                                            '---',
+                                                            'Set Return Rate',
+                                                            [f'{i}::-M-IMU-RATE-' for i in c.IMU_RATE_OPTIONS],
+                                                            'Set Bandwidth', [f'{i}::-M-IMU-BANDWIDTH-' for i in
+                                                                              c.IMU_BANDWIDTH_OPTIONS],
+                                                            'Set Algorithm', [f'{i}::-M-IMU-ALGORITHM-' for i in
+                                                                              c.IMU_ALGORITHM_OPTIONS],
+                                                            'Calibrate Acceleration::-M-IMU-CALIBRATE-']
                              ]
 
     def __generate_menus(self):

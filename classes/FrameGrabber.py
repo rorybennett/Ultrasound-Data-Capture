@@ -4,6 +4,7 @@ greyscale images.
 are .
 """
 import cv2 as cv
+
 import constants as c
 
 
@@ -35,7 +36,7 @@ class FrameGrabber:
         self.width = width  # Pixel width of signal
         self.height = height  # Pixel height of signal
         self.sourceFps = fps  # Frame rate of signal
-        self.isConnected = False  # Is the signal currently being streamed
+        self.is_connected = False  # Is the signal currently being streamed
 
         self.vid = None  # VideoCapture object
 
@@ -43,7 +44,7 @@ class FrameGrabber:
         """
         On object delete, release the VideoCapture device.
         """
-        self.isConnected = False
+        self.is_connected = False
         if self.vid and self.vid.isOpened():
             self.vid.release()
             print('FrameGrabber released.')
@@ -59,15 +60,15 @@ class FrameGrabber:
             # Disconnect.
             self.disconnect()
 
-            print(
-                f'Attempting to connect to source: {self.signalSource}, with dimensions: {self.width}x{self.height}...')
+            print(f'Attempting to connect to source: {self.signalSource}, '
+                  f'with dimensions: {self.width}x{self.height}...', end=' ')
             self.vid = cv.VideoCapture(self.signalSource, cv.CAP_DSHOW)
             if not self.vid.isOpened():
                 print(f'Could not open source: {self.signalSource}.')
                 return
 
             print(f'Connected to source {self.signalSource}.')
-            self.isConnected = True
+            self.is_connected = True
 
             # Set the signal properties
             self.set_grabber_properties(self.width, self.height, self.fps)
@@ -79,11 +80,10 @@ class FrameGrabber:
         Function to disconnect signal source. This releases the self.vid device and sets the self.isConnected
         variable to False, so no new frames are read.
         """
-        print(f'Attempting to disconnected from source: {self.signalSource}.')
-        if self.isConnected:
-            print(f'{self.isConnected}. Attempting to release current source...')
+        if self.is_connected:
+            print(f'Source connected: {self.is_connected}. Attempting to release current source...', end=' ')
             self.vid.release()
-            self.isConnected = False
+            self.is_connected = False
             print(f'Source {self.signalSource} has been released.')
 
     def set_grabber_properties(self, width, height, fps=100) -> bool:
@@ -105,8 +105,8 @@ class FrameGrabber:
         self.width = width
         self.height = height
         self.fps = fps
-        if self.isConnected:
-            print(f'Attempting to set FrameGrabber dimensions to {width}x{height} at {fps}fps...')
+        if self.is_connected:
+            print(f'Attempting to set FrameGrabber dimensions to {width}x{height} at {fps}fps...', end=' ')
 
             # Attempt to set video source width and height, if cv is unable to use given
             # dimension, smaller default dimensions will be used.
@@ -145,13 +145,13 @@ class FrameGrabber:
             success_flag (bool): Read success_flag. True if frame read, else False.
             frame (image): Returned image id read was successful.
         """
-        if self.isConnected:
+        if self.is_connected:
             success_flag, frame = self.vid.read()
             # Return boolean success flag and current frame
             if success_flag:
                 return success_flag, cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
             else:
-                self.isConnected = False
+                self.is_connected = False
                 return success_flag, None
         else:
             print('FrameGrabber is not connected. Call connect() before get_frame().')

@@ -4,10 +4,11 @@ by the company. It is also not complete, as some quite basic functionality is mi
 
 The extra classes at the bottom are used to expand on the Witmotion library capabilities.
 """
-from enum import Enum
-import witmotion as wm
 import time
+from enum import Enum
+
 import serial.tools.list_ports
+import witmotion as wm
 
 
 def available_com_ports():
@@ -23,8 +24,8 @@ def available_com_ports():
 
     all_com_ports = []
 
-    for port, description, hid in sorted(port_info):
-        all_com_ports.append(port)
+    for i in sorted(port_info):
+        all_com_ports.append(i)
 
     if not all_com_ports:
         all_com_ports = ['None']
@@ -52,22 +53,22 @@ class IMU:
             com_port (String, optional): Comport the IMU is connected to. Defaults to 'COM3'.
             baud_rate (int, optional): Operational baud rate of the IMU. Defaults to 115200.
         """
-        self.startTime = time.time()
-        self.callback_counter = None
         self.imu = None  # Witmotion IMU object
-        self.isConnected = False  # Has an IMU object been successfully connected (does not account for callback).
+        self.is_connected = False  # Has an IMU object been successfully connected (does not account for callback).
         self.com_port = com_port  # IMU object's COM port
         self.baudRate = baud_rate  # IMU object's baudRate
-        self.acceleration = []  # Acceleration returned by IMU
-        self.angle = []  # Euler angles returned by IMU
-        self.quaternion = []  # Quaternion returned by IMU
 
-    def __del__(self):
-        """
-        On class object delete the IMU object must be disconnected. This ensures that required connections are closed.
-        """
-        self.disconnect()
-        self.imu = None
+        self.accelerations = []  # Acceleration returned by IMU
+        self.angles = []  # Euler angles returned by IMU
+        self.quaternions = []  # Quaternion returned by IMU
+
+        self.acceleration = []  # Mostly used for updating the display.
+        self.quaternion = []
+        self.angle = []
+
+        self.save_data = False  # Should data be appended for later storage.
+        self.imu_start_time = 0  # IMU time at the start of data storage.
+        self.system_start_time = 0  # System time at the start of data storage.
 
     def __imu_callback(self, msg):
         """
@@ -80,13 +81,53 @@ class IMU:
         """
         msg_type = type(msg)
 
+        imu_time = self.imu.get_timestamp()
+
+        save_time = imu_time - self.imu_start_time + self.system_start_time if imu_time else 0
+
         if msg_type is wm.protocol.AccelerationMessage:
-            self.acceleration = self.imu.get_acceleration()
+            ac = self.imu.get_acceleration()
+            self.acceleration = ac
+            if self.save_data:
+                self.accelerations.append([save_time, ac[0], ac[1], ac[2]])
         elif msg_type is wm.protocol.QuaternionMessage:
-            self.quaternion = self.imu.get_quaternion()
-            self.callback_counter += 1
+            q = self.imu.get_quaternion()
+            self.quaternion = q
+            if self.save_data:
+                self.quaternions.append([save_time, q[0], q[1], q[2], q[3]])
         elif msg_type is wm.protocol.AngleMessage:
-            self.angle = self.imu.get_angle
+            an = self.imu.get_angle()
+            self.angle = an
+            if self.save_data:
+                self.angles.append([save_time, an[0], an[1], an[2]])
+
+    def start_recording(self):
+        """
+        Set save_data to True so the data received from the IMU is saved into a variable. The locally stored data has
+        an adjusted timestamp added to it:
+                        current time on imu - start test time on imu + start test time on system.
+        """
+        self.save_data = True
+        self.clear_data()
+
+        self.imu_start_time = self.imu.get_timestamp()
+        self.system_start_time = time.time()
+        print('Starting IMU data save...')
+
+    def stop_recording(self):
+        """
+        Set save_data to False to start saving data to a local variable.
+        """
+        self.save_data = False
+        print('Ending IMU data save...')
+
+    def clear_data(self):
+        """
+        Reset variables where IMU data is stored during a recording.
+        """
+        self.accelerations = []
+        self.quaternions = []
+        self.angles = []
 
     def connect(self) -> bool:
         """
@@ -101,20 +142,18 @@ class IMU:
         success_flag = False
         try:
             print(
-                f'Attempting to connect to {self.com_port} at {self.baudRate}...')
+                f'Attempting to connect to {self.com_port} at {self.baudRate}...', end=' ')
             self.imu = wm.IMU(path=self.com_port, baudrate=self.baudRate)
-            self.isConnected = True
+            self.is_connected = True
 
-            print('IMU serial connection created. Subscribing callback...')
+            print('IMU serial connection created. Subscribing callback...', end=' ')
             self.imu.subscribe(self.__imu_callback)
 
-            print(f'Callback subscribed. IMU connected on {self.com_port}!')
-            self.callback_counter = 0
-            self.startTime = time.time()
+            print(f'Callback subscribed. IMU connected on {self.com_port}.')
             success_flag = True
         except Exception as e:
             print(f'Error initialising IMU class object: {e}')
-            if self.isConnected:
+            if self.is_connected:
                 self.disconnect()
         return success_flag
 
@@ -125,11 +164,11 @@ class IMU:
         """
         try:
             if self.imu:
-                print(f'Attempting to disconnect from IMU ({self.com_port})...')
+                print(f'Attempting to disconnect from IMU ({self.com_port})...', end=' ')
                 self.imu.close()
                 self.imu.ser.close()
                 print('Disconnected from IMU!')
-                self.isConnected = False
+                self.is_connected = False
         except Exception as e:
             print(f'Error disconnecting from IMU: {e}')
 
@@ -160,7 +199,7 @@ class IMU:
         sel = {
             256: BandwidthSelect.bandwidth_256_Hz,
             184: BandwidthSelect.bandwidth_188_Hz,
-            94: BandwidthSelect.bandwidth_98_Hz,
+            98: BandwidthSelect.bandwidth_98_Hz,
             42: BandwidthSelect.bandwidth_42_Hz,
             21: BandwidthSelect.bandwidth_20_Hz,
             10: BandwidthSelect.bandwidth_10_Hz,

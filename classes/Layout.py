@@ -40,13 +40,13 @@ def imu_layout(com_ports, com_port, baud_rate) -> list:
         layout (list): Layout in the form of a list.
     """
     layout = [
-        [Psg.B(k='-B-COM-REFRESH-', button_text='', border_width=3, p=((0, 10), (20, 0)),
+        [Psg.B(k='-B-COM-REFRESH-', button_text='', border_width=3, p=((0, 10), (20, 20)),
                image_source=str(Path().absolute().parent) + '\\icons\\refresh_icon.png', image_subsample=4),
-         Psg.Combo(k='-COMBO-COM-PORT-', values=com_ports, s=7, font=st.FONT_COMBO,
-                   enable_events=True, readonly=True, default_value=com_port, p=((0, 0), (20, 0))),
-         Psg.T('Baud Rate:', justification='right', font=st.FONT_DESCR, p=((20, 0), (20, 0))),
+         Psg.Combo(k='-COMBO-COM-PORT-', values=com_ports, font=st.FONT_COMBO,
+                   readonly=True, default_value='Select COM Port...', s=40, p=((0, 0), (20, 20)))],
+        [Psg.T('Baud Rate:', justification='right', font=st.FONT_DESCR, p=((20, 0), (20, 0))),
          Psg.Combo(k='-COMBO-BAUD-RATE-', values=c.COMMON_BAUD_RATES, s=7, font=st.FONT_COMBO,
-                   enable_events=True, readonly=True, default_value=baud_rate, p=((0, 0), (20, 0)))],
+                   readonly=True, default_value=baud_rate, p=((0, 0), (20, 0)))],
         [Psg.HSep(p=((10, 10), (20, 20)))],
         [Psg.B(k='-B-IMU-CONNECT-', button_text='Connect', border_width=3, font=st.FONT_BTN)]
     ]
@@ -139,11 +139,6 @@ class Layout:
                    justification='center')]
         ]
 
-        record_end_column = [
-            [Psg.T(text='Record End', font=st.FONT_DESCR)],
-            [Psg.T(k='-T-RECORD-END-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1), justification='center')]
-        ]
-
         record_elapsed_column = [
             [Psg.T(text='Elapsed Time', font=st.FONT_DESCR)],
             [Psg.T(k='-T-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
@@ -151,7 +146,7 @@ class Layout:
         ]
 
         record_frames_column = [
-            [Psg.T(text='Frames saved', font=st.FONT_DESCR)],
+            [Psg.T(text='Frames To Save', font=st.FONT_DESCR)],
             [Psg.T(k='-T-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, s=(12, 1), justification='center')]
         ]
 
@@ -161,7 +156,6 @@ class Layout:
              Psg.B(k='-B-RECORD-TOGGLE-', button_text='Start Recording', s=(15, 1), font=st.FONT_BTN,
                    border_width=3, p=((0, 0), (0, 0)), disabled=True),
              Psg.Column(record_start_column, element_justification='center', p=(0, 0)),
-             Psg.Column(record_end_column, element_justification='center', p=(0, 0)),
              Psg.Column(record_elapsed_column, element_justification='center', p=(0, 0)),
              Psg.Column(record_frames_column, element_justification='center', p=(0, 0))]
         ]
