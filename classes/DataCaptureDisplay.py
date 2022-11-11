@@ -395,6 +395,8 @@ class DataCaptureDisplay:
         """
         Delete references to IMU object for garbage collection.
         """
+        self.plotting_process.end_plotting()
+
         if self.imu.is_connected:
             self.imu.disconnect()
             del self.imu
