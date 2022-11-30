@@ -65,6 +65,7 @@ class PlottingProcess:
         self.manager.start()
         self.plottingQueue = None
         self.pool = None
+        self.is_plotting = False
 
     def start_plotting(self):
         """
@@ -74,6 +75,7 @@ class PlottingProcess:
         self.pool = multiprocessing.Pool(1)
         self.plottingAsyncProcess = self.pool.apply_async(plotting_process,
                                                           args=(self.plottingQueue, self.screenDimensions))
+        self.is_plotting = True
 
     def plot_orientation(self, quaternion):
         """
@@ -89,10 +91,12 @@ class PlottingProcess:
         Close and join the plotting_process. First the while loop in the plotting_process method is broken, then the
         plottingQueue is deleted (helps with memory release), and the process pool is closed and joined.
         """
-        self.plottingQueue.put('-END-PROCESS-')
-        del self.plottingQueue
-        self.pool.close()
-        self.pool.join()
+        if self.is_plotting:
+            self.plottingQueue.put('-END-PROCESS-')
+            del self.plottingQueue
+            self.pool.close()
+            self.pool.join()
+            self.is_plotting = False
 
 
 def plotting_process(lifo_queue, screen_dimensions):
