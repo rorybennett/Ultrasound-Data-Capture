@@ -122,6 +122,7 @@ class FrameGrabber:
             self.height = int(self.vid.get(cv.CAP_PROP_FRAME_HEIGHT))
 
             # Set video codec. "MJPG" appears to be much faster than default.
+            # This codec appears to cause a memory leak with higher resolutions
             fourcc = cv.VideoWriter_fourcc('M', 'J', 'P', 'G')
             self.vid.set(cv.CAP_PROP_FOURCC, fourcc)
             if self.width == width or self.height == height:
