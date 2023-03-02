@@ -189,12 +189,15 @@ class DataCaptureDisplay:
         Thread for acquiring frames from FrameGrabber object.
         """
         print('Thread starting up: thread_get_frames.')
+        count = 0
+        start = time.time()
         while self.frame_grabber.is_connected:
             signal_fps_1 = time.time()
             # Grab frame.
             res, self.frame_raw = self.frame_grabber.get_frame()
             # Successful frame read?
             if res:
+                count += 1
                 # Is recording enabled?
                 if self.enable_recording:
                     self.frames_to_record.append(self.frame_raw)
@@ -206,10 +209,12 @@ class DataCaptureDisplay:
                 if self.enable_display:
                     self.enable_frame_resize = True
 
-                # Signal frame rate estimate.
-                signal_dt = time.time() - signal_fps_1
-                signal_fps = int(1 / signal_dt) if signal_dt != 0 else 100
-                self.window.write_event_value(key='-THD-SIGNAL-RATE-', value=signal_fps)
+                if count > 50:
+                    count = 0
+                    signal_dt = time.time() - start
+                    signal_fps = int(50 / signal_dt)
+                    self.window.write_event_value(key='-THD-SIGNAL-RATE-', value=signal_fps)
+                    start = time.time()
 
         print('-------------------------------------------\nThread closing down: '
               'thread_get_frames.\n-------------------------------------------')
