@@ -89,7 +89,7 @@ class DataCaptureDisplay:
             if self.enable_plotting and self.imu.quaternion:
                 self.plotting_process.plot_orientation(self.imu.quaternion)
 
-            event, values = self.window.read(timeout=0)
+            event, values = self.window.read(timeout=10)
 
             if event in [Psg.WIN_CLOSED, 'None']:
                 # On window close clicked.
@@ -125,8 +125,6 @@ class DataCaptureDisplay:
             # Signal Display Events.
             if event == '-B-DISPLAY-TOGGLE-':
                 self.toggle_display()
-            elif event == '-B-SNAPSHOT-':
-                ut.save_single_frame(self.frame_raw, f'{self.single_frames_path}\\{int(time.time() * 1000)}.png')
             elif event == '-B-RECORD-TOGGLE-':
                 self.toggle_recording()
             elif (len(event) == 1 and ord(event) == 32) and self.frame_grabber.is_connected:

@@ -134,7 +134,7 @@ class Layout:
             layout (list): Layout in the form of a list.
         """
         record_start_column = [
-            [Psg.T(text='Record Start', font=st.FONT_DESCR)],
+            [Psg.T(text='Recording Started', font=st.FONT_DESCR)],
             [Psg.T(k='-T-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
                    justification='center')]
         ]
@@ -151,9 +151,7 @@ class Layout:
         ]
 
         layout = [
-            [Psg.B(k='-B-SNAPSHOT-', button_text='Save Frame', s=(15, 1), font=st.FONT_BTN,
-                   border_width=3, p=((0, 20), (0, 0)), disabled=True),
-             Psg.B(k='-B-RECORD-TOGGLE-', button_text='Start Recording', s=(15, 1), font=st.FONT_BTN,
+            [Psg.B(k='-B-RECORD-TOGGLE-', button_text='Start Recording', s=(15, 1), font=st.FONT_BTN,
                    border_width=3, p=((0, 0), (0, 0)), disabled=True),
              Psg.Column(record_start_column, element_justification='center', p=(0, 0)),
              Psg.Column(record_elapsed_column, element_justification='center', p=(0, 0)),
