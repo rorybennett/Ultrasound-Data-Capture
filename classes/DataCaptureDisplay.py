@@ -148,7 +148,7 @@ class DataCaptureDisplay:
 
             # GUI frame rate estimate.
             gui_dt = time.time() - gui_fps_1
-            gui_fps = int(1 / gui_dt) if gui_dt > 0.00999 else '100+'
+            gui_fps = int(1 / gui_dt) if gui_dt > 0.01666 else '60+'
 
             self.window['-T-GUI-RATE-'].update(f'{gui_fps}')
             self.window['-T-MEMORY-'].update(f'{int(process.memory_info()[0] / float(2 ** 20))} MB')
