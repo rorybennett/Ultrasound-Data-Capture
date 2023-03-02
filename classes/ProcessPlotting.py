@@ -51,7 +51,7 @@ class MyManager(BaseManager):
 MyManager.register('LifoQueue', LifoQueue)
 
 
-class PlottingProcess:
+class ProcessPlotting:
     def __init__(self, window):
         """
         Initialise a plotting_process object.

@@ -6,16 +6,15 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 
 import PySimpleGUI as Psg
-import numpy as np
 
 import constants as c
 import styling as st
 import utils as ut
-from classes import FrameGrabber
+from classes import FrameGrabber, ProcessSave
 from classes import IMU
 from classes import Layout
 from classes import Menu
-from classes import PlottingProcess
+from classes import ProcessPlotting
 
 
 class DataCaptureDisplay:
@@ -60,6 +59,8 @@ class DataCaptureDisplay:
         self.enable_frame_save = False
         # Time a recording was started.
         self.recording_start = None
+        # Save data process.
+        self.save_process = ProcessSave.ProcessSave()
 
         # IMU connect window
         self.window_imu = None
@@ -69,7 +70,7 @@ class DataCaptureDisplay:
                                  location=(20, 50))
 
         # Plotting process
-        self.plotting_process = PlottingProcess.PlottingProcess(self.window)
+        self.plotting_process = ProcessPlotting.ProcessPlotting(self.window)
 
         self.run()
 
@@ -148,40 +149,6 @@ class DataCaptureDisplay:
 
             self.window['-T-GUI-RATE-'].update(f'{gui_fps}')
 
-    def save_recording(self):
-        """
-        Save data at the end of a recording.
-        """
-        print(f'Frames: {len(self.frames_to_record)}, Timestamps: {len(self.frame_record_times)}, '
-              f'Accelerations: {len(self.imu.accelerations)}, Quaternions: {len(self.imu.quaternions)}.')
-        self.current_data_file = open(self.current_data_file_path, 'w')
-
-        accelerations = np.array(self.imu.accelerations)
-        accelerations[:, 0] = accelerations[:, 0] * 1000
-        quaternions = np.array(self.imu.quaternions)
-        quaternions[:, 0] = quaternions[:, 0] * 1000
-
-        for index, frameData in enumerate(self.frames_to_record):
-            Psg.PopupAnimated(image_source=Psg.DEFAULT_BASE64_LOADING_GIF, message='Saving to disk...',
-                              keep_on_top=True, time_between_frames=50, text_color='black',
-                              background_color=Psg.DEFAULT_BACKGROUND_COLOR)
-
-            frame_time = self.frame_record_times[index]
-
-            acc_index = (np.abs(accelerations[:, 0] - frame_time)).argmin()
-            acceleration = accelerations[acc_index, 1:]
-            q_index = (np.abs(quaternions[:, 0] - frame_time)).argmin()
-            quaternion = quaternions[q_index, 1:]
-
-            frame_name = f'{index + 1}-{self.frame_record_times[index]}'
-            self.record_frame(frame_name, frameData, acceleration, quaternion)
-
-        self.frames_to_record = []
-        self.imu.clear_data()
-        Psg.PopupAnimated(None)
-        print('In memory frames have been recorded to disk.')
-        self.current_data_file.close()
-
     def toggle_recording(self):
         """
         Toggle self.enableRecording. If recording is disabled, the data stored in memory is saved to disk.
@@ -195,18 +162,23 @@ class DataCaptureDisplay:
             self.recording_start = time.time()
             self.window['-T-RECORD-START-'].update(time.strftime('%H:%M:%S'))
             self.enable_recording = True
-            self.imu.start_recording()
+            if self.imu.is_connected:
+                self.imu.start_recording()
         else:
             self.enable_recording = False
             self.imu.stop_recording()
             time.sleep(0.03)
-            self.save_recording()
+            self.save_process.start_process(self.frames_to_record, self.frame_record_times, self.imu.accelerations,
+                                            self.imu.quaternions, self.current_data_file_path,
+                                            self.current_recording_path)
+            time.sleep(0.03)
+            self.frames_to_record = []
+            self.imu.clear_data()
 
         # Set element states.
         self.window['-B-RECORD-TOGGLE-'].update(
             button_color=st.COL_BTN_ACTIVE if self.enable_recording else Psg.DEFAULT_BUTTON_COLOR,
             text='Stop Recording' if self.enable_recording else 'Start Recording')
-        self.window['-B-SNAPSHOT-'].update(disabled=True if self.enable_recording else False)
 
     def thread_get_frames(self):
         """
@@ -265,20 +237,6 @@ class DataCaptureDisplay:
               'thread_resize_frames.\n-------------------------------------------')
         self.window.write_event_value(key='-THD-RESIZE-RATE-', value=0)
 
-    def record_frame(self, frame_name, frame, acceleration, quaternion):
-        """
-        Save a frame and its related IMU data to disk.
-        """
-        try:
-            self.current_data_file.write(f'{frame_name},:'
-                                         f'acc[,{acceleration[0]},{acceleration[1]},{acceleration[2]},]'
-                                         f'q[,{quaternion[0]},{quaternion[1]},{quaternion[2]},{quaternion[3]},]'
-                                         f'dimensions[,{self.frame_grabber.width},{self.frame_grabber.height},]'
-                                         f'depth[,{c.DEFAULT_SCAN_DEPTH},]\n')
-            ut.save_single_frame(frame, f'{self.current_recording_path}\\{frame_name}.png')
-        except Exception as e:
-            print(f'Error recording a frame or recording to data.txt: {e}.')
-
     def toggle_display(self):
         """
         Toggle self.enableDisplay. Disabling the display can give a moderate frame rate boost, especially when
@@ -304,7 +262,6 @@ class DataCaptureDisplay:
         # Update menus.
         self.update_menus()
         # Set element states.
-        self.window['-B-SNAPSHOT-'].update(disabled=False if self.frame_grabber.is_connected else True)
         self.window['-B-RECORD-TOGGLE-'].update(disabled=False if self.frame_grabber.is_connected else True)
         self.window['-T-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frame_grabber.width, self.frame_grabber.height)}.')
