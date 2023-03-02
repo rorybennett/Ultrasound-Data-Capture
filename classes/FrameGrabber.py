@@ -108,20 +108,18 @@ class FrameGrabber:
         if self.is_connected:
             print(f'Attempting to set FrameGrabber dimensions to {width}x{height} at {fps}fps...', end=' ')
 
+            # Attempt to set video source width and height, if cv is unable to use given
+            # dimension, smaller default dimensions will be used.
+            self.vid.set(cv.CAP_PROP_FRAME_WIDTH, self.width)
+            self.vid.set(cv.CAP_PROP_FRAME_HEIGHT, self.height)
+
             # Set capture frame rate.
             self.vid.set(cv.CAP_PROP_FPS, self.fps)
 
             # Set video codec. "MJPG" appears to be much faster than default.
             # This codec appears to cause a memory leak with higher resolutions
             fourcc_1 = cv.VideoWriter_fourcc('M', 'J', 'P', 'G')
-            fourcc_2 = cv.VideoWriter_fourcc('m', 'j', 'p', 'g')
-            self.vid.set(cv.CAP_PROP_FOURCC, fourcc_2)
             self.vid.set(cv.CAP_PROP_FOURCC, fourcc_1)
-
-            # Attempt to set video source width and height, if cv is unable to use given
-            # dimension, smaller default dimensions will be used.
-            self.vid.set(cv.CAP_PROP_FRAME_WIDTH, self.width)
-            self.vid.set(cv.CAP_PROP_FRAME_HEIGHT, self.height)
 
             # Set width and height to source width and height. This can be used to test if
             # the new dimensions were set properly.

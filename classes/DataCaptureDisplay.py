@@ -140,9 +140,9 @@ class DataCaptureDisplay:
 
             # Thread events.
             if event == '-THD-SIGNAL-RATE-':
-                self.window['-T-SIGNAL-RATE-'].update(f'{values[event]}')
+                self.window['-T-SIGNAL-RATE-'].update(f'{values[event]} fps')
             elif event == '-THD-RESIZE-RATE-':
-                self.window['-T-RESIZE-RATE-'].update(f'{values[event]}')
+                self.window['-T-RESIZE-RATE-'].update(f'{values[event]} fps')
             elif event == '-THD-FRAMES-SAVED-':
                 self.window['-T-FRAMES-SAVED-'].update(f'{values[event]}')
 
@@ -192,7 +192,6 @@ class DataCaptureDisplay:
         count = 0
         start = time.time()
         while self.frame_grabber.is_connected:
-            signal_fps_1 = time.time()
             # Grab frame.
             res, self.frame_raw = self.frame_grabber.get_frame()
             # Successful frame read?
@@ -225,19 +224,23 @@ class DataCaptureDisplay:
         Thread for resizing a frame to be displayed in the GUI window.
         """
         print('Thread starting up: thread_resize_frames.')
+        count = 0
+        start = time.time()
         while self.frame_grabber.is_connected:
             if self.enable_frame_resize:
+                count += 1
                 self.enable_frame_resize = False
-                resize_fps_1 = time.time()
                 resized_frame = ut.resize_frame(self.frame_raw, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
                 frame_bytes = ut.frame_to_bytes(resized_frame)
                 self.window.write_event_value(key='-UPDT-IMAGE-FRAME-', value=frame_bytes)
+
                 # Resize frame rate estimate.
-                resize_fps_dt = time.time() - resize_fps_1
-                resize_fps = int(1 / resize_fps_dt)
-                self.window.write_event_value(key='-THD-RESIZE-RATE-', value=resize_fps)
-            else:
-                self.window.write_event_value(key='-THD-RESIZE-RATE-', value=0)
+                if count > 50:
+                    count = 0
+                    resize_dt = time.time() - start
+                    resize_fps = int(50 / resize_dt)
+                    self.window.write_event_value(key='-THD-RESIZE-RATE-', value=resize_fps)
+                    start = time.time()
 
             # Sleep thread.
             time.sleep(0.03)
@@ -273,7 +276,7 @@ class DataCaptureDisplay:
         # Set element states.
         self.window['-B-RECORD-TOGGLE-'].update(disabled=False if self.frame_grabber.is_connected else True)
         self.window['-T-SIGNAL-DIMENSIONS-'].update(
-            f'Signal Dimensions: {(self.frame_grabber.width, self.frame_grabber.height)}.')
+            f'Signal Dimensions: {self.frame_grabber.width} x {self.frame_grabber.height}.')
 
     def update_times(self):
         """

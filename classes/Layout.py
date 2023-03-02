@@ -95,11 +95,11 @@ class Layout:
         """
         display_column = [
             [Psg.Image(k='-IMAGE-FRAME-', s=c.DISPLAY_DIMENSIONS, background_color='#000000',
-                       p=(0, 0))],
+                       p=((0, 0), (5, 10)))],
             [Psg.T(k='-T-SIGNAL-DIMENSIONS-', text='Signal Dimensions: ', font=st.FONT_INFO, expand_x=True,
                    justification='left', p=(0, 0)),
              Psg.T(text=' Signal FPS: ', justification='right', font=st.FONT_INFO, p=(0, 0)),
-             Psg.T(k='-T-SIGNAL-RATE-', text='0', justification='center', font=st.FONT_INFO, s=(3, 1),
+             Psg.T(k='-T-SIGNAL-RATE-', text='0 fps', justification='center', font=st.FONT_INFO, s=(7, 1),
                    p=(0, 0))]
         ]
 
@@ -141,17 +141,17 @@ class Layout:
             layout (list): Layout in the form of a list.
         """
         frame_rate_details = [
-            [Psg.T(text='GUI: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
+            [Psg.T(text=' GUI: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
                    border_width=2),
              Psg.T(k='-T-GUI-RATE-', text='0', justification='center', font=st.FONT_INFO,
                    s=(4, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2),
              Psg.T(text=' Resize: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
                    border_width=2),
              Psg.T(k='-T-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
-                   s=(3, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2),
+                   s=(7, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2),
              Psg.T(text=' Memory: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
                    border_width=2),
-             Psg.T(k='-T-MEMORY-', text='0', justification='center', font=st.FONT_INFO,
+             Psg.T(k='-T-MEMORY-', text='0 fps', justification='center', font=st.FONT_INFO,
                    s=(9, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2)
              ]
         ]
