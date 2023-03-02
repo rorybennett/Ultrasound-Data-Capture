@@ -295,7 +295,7 @@ class DataCaptureDisplay:
             self.plotting_process.end_plotting()
 
         self.window['-B-PLOT-TOGGLE-'].update(
-            text='Disable Orientation' if self.enable_plotting else 'Enable Orientation',
+            text='Hide Orientation' if self.enable_plotting else 'Show Orientation',
             button_color=st.COL_BTN_ACTIVE if self.enable_plotting else Psg.DEFAULT_BUTTON_COLOR)
 
     def change_signal_dimensions(self, dimensions):

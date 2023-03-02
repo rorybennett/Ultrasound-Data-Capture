@@ -111,7 +111,7 @@ class Layout:
             [Psg.T('IMU Accelerations', font=st.FONT_DESCR, p=((5, 0), (10, 0)))],
             [Psg.T(k='-T-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
                    s=(25, 1))],
-            [Psg.B(k='-B-PLOT-TOGGLE-', button_text='Enable Orientation', s=(15, 1),
+            [Psg.B(k='-B-PLOT-TOGGLE-', button_text='Show Orientation', s=(15, 1),
                    font=st.FONT_BTN, border_width=3, p=((0, 0), (0, 5)))],
             [Psg.B(k='-B-DISPLAY-TOGGLE-', button_text='Disable Display', s=(15, 1),
                    font=st.FONT_BTN,

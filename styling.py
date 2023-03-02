@@ -13,7 +13,7 @@ FONT_DESCR = 'Helvetica 12'
 # Font used for info text.
 FONT_INFO = 'Helvetica 10'
 # Font used on buttons.
-FONT_BTN = 'Helvetica 14 bold'
+FONT_BTN = 'Helvetica 12 bold'
 # Font used on smaller buttons.
 FONT_BTN_SMALL = 'Helvetica 10 bold'
 # Button colour when active
