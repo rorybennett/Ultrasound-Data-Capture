@@ -119,7 +119,6 @@ class IMU:
         Set save_data to False to start saving data to a local variable.
         """
         self.save_data = False
-        print('Ending IMU data save...')
 
     def clear_data(self):
         """
