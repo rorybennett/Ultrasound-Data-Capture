@@ -2,10 +2,12 @@
 Main class for capturing frames from the output of an ultrasound scanner and adding IMU orientation data to the frames.
 
 """
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 
 import PySimpleGUI as Psg
+import psutil
 
 import constants as c
 import styling as st
@@ -78,6 +80,7 @@ class DataCaptureDisplay:
         """
         Main loop/thread for displaying the GUI and reacting to events, in standard PySimpleGUI fashion.
         """
+        process = psutil.Process(os.getpid())
         while True:
             gui_fps_1 = time.time()
             # Update recording times.
@@ -148,6 +151,7 @@ class DataCaptureDisplay:
             gui_fps = int(1 / gui_dt) if gui_dt > 0.00999 else '100+'
 
             self.window['-T-GUI-RATE-'].update(f'{gui_fps}')
+            self.window['-T-MEMORY-'].update(f'{int(process.memory_info()[0] / float(2 ** 20))} MB')
 
     def toggle_recording(self):
         """
@@ -280,7 +284,7 @@ class DataCaptureDisplay:
         update displayed acceleration values.
         """
         self.window['-T-IMU-ACC-'].update(f'Ax: {self.imu.acceleration[0]:.2f}\t'
-                                          f'Ay: {self.imu.acceleration[1]:.2f}\t'
+                                          f'Ay: {self.imu.acceleration[1]:.2f}\n'
                                           f'Az: {self.imu.acceleration[2]:.2f}')
 
     def toggle_plotting(self):

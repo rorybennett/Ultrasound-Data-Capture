@@ -73,15 +73,11 @@ class Layout:
         """
         display_row = self.__create_display_row()
 
-        record_row = self.__create_record_row()
-
         miscellaneous_row = self.__create_miscellaneous_row()
 
         layout = [
             [Psg.Menu(k='-M-', menu_definition=self.menu.get_menu())],
             [display_row],
-            [Psg.HSep(p=((0, 0), (0, 10)))],
-            [record_row],
             [Psg.HSep(p=((0, 0), (0, 10)))],
             [miscellaneous_row]
         ]
@@ -108,54 +104,30 @@ class Layout:
         ]
 
         imu_column = [
-            [Psg.T('IMU Accelerations', font=st.FONT_DESCR, p=((5, 0), (10, 0)))],
+            [Psg.T('IMU Accelerations', font=st.FONT_DESCR + ' underline', p=((5, 0), (5, 0)))],
             [Psg.T(k='-T-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
-                   s=(25, 1))],
+                   s=(18, 2), p=((5, 5), (5, 20)))],
+            [Psg.HSep(p=((0, 0), (0, 10)))],
             [Psg.B(k='-B-PLOT-TOGGLE-', button_text='Show Orientation', s=(15, 1),
                    font=st.FONT_BTN, border_width=3, p=((0, 0), (0, 5)))],
             [Psg.B(k='-B-DISPLAY-TOGGLE-', button_text='Disable Display', s=(15, 1),
-                   font=st.FONT_BTN,
-                   border_width=3, p=((0, 0), (5, 0)), button_color=st.COL_BTN_ACTIVE)]
+                   font=st.FONT_BTN, border_width=3, p=((0, 0), (5, 10)), button_color=st.COL_BTN_ACTIVE)],
+            [Psg.HSep(p=((0, 0), (0, 10)))],
+            [Psg.T(text='Recording Started', font=st.FONT_DESCR)],
+            [Psg.T(k='-T-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
+                   justification='center')],
+            [Psg.T(text='Elapsed Time', font=st.FONT_DESCR)],
+            [Psg.T(k='-T-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
+                   justification='center')],
+            [Psg.T(text='Frames To Save', font=st.FONT_DESCR)],
+            [Psg.T(k='-T-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, s=(12, 1), justification='center')],
+            [Psg.B(k='-B-RECORD-TOGGLE-', button_text='Start Recording', s=(15, 1), font=st.FONT_BTN,
+                   border_width=3, p=((0, 0), (5, 0)), disabled=True)]
         ]
 
         layout = [
             [Psg.pin(Psg.Column(k='-COL-EDIT-FALSE-', layout=display_column, vertical_alignment='top')),
              Psg.Column(imu_column, vertical_alignment='top', element_justification='center')]
-        ]
-
-        return layout
-
-    def __create_record_row(self) -> list:
-        """
-        Create the record row of the main window. This contains the recording buttons and details about the current
-        recording session.
-
-        Returns:
-            layout (list): Layout in the form of a list.
-        """
-        record_start_column = [
-            [Psg.T(text='Recording Started', font=st.FONT_DESCR)],
-            [Psg.T(k='-T-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
-                   justification='center')]
-        ]
-
-        record_elapsed_column = [
-            [Psg.T(text='Elapsed Time', font=st.FONT_DESCR)],
-            [Psg.T(k='-T-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
-                   justification='center')]
-        ]
-
-        record_frames_column = [
-            [Psg.T(text='Frames To Save', font=st.FONT_DESCR)],
-            [Psg.T(k='-T-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, s=(12, 1), justification='center')]
-        ]
-
-        layout = [
-            [Psg.B(k='-B-RECORD-TOGGLE-', button_text='Start Recording', s=(15, 1), font=st.FONT_BTN,
-                   border_width=3, p=((0, 0), (0, 0)), disabled=True),
-             Psg.Column(record_start_column, element_justification='center', p=(0, 0)),
-             Psg.Column(record_elapsed_column, element_justification='center', p=(0, 0)),
-             Psg.Column(record_frames_column, element_justification='center', p=(0, 0))]
         ]
 
         return layout
@@ -176,7 +148,12 @@ class Layout:
              Psg.T(text=' Resize: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
                    border_width=2),
              Psg.T(k='-T-RESIZE-RATE-', text='0', justification='center', font=st.FONT_INFO,
-                   s=(3, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2)]
+                   s=(3, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2),
+             Psg.T(text=' Memory: ', justification='right', font=st.FONT_INFO, p=(0, 0), relief=Psg.RELIEF_SUNKEN,
+                   border_width=2),
+             Psg.T(k='-T-MEMORY-', text='0', justification='center', font=st.FONT_INFO,
+                   s=(9, 1), p=(0, 0), relief=Psg.RELIEF_SUNKEN, border_width=2)
+             ]
         ]
 
         layout = [
