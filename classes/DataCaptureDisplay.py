@@ -372,6 +372,8 @@ class DataCaptureDisplay:
         """
         self.plotting_process.end_plotting()
 
+        self.thread_executor.shutdown()
+
         if self.imu.is_connected:
             self.imu.disconnect()
             del self.imu
