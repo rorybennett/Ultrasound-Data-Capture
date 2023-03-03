@@ -243,8 +243,8 @@ class DataCaptureDisplay:
                         self.window.write_event_value(key='-THD-RESIZE-RATE-', value=resize_fps)
                         start = time.time()
 
-            # Sleep thread. Limit resizing to roughly 30Hz, faster is not necessary.
-            time.sleep(0.03)
+            # Sleep thread. Limit resizing to roughly 20Hz, faster is not necessary.
+            time.sleep(0.05)
 
         print('-------------------------------------------\nThread closing down: '
               'thread_resize_frames.\n-------------------------------------------')
