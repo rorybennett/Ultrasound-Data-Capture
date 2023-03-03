@@ -205,7 +205,7 @@ class DataCaptureDisplay:
                     self.window.write_event_value(key='-THD-FRAMES-SAVED-', value=self.frame_grab_counter)
 
                 # Display enabled?
-                if self.enable_display:
+                if self.enable_display and self.frame_raw is not None:
                     self.enable_frame_resize = True
 
                 if count > 50:
@@ -228,21 +228,22 @@ class DataCaptureDisplay:
         start = time.time()
         while self.frame_grabber.is_connected:
             if self.enable_frame_resize:
-                count += 1
                 self.enable_frame_resize = False
-                resized_frame = ut.resize_frame(self.frame_raw, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
-                frame_bytes = ut.frame_to_bytes(resized_frame)
-                self.window.write_event_value(key='-UPDT-IMAGE-FRAME-', value=frame_bytes)
+                if self.frame_raw is not None:
+                    count += 1
+                    resized_frame = ut.resize_frame(self.frame_raw, c.DISPLAY_DIMENSIONS, ut.INTERPOLATION_NEAREST)
+                    frame_bytes = ut.frame_to_bytes(resized_frame)
+                    self.window.write_event_value(key='-UPDT-IMAGE-FRAME-', value=frame_bytes)
 
-                # Resize frame rate estimate.
-                if count > 50:
-                    count = 0
-                    resize_dt = time.time() - start
-                    resize_fps = int(50 / resize_dt)
-                    self.window.write_event_value(key='-THD-RESIZE-RATE-', value=resize_fps)
-                    start = time.time()
+                    # Resize frame rate estimate.
+                    if count > 50:
+                        count = 0
+                        resize_dt = time.time() - start
+                        resize_fps = int(50 / resize_dt)
+                        self.window.write_event_value(key='-THD-RESIZE-RATE-', value=resize_fps)
+                        start = time.time()
 
-            # Sleep thread.
+            # Sleep thread. Limit resizing to roughly 30Hz, faster is not necessary.
             time.sleep(0.03)
 
         print('-------------------------------------------\nThread closing down: '
@@ -314,10 +315,17 @@ class DataCaptureDisplay:
         """
         Attempt to change the signal dimensions from the menu click.
         """
+        self.frame_grabber.disconnect()
         self.frame_grabber.set_grabber_properties(width=int(dimensions[0]), height=int(dimensions[1]),
                                                   fps=c.DEFAULT_FRAME_RATE)
         self.window['-T-SIGNAL-DIMENSIONS-'].update(
             f'Signal Dimensions: {(self.frame_grabber.width, self.frame_grabber.height)}.')
+        time.sleep(1)
+        self.frame_grabber.connect()
+        # Start frame threads.
+        self.thread_executor.submit(self.thread_get_frames)
+        time.sleep(0.01)
+        self.thread_executor.submit(self.thread_resize_frames)
 
     def show_imu_window(self):
         """
