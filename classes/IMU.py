@@ -4,6 +4,7 @@ by the company. It is also not complete, as some quite basic functionality is mi
 
 The extra classes at the bottom are used to expand on the Witmotion library capabilities.
 """
+import datetime
 import time
 from enum import Enum
 
@@ -69,6 +70,8 @@ class IMU:
         self.save_data = False  # Should data be appended for later storage.
         self.imu_start_time = 0  # IMU time at the start of data storage.
         self.system_start_time = 0  # System time at the start of data storage.
+
+        self.connect_time = None  # Time that the IMU was connected.
 
     def __imu_callback(self, msg):
         """
@@ -149,6 +152,7 @@ class IMU:
             self.imu.subscribe(self.__imu_callback)
 
             print(f'Callback subscribed. IMU connected on {self.com_port}.')
+            self.connect_time = datetime.datetime.now()
             success_flag = True
         except Exception as e:
             print(f'Error initialising IMU class object: {e}')
@@ -166,8 +170,9 @@ class IMU:
                 print(f'Attempting to disconnect from IMU ({self.com_port})...', end=' ')
                 self.imu.close()
                 self.imu.ser.close()
-                print('Disconnected from IMU!')
+                print('Disconnected from IMU!', end=' ')
                 self.is_connected = False
+                print(f'Total IMU connected time: {datetime.datetime.now() - self.connect_time}')
         except Exception as e:
             print(f'Error disconnecting from IMU: {e}')
 

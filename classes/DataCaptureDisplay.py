@@ -151,7 +151,7 @@ class DataCaptureDisplay:
             gui_fps = int(1 / gui_dt) if gui_dt > 0.01666 else '60+'
 
             self.window['-T-GUI-RATE-'].update(f'{gui_fps}')
-            self.window['-T-MEMORY-'].update(f'{int(process.memory_info()[0] / float(2 ** 20))} MB')
+            self.window['-T-MEMORY-'].update(f'{int(process.memory_info().rss / float(2 ** 20))} MB')
 
     def toggle_recording(self):
         """
