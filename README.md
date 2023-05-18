@@ -106,9 +106,6 @@ their acquisition is fairly straightforward should you want to change the code a
   communication with the IMU: [https://pypi.org/project/witmotion/](https://pypi.org/project/witmotion/).
 - Opening a menu while a signal source is connected causes a delay in the signal display. I cannot
   solve this at the moment. Just wait until the display signal catches up, it can take a little while.
-- ~~As of 01/Aug/2022 the plotting should be disabled when recording a signal.~~ This has been fixed. The plotting
-  is now initially disabled and takes place on a separate process to the main process. The orientation plot is displayed 
-  in a new window when enabled. This has removed the need for blit and should no longer slow the frame grabbing down.
 - This project/program is run directly from PyCharm, and if any other libraries are required an error
   message will be shown.
 - IMU data is stored in a variable during recording, and once the recording is stopped, timestamps are
@@ -116,9 +113,19 @@ their acquisition is fairly straightforward should you want to change the code a
 - The program now stores the frames and IMU data in memory while recording, and when the recording is finished
   all the in-memory data is saved to disk. This was done to increase the speed at which frames could
   be grabbed (write operations tend to be quite slow) but it also results in a much higher memory usage.
-  Do not run a recording for too long, otherwise the system will run out of available RAM. Try and keep
-  recordings below 1 to 2 minutes.
+  Do not run a recording for too long, otherwise the system will run out of available RAM (depending on available 
+  memory). Try and keep recordings below 1 to 2 minutes.
 - Recordings are now saved in a separate process, so the main screen can continue to operate as normal while the data 
   is being saved.
+- The IMU that was used during this project becomes incredibly unstable in a hospital environment, with more than
+  half the data being lost during a recording. A USB connection to the IMU can circumvent this, without changing
+  how the program is used (USB serial connections show up in the Bluetooth connection pop-up).
+
+
+# Problems
+
 - As of 03/Mar/2023 there is a memory leak when the video signal is 1920x1080. It has something to do with the MJPG 
   format of the OpenCV class.
+- ~~As of 01/Aug/2022 the plotting should be disabled when recording a signal.~~ This has been fixed. The plotting
+  is now initially disabled and takes place on a separate process to the main process. The orientation plot is displayed 
+  in a new window when enabled. This has removed the need for blit and should no longer slow the frame grabbing down.
