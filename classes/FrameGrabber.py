@@ -62,7 +62,7 @@ class FrameGrabber:
 
             print(f'Attempting to connect to source: {self.signalSource}, '
                   f'with dimensions: {self.width}x{self.height}...', end=' ')
-            self.vid = cv.VideoCapture(self.signalSource, cv.CAP_DSHOW)
+            self.vid = cv.VideoCapture(self.signalSource, cv.FFMPEG)
             if not self.vid.isOpened():
                 print(f'Could not open source: {self.signalSource}.')
                 return
@@ -81,7 +81,7 @@ class FrameGrabber:
         variable to False, so no new frames are read.
         """
         if self.is_connected:
-            print(f'Source connected: {self.is_connected}. Attempting to release current source...', end=' ')
+            print(f'Source connected: {self.is_connected}. Attempting to release current source...')
             self.vid.release()
             self.is_connected = False
             print(f'Source {self.signalSource} has been released.')
