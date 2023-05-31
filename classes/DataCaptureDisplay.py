@@ -11,7 +11,7 @@ import psutil
 
 import constants as c
 import styling as st
-import utils as ut
+import utils_functions as ut
 from classes import FrameGrabber, ProcessSave
 from classes import IMU
 from classes import Layout
@@ -88,7 +88,7 @@ class DataCaptureDisplay:
                 self.update_times()
             # Update IMU values if present.
             if self.imu.is_connected and self.imu.acceleration:
-                self.update_accelerations()
+                self.update_imu_data()
             # Send orientation to plotting process.
             if self.enable_plotting and self.imu.quaternion:
                 self.plotting_process.plot_orientation(self.imu.quaternion)
@@ -288,13 +288,17 @@ class DataCaptureDisplay:
         # Set element states.
         self.window['-T-RECORD-ELAPSED-'].update(time.strftime('%H:%M:%S', time.localtime(elapsed_time)))
 
-    def update_accelerations(self):
+    def update_imu_data(self):
         """
         update displayed acceleration values.
         """
-        self.window['-T-IMU-ACC-'].update(f'Ax: {self.imu.acceleration[0]:.2f}\t'
+        self.window['-T-IMU-ACC-'].update(f'Ax: {self.imu.acceleration[0]:.2f}\n'
                                           f'Ay: {self.imu.acceleration[1]:.2f}\n'
                                           f'Az: {self.imu.acceleration[2]:.2f}')
+        self.window['-T-IMU-ORI-'].update(f'Ax: {self.imu.quaternion[0]:.2f}\n'
+                                          f'Ay: {self.imu.quaternion[1]:.2f}\n'
+                                          f'Az: {self.imu.quaternion[2]:.2f}\n'
+                                          f'Az: {self.imu.quaternion[3]:.2f}')
 
     def toggle_plotting(self):
         """

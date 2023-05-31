@@ -62,7 +62,7 @@ class FrameGrabber:
 
             print(f'Attempting to connect to source: {self.signalSource}, '
                   f'with dimensions: {self.width}x{self.height}...', end=' ')
-            self.vid = cv.VideoCapture(self.signalSource, cv.FFMPEG)
+            self.vid = cv.VideoCapture(self.signalSource, cv.CAP_DSHOW)
             if not self.vid.isOpened():
                 print(f'Could not open source: {self.signalSource}.')
                 return
@@ -125,6 +125,8 @@ class FrameGrabber:
             # the new dimensions were set properly.
             self.width = int(self.vid.get(cv.CAP_PROP_FRAME_WIDTH))
             self.height = int(self.vid.get(cv.CAP_PROP_FRAME_HEIGHT))
+            "Testing buffer size"
+            self.vid.set(cv.CAP_PROP_BUFFERSIZE, 20)
 
             if self.width == width or self.height == height:
                 print(f'Dimensions correctly set to {self.width}x{self.height}.\n')
@@ -148,6 +150,8 @@ class FrameGrabber:
             frame (image): Returned image id read was successful.
         """
         if self.is_connected:
+            "Testing Frame read position"
+            self.vid.set(cv.CAP_PROP_POS_FRAMES, 0)
             success_flag, frame = self.vid.read()
             # Return boolean success flag and current frame
             if success_flag:

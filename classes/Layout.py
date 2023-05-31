@@ -104,9 +104,13 @@ class Layout:
         ]
 
         imu_column = [
-            [Psg.T('IMU Accelerations', font=st.FONT_DESCR + ' underline', p=((5, 0), (5, 0)))],
-            [Psg.T(k='-T-IMU-ACC-', text='', font=st.FONT_DESCR, justification='center', expand_x=True,
-                   s=(18, 2), p=((5, 5), (5, 20)))],
+            [Psg.T('IMU Data', font=st.FONT_DESCR + ' underline', p=((5, 0), (5, 0)))],
+            [Psg.Column(element_justification='left', layout=[
+                [Psg.T(k='-T-IMU-ORI-', text=f'q0:\nq1:\nq2:\nq3:', font=st.FONT_DESCR,
+                       expand_x=True, s=(10, 4), p=((5, 5), (5, 20)))]]),
+             Psg.Column(element_justification='left', layout=[
+                 [Psg.T(k='-T-IMU-ACC-', text=f'Ax:\nAy:\nAz:', font=st.FONT_DESCR,
+                        expand_x=True, s=(10, 3), p=((5, 5), (5, 20)))]])],
             [Psg.HSep(p=((0, 0), (0, 10)))],
             [Psg.B(k='-B-PLOT-TOGGLE-', button_text='Show Orientation', s=(15, 1),
                    font=st.FONT_BTN, border_width=3, p=((0, 0), (0, 5)))],
