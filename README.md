@@ -65,8 +65,8 @@ Once connected, the return rate of the IMU can be set and the accelerometer can 
 
 ### Basic Operation: Saving data
 
-Frames from the video/input signal (USB-port) are stored with data streamed from an IMU device (bluetooth)
-and the results stored as:
+Frames from the video/input signal (USB-port) are stored with data streamed from an IMU device (bluetooth
+/USB) and the results stored as:
 
 - A series of .png files, each .png corresponding to a frame from the input signal. The name of the
   .png files start with the recorded frame number, followed by a timestamp based on the system time that
