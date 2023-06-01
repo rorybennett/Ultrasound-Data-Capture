@@ -73,7 +73,7 @@ SIGNAL_SOURCES = 5
 DISPLAY_DIMENSIONS = (1024, 576)
 
 # Default frame rate of the video signal. This is dependent on the video signal source and the hardware being used.
-DEFAULT_FRAME_RATE = 100
+DEFAULT_FRAME_RATE = 60
 
 # Default signal dimensions. HD is chosen, if it is not available the nearest lower resolution will be used.
 DEFAULT_SIGNAL_DIMENSIONS = [1920, 1080]
