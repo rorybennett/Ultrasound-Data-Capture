@@ -104,11 +104,11 @@ class Layout:
         ]
 
         imu_column = [
-            [Psg.T('IMU Data', font=st.FONT_INFO + ' underline', p=((5, 0), (5, 0)))],
+            [Psg.T('IMU Data', font=st.FONT_DESCR + ' underline', p=((5, 0), (5, 0)))],
             [Psg.Col(element_justification='center', layout=[[
-                Psg.T(k='-T-IMU-AX-', text=f'Ax: ', font=st.FONT_INFO, expand_x=True, s=(7, 1)),
-                Psg.T(k='-T-IMU-AY-', text=f'Ay: ', font=st.FONT_INFO, expand_x=True, s=(7, 1)),
-                Psg.T(k='-T-IMU-AZ-', text=f'Az: ', font=st.FONT_INFO, expand_x=True, s=(7, 1))]]
+                Psg.T(k='-T-IMU-AX-', text=f'Ax: ', font=st.FONT_DESCR, expand_x=True, s=(7, 1)),
+                Psg.T(k='-T-IMU-AY-', text=f'Ay: ', font=st.FONT_DESCR, expand_x=True, s=(7, 1)),
+                Psg.T(k='-T-IMU-AZ-', text=f'Az: ', font=st.FONT_DESCR, expand_x=True, s=(7, 1))]]
                      )],
             [Psg.HSep(p=((0, 0), (0, 10)))],
             [Psg.B(k='-B-PLOT-TOGGLE-', button_text='Show Orientation', s=(15, 1),
@@ -116,23 +116,21 @@ class Layout:
             [Psg.B(k='-B-DISPLAY-TOGGLE-', button_text='Disable Display', s=(15, 1),
                    font=st.FONT_BTN, border_width=3, p=((0, 0), (5, 10)), button_color=st.COL_BTN_ACTIVE)],
             [Psg.HSep(p=((0, 0), (0, 10)))],
-            [Psg.T(text='Recording Started', font=st.FONT_INFO)],
-            [Psg.T(k='-T-RECORD-START-', text='--:--:--', font=st.FONT_INFO, s=(12, 1),
+            [Psg.T(text='Recording Started', font=st.FONT_DESCR)],
+            [Psg.T(k='-T-RECORD-START-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
                    justification='center')],
-            [Psg.T(text='Elapsed Time', font=st.FONT_INFO)],
-            [Psg.T(k='-T-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_INFO, s=(12, 1),
+            [Psg.T(text='Elapsed Time', font=st.FONT_DESCR)],
+            [Psg.T(k='-T-RECORD-ELAPSED-', text='--:--:--', font=st.FONT_DESCR, s=(12, 1),
                    justification='center')],
-            [Psg.T(text='Frames To Save', font=st.FONT_INFO)],
-            [Psg.T(k='-T-FRAMES-SAVED-', text='0', font=st.FONT_INFO, s=(12, 1), justification='center')],
-            [Psg.T(text='Patient', font=st.FONT_INFO)],
-            [Psg.I(k='-I-PATIENT-', font=st.FONT_INFO, s=(12, 1), justification='center')],
-            [Psg.T(text='Scan Plane', font=st.FONT_INFO)],
+            [Psg.T(text='Frames To Save', font=st.FONT_DESCR)],
+            [Psg.T(k='-T-FRAMES-SAVED-', text='0', font=st.FONT_DESCR, s=(12, 1), justification='center')],
+            [Psg.T(text='Patient Identifier', font=st.FONT_DESCR)],
+            [Psg.I(k='-I-PATIENT-', font=st.FONT_DESCR, s=(12, 1), justification='center')],
+            [Psg.T(text='Scan Plane', font=st.FONT_DESCR)],
             [Psg.Col(element_justification='left', layout=[
-                [Psg.R(k='-R-TT-', font=st.FONT_INFO, group_id="SCAN-TYPE", text="TAUS-Transverse")],
-                [Psg.R(k='-R-TS-', font=st.FONT_INFO, group_id="SCAN-TYPE", text="TAUS-Sagittal")],
-                [Psg.R(k='-R-PT-', font=st.FONT_INFO, group_id="SCAN-TYPE", text="PUS-Transverse")],
-                [Psg.R(k='-R-PS-', font=st.FONT_INFO, group_id="SCAN-TYPE", text="PUS-Sagittal")],
-                [Psg.R(k='-R-O-', font=st.FONT_INFO, group_id="SCAN-TYPE", text="Other", default=True)]])],
+                [Psg.R(k='-R-TA-', font=st.FONT_DESCR, group_id='SCAN-TYPE', text='Transabdominal')],
+                [Psg.R(k='-R-TP-', font=st.FONT_DESCR, group_id='SCAN-TYPE', text='Transperineal')],
+                [Psg.R(k='-R-O-', font=st.FONT_DESCR, group_id='SCAN-TYPE', text='Other', default=True)]])],
             [Psg.B(k='-B-RECORD-TOGGLE-', button_text='Start Recording', s=(15, 1), font=st.FONT_BTN,
                    border_width=3, p=((0, 0), (5, 0)), disabled=True)]
         ]

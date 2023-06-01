@@ -192,19 +192,26 @@ def save_single_frame(frame, frame_path):
         print(f'Error saving frame to {frame_path}: {e}')
 
 
-def create_recording_directory(videos_path) -> tuple[Path, str]:
+def create_recording_directory(videos_path, patient_number, scan_plane) -> tuple[Path, str]:
     """
-    Create a directory where a recording of frames will be saved. Based on the time the test/recording was started.
+    Create a directory where a recording of frames will be saved. Based on the time the test/recording was started and
+    extra parameters entered.
 
     Args:
         videos_path (str): Path to the parent Videos directory where all recordings are saved.
+        patient_number (str): Patient scan identifier.
+        scan_plane (str): Scan plane identifier, from radio buttons.
 
     Returns:
         tuple(Path, str): The Path to the current recording directory and its related data.txt file.
 
     """
     # Create the new recording directory.
-    current_recording_path = Path(videos_path, dt.now().strftime("%d %m %Y %H-%M-%S,%f")[:-3])
+    if not patient_number.strip():
+        patient_number = dt.now().strftime("%d %m %Y %H-%M-%S,%f")[:-3]
+
+    path = videos_path + '/' + patient_number + '/' + scan_plane
+    current_recording_path = Path(path, dt.now().strftime("%d %m %Y %H-%M-%S,%f")[:-3])
     current_recording_path.mkdir(parents=True, exist_ok=True)
     # Return a path to the new directory's data.txt file for IMU data recording.
     data_file_path = str(Path(current_recording_path, 'data.txt'))

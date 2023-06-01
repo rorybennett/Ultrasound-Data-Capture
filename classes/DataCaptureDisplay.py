@@ -129,7 +129,7 @@ class DataCaptureDisplay:
             # Signal Display Events.
             if event == '-B-DISPLAY-TOGGLE-':
                 self.toggle_display()
-            elif event == '-B-RECORD-TOGGLE-':
+            elif event == '-B-RECORD-TOGGLE-' and self.frame_grabber.is_connected:
                 self.toggle_recording()
             elif (event == "F1:112") and self.frame_grabber.is_connected:
                 self.toggle_recording()
@@ -159,7 +159,13 @@ class DataCaptureDisplay:
         """
         # Create video directory for saving frames.
         if not self.enable_recording:
-            self.current_recording_path, self.current_data_file_path = ut.create_recording_directory(self.video_path)
+            scan_plane = "Other"
+            if self.window['-R-TA-'].get():
+                scan_plane = "Transabdominal"
+            elif self.window['-R-TP-'].get():
+                scan_plane = "Transperineal"
+            self.current_recording_path, self.current_data_file_path = \
+                ut.create_recording_directory(str(self.video_path), self.window['-I-PATIENT-'].get(), scan_plane)
             self.frames_to_record = []
             self.frame_record_times = []
             self.frame_grab_counter = 1
