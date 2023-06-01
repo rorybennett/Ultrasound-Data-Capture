@@ -131,7 +131,7 @@ class DataCaptureDisplay:
                 self.toggle_display()
             elif event == '-B-RECORD-TOGGLE-':
                 self.toggle_recording()
-            elif (len(event) == 1 and ord(event) == 32) and self.frame_grabber.is_connected:
+            elif (event == "F1:112") and self.frame_grabber.is_connected:
                 self.toggle_recording()
 
             # IMU Display Events.
@@ -292,13 +292,9 @@ class DataCaptureDisplay:
         """
         update displayed acceleration values.
         """
-        self.window['-T-IMU-ACC-'].update(f'Ax: {self.imu.acceleration[0]:.2f}\n'
-                                          f'Ay: {self.imu.acceleration[1]:.2f}\n'
-                                          f'Az: {self.imu.acceleration[2]:.2f}')
-        self.window['-T-IMU-ORI-'].update(f'Ax: {self.imu.quaternion[0]:.2f}\n'
-                                          f'Ay: {self.imu.quaternion[1]:.2f}\n'
-                                          f'Az: {self.imu.quaternion[2]:.2f}\n'
-                                          f'Az: {self.imu.quaternion[3]:.2f}')
+        self.window['-T-IMU-AX-'].update(f'Ax: {self.imu.acceleration[0]:.1f}')
+        self.window['-T-IMU-AY-'].update(f'Ay: {self.imu.acceleration[1]:.1f}')
+        self.window['-T-IMU-AZ-'].update(f'Az: {self.imu.acceleration[2]:.1f}')
 
     def toggle_plotting(self):
         """
