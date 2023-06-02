@@ -123,7 +123,8 @@ their acquisition is fairly straightforward should you want to change the code a
 
 
 # Problems
-
+- ~~As of 02/June/2023 the program hangs on exit if connected to input signal.~~ This has been fixed by making sure
+  the main window is open before closing off a thread.
 - As of 03/Mar/2023 there is a memory leak when the video signal is 1920x1080. It has something to do with the MJPG 
   format of the OpenCV class.
 - ~~As of 01/Aug/2022 the plotting should be disabled when recording a signal.~~ This has been fixed. The plotting
