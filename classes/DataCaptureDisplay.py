@@ -95,7 +95,7 @@ class DataCaptureDisplay:
 
             event, values = self.window.read(timeout=10)
 
-            if event in [Psg.WIN_CLOSED, 'None']:
+            if event in [Psg.WIN_CLOSED, 'Exit', 'None']:
                 # On window close clicked.
                 self.close()
                 break
@@ -152,6 +152,8 @@ class DataCaptureDisplay:
 
             self.window['-T-GUI-RATE-'].update(f'{gui_fps}')
             self.window['-T-MEMORY-'].update(f'{int(process.memory_info().rss / float(2 ** 20))} MB')
+
+        self.window.close()
 
     def toggle_recording(self):
         """
@@ -223,7 +225,8 @@ class DataCaptureDisplay:
 
         print('-------------------------------------------\nThread closing down: '
               'thread_get_frames.\n-------------------------------------------')
-        self.window.write_event_value(key='-THD-SIGNAL-RATE-', value=0)
+        if not self.window.is_closed():
+            self.window.write_event_value(key='-THD-SIGNAL-RATE-', value=0)
 
     def thread_resize_frames(self):
         """
@@ -254,7 +257,8 @@ class DataCaptureDisplay:
 
         print('-------------------------------------------\nThread closing down: '
               'thread_resize_frames.\n-------------------------------------------')
-        self.window.write_event_value(key='-THD-RESIZE-RATE-', value=0)
+        if not self.window.is_closed():
+            self.window.write_event_value(key='-THD-RESIZE-RATE-', value=0)
 
     def toggle_display(self):
         """
@@ -376,17 +380,16 @@ class DataCaptureDisplay:
         """
         Delete references to IMU object for garbage collection.
         """
-        self.plotting_process.end_plotting()
-
-        self.thread_executor.shutdown()
-
+        if self.enable_plotting:
+            self.plotting_process.end_plotting()
         if self.imu.is_connected:
             self.imu.disconnect()
             del self.imu
-
         if self.frame_grabber.is_connected:
             self.frame_grabber.disconnect()
+        # self.thread_executor.shutdown()
 
 
 if __name__ == '__main__':
     DataCaptureDisplay()
+    print("Completing Shutdown...")

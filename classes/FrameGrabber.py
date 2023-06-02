@@ -3,6 +3,7 @@ FrameGrabber class for handling the OpenCV portion of the program. Frames from a
 greyscale images.
 are .
 """
+
 import cv2 as cv
 
 import constants as c
@@ -38,7 +39,7 @@ class FrameGrabber:
         self.sourceFps = fps  # Frame rate of signal
         self.is_connected = False  # Is the signal currently being streamed
 
-        self.vid = None  # VideoCapture object
+        self.vid = cv.VideoCapture()  # VideoCapture object
 
     def __del__(self):
         """
@@ -62,7 +63,7 @@ class FrameGrabber:
 
             print(f'Attempting to connect to source: {self.signalSource}, '
                   f'with dimensions: {self.width}x{self.height}...', end=' ')
-            self.vid = cv.VideoCapture(self.signalSource, cv.CAP_DSHOW)
+            self.vid.open(self.signalSource, cv.CAP_DSHOW)
             if not self.vid.isOpened():
                 print(f'Could not open source: {self.signalSource}.')
                 return
@@ -118,7 +119,7 @@ class FrameGrabber:
 
             # Set video codec. "MJPG" appears to be much faster than default.
             # This codec appears to cause a memory leak with higher resolutions
-            fourcc_1 = cv.VideoWriter_fourcc('M', 'J', 'P', 'G')
+            fourcc_1 = cv.VideoWriter_fourcc(*"MJPG")
             self.vid.set(cv.CAP_PROP_FOURCC, fourcc_1)
 
             # Set width and height to source width and height. This can be used to test if
